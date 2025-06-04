@@ -1,4 +1,5 @@
 # Backend .gitignore placeholder
+
 # .gitignore
 
 # Python virtual environment
@@ -17,4 +18,3 @@ __pycache__/
 # Migrations (optional to ignore)
 **/migrations/*.py
 !**/migrations/__init__.py
-
