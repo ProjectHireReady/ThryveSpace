@@ -1,1 +1,20 @@
 # Backend .gitignore placeholder
+# .gitignore
+
+# Python virtual environment
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Django secret settings
+.env
+
+# VS Code settings
+.vscode/
+
+# Migrations (optional to ignore)
+**/migrations/*.py
+!**/migrations/__init__.py
+
