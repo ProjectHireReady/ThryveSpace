@@ -1,3 +1,36 @@
-body {
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lobster+Two&family=Nunito:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap');
+
+/* Define font variables */
+:root {
+  --font-logo: 'Lobster Two', cursive;
+  --font-body: 'Nunito', sans-serif;
+  --font-heading: 'Poppins', sans-serif;
+}
+
+/* Base reset */
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Apply body font and background */
+body {
+  font-family: var(--font-body);
+  background-color: #F7F9FB;
+}
+
+/* Apply heading font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Logo styles based on your design */
+.logo {
+  font-family: var(--font-logo);
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: 0.009em;
 }
