@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class MoodjournalConfig(AppConfig):
+class MoodsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'moodjournal'
+    name = 'moods'
