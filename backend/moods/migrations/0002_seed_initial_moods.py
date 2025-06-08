@@ -6,11 +6,11 @@ from django.db import migrations
 def seed_moods(apps, schema_editor):
     Mood = apps.get_model("moods", "Mood")
     initial = [
-        {"name": "Happy", "emoji": "😊", "category": "Positive"},
-        {"name": "Laugh", "emoji": "😆", "category": "Positive"},
-        {"name": "Sad", "emoji": "😢", "category": "Negative"},
-        {"name": "Anxious", "emoji": "😰", "category": "Negative"},
-        {"name": "Calm", "emoji": "😌", "category": "Neutral"},
+        {"name": "Happy", "emoji": "😊", "category": "positive"},
+        {"name": "Laugh", "emoji": "😆", "category": "positive"},
+        {"name": "Sad", "emoji": "😢", "category": "negative"},
+        {"name": "Anxious", "emoji": "😰", "category": "negative"},
+        {"name": "Calm", "emoji": "😌", "category": "neutral"},
     ]
 
     for mood in initial:
@@ -26,6 +26,5 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(seed_moods, reverse_code=migrations.RunPython.noop),
     ]
-
 
 # This migration seeds the initial moods into the database.
