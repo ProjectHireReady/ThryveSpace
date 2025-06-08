@@ -14,8 +14,6 @@ class Mood(models.Model):
     emoji = models.CharField(max_length=10)
     category = models.CharField(
         max_length=30,
-        blank=True,
-        null=True,
         choices=CATEGORY_CHOICES,
     )  # Optional field for categorization
     is_active = models.BooleanField(
