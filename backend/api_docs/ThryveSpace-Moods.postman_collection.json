@@ -1,0 +1,204 @@
+{
+	"info": {
+		"_postman_id": "84762f62-5eae-4646-9b9c-350071fb640d",
+		"name": "ThryveSpace-Moods",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45713706",
+		"_collection_link": "https://egbafrank.postman.co/workspace/Thryvespace-API~3540945d-ad07-41ff-ba93-d8ded9a69467/collection/45713706-84762f62-5eae-4646-9b9c-350071fb640d?action=share&source=collection_link&creator=45713706"
+	},
+	"item": [
+		{
+			"name": "Get All Moods",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response is JSON array\", () => {\r",
+							"    pm.response.to.be.json;\r",
+							"    pm.expect(pm.response.json()).to.be.an(\"array\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Each mood has name and emoji\", () => {\r",
+							"    const moods = pm.response.json();\r",
+							"    moods.forEach(mood => {\r",
+							"        pm.expect(mood).to.have.property(\"name\");\r",
+							"        pm.expect(mood).to.have.property(\"emoji\");\r",
+							"    });\r",
+							"});\r",
+							"var template = `\r",
+							"<style type=\"text/css\">\r",
+							"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+							"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+							"    .tftable tr {background-color:#ffffff;}\r",
+							"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+							"    .tftable tr:hover {background-color:#e0ffff;}\r",
+							"</style>\r",
+							"\r",
+							"<table class=\"tftable\" border=\"1\">\r",
+							"    <tr>\r",
+							"        <th>ID</th>\r",
+							"        <th>Name</th>\r",
+							"        <th>Emoji</th>\r",
+							"        <th>Category</th>\r",
+							"    </tr>\r",
+							"    \r",
+							"    {{#each response}}\r",
+							"        <tr id=row_{{@key}}>\r",
+							"            <td>{{id}}</td>\r",
+							"            <td>{{name}}</td>\r",
+							"            <td>{{emoji}}</td>\r",
+							"            <td>{{category}}</td>\r",
+							"        </tr>\r",
+							"    {{/each}}\r",
+							"</table>\r",
+							"`;\r",
+							"\r",
+							"function constructVisualizerPayload() {\r",
+							"    return { response: pm.response.json() };\r",
+							"}\r",
+							"\r",
+							"pm.visualizer.set(template, constructVisualizerPayload());"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/moods/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"moods",
+						""
+					]
+				},
+				"description": "## Get Moods\n\nThis endpoint retrieves a list of moods available in the system.\n\n### Request\n\n- **Method**: `GET`\n    \n- **Endpoint**: `{{base_url}}/moods/`\n    \n\n### Response\n\n- **Status Code**: `200 OK`\n    \n- **Content-Type**: `application/json`\n    \n- **Response Body**: An array of mood objects, where each object contains the following keys:\n    \n    - `id`: A unique identifier for the mood.\n        \n    - `name`: The name of the mood.\n        \n    - `emoji`: An emoji representation of the mood.\n        \n    - `category`: The category to which the mood belongs.\n        \n\n### Example Response\n\n``` json\n[\n    {\n        \"id\": \"cc492bd4-30c9-470f-92f5-4bfc9ed525ad\",\n        \"name\": \"Calm\",\n        \"emoji\": \"😌\",\n        \"category\": \"Neutral\"\n    }\n]\n\n ```\n\nThis response format allows frontend to easily understand and utilize the available moods in their applications."
+			},
+			"response": [
+				{
+					"name": "Get All Moods",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/moods/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"moods",
+								""
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sun, 08 Jun 2025 12:30:38 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "WSGIServer/0.2 CPython/3.12.3"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept, Cookie, origin"
+						},
+						{
+							"key": "Allow",
+							"value": "GET, HEAD, OPTIONS"
+						},
+						{
+							"key": "Expires",
+							"value": "Sun, 08 Jun 2025 13:30:38 GMT"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "max-age=3600"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Length",
+							"value": "489"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "Referrer-Policy",
+							"value": "same-origin"
+						},
+						{
+							"key": "Cross-Origin-Opener-Policy",
+							"value": "same-origin"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": \"a0505bd1-e6f1-4c61-84ab-7240c5824ff2\",\n        \"name\": \"Anxious\",\n        \"emoji\": \"😰\",\n        \"category\": \"Negative\"\n    },\n    {\n        \"id\": \"cc492bd4-30c9-470f-92f5-4bfc9ed525ad\",\n        \"name\": \"Calm\",\n        \"emoji\": \"😌\",\n        \"category\": \"Neutral\"\n    },\n    {\n        \"id\": \"c8abfc62-978c-4e1f-9442-9fe8a1db7675\",\n        \"name\": \"Happy\",\n        \"emoji\": \"😊\",\n        \"category\": \"Positive\"\n    },\n    {\n        \"id\": \"68c4f499-2997-44cc-a5ca-388cc4477de8\",\n        \"name\": \"Laugh\",\n        \"emoji\": \"😆\",\n        \"category\": \"Positive\"\n    },\n    {\n        \"id\": \"8eb97739-7584-44d6-b260-cf751ddfcf45\",\n        \"name\": \"Sad\",\n        \"emoji\": \"😢\",\n        \"category\": \"Negative\"\n    }\n]"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api/v1",
+			"type": "string"
+		}
+	]
+}
