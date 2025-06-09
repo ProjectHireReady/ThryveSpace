@@ -14,4 +14,5 @@ class Note(models.Model):
 
     def __str__(self):
         # Useful for admin panel and debugging
+        # F-strings typically use double quotes for the string itself for clarity
         return f"Note by {self.user.username} on {self.created_at.strftime('%Y-%m-%d %H:%M')}"

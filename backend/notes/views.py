@@ -2,14 +2,15 @@
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404 # Useful for fetching objects or returning 404
-from django.contrib.auth import get_user_model # The correct way to get the active custom User model
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
 
 # Import your models from their new locations
 from notes.models import Note
 from moods.models import Mood
 
-# Remove the global JOURNAL_ENTRIES list, as it's no longer needed
+# The global JOURNAL_ENTRIES list and its related comment are now completely obsolete.
+# You can remove this entire line or keep it commented out for historical context.
 
 @csrf_exempt
 def save_note(request):
@@ -17,16 +18,16 @@ def save_note(request):
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON in request body."}, status=400)
+            return JsonResponse({'error': 'Invalid JSON in request body.'}, status=400)
 
         # Extract data from the request
         user_id = data.get('user_id')
-        mood_name = data.get('mood')  # Assuming frontend sends mood 'name' (e.g., "happy")
+        mood_name = data.get('mood') # Assuming frontend sends mood 'name' (e.g., 'happy')
         content = data.get('note', '') # 'content' is the field name in your Note model
 
         # --- Validation & Object Fetching ---
         if not user_id:
-            return JsonResponse({"error": "user_id is required."}, status=400)
+            return JsonResponse({'error': 'user_id is required.'}, status=400)
 
         # Get the custom User model
         User = get_user_model()
@@ -35,7 +36,7 @@ def save_note(request):
             # Assuming user_id from frontend is the UUID primary key of the User model
             user_obj = get_object_or_404(User, id=user_id)
         except Exception: # Catch any error, like invalid UUID format
-            return JsonResponse({"error": "Invalid or non-existent user_id."}, status=400)
+            return JsonResponse({'error': 'Invalid or non-existent user_id.'}, status=400)
 
 
         mood_obj = None
@@ -45,7 +46,7 @@ def save_note(request):
                 mood_obj = get_object_or_404(Mood, name__iexact=mood_name)
             except Exception:
                 # If mood name is provided but doesn't exist, return an error
-                return JsonResponse({"error": f"Mood '{mood_name}' not found."}, status=400)
+                return JsonResponse({'error': f"Mood '{mood_name}' not found."}, status=400)
 
         # --- Create and Save Note Object ---
         try:
@@ -58,21 +59,21 @@ def save_note(request):
             # --- Prepare Response Data ---
             # Use a dictionary to build your response data for clarity
             response_data = {
-                "id": str(note.id), # Convert UUID to string for JSON
-                "user_id": str(note.user.id),
-                "mood": note.mood.name if note.mood else None, # Return mood's name if exists, else None
-                "content": note.content,
-                "created_at": note.created_at.isoformat(), # ISO 8601 format for timestamps
-                "updated_at": note.updated_at.isoformat(),
+                'id': str(note.id), # Convert UUID to string for JSON
+                'user_id': str(note.user.id),
+                'mood': note.mood.name if note.mood else None, # Return mood's name if exists, else None
+                'content': note.content,
+                'created_at': note.created_at.isoformat(), # ISO 8601 format for timestamps
+                'updated_at': note.updated_at.isoformat(),
             }
             return JsonResponse({
-                "message": "Journal entry saved successfully!",
-                "data": response_data
+                'message': 'Note saved successfully!', # Changed from "Journal entry saved successfully!"
+                'data': response_data
             }, status=201)
 
         except Exception as e:
             # Catch any unexpected database errors during creation
-            return JsonResponse({"error": f"An unexpected error occurred while saving: {str(e)}"}, status=500)
+            return JsonResponse({'error': f'An unexpected error occurred while saving: {str(e)}'}, status=500)
     else:
         # Handle non-POST requests
-        return JsonResponse({"error": "Method not allowed."}, status=405)
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
