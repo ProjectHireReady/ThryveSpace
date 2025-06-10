@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/moods/', include('moods.urls')),  # Routes all /api/ requests to our app
+    path('api/v1/moods/', include('moods.urls')),
+    path('api/v1/notes/', include('notes.urls')), # Updated for versioning
 ]
