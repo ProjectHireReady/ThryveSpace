@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppings:wght@400;600;700&display=swap');
+
+.features-preview-alt {
+  padding: 3rem 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.features-alt-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.features-alt-text {
+  flex: 1;
+  min-width: 300px;
+}
+
+.features-alt-text h2 {
+  font-size: 2rem;
+  color: #374151;
+}
+
+.features-subtext {
+  margin: 0.75rem 0 1.5rem;
+  color: #6B7280;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.features-alt-items {
+  flex: 1.2;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.feature-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.feature-icon {
+  color: #5a90c5;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.feature-row h4 {
+  margin-bottom: 0.5rem;
+  font-size: 18px;
+  color: #333333;
+}
+
+.feature-row p {
+  font-size: 16px;
+  color: #6B7280;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Button style */
+.features-button {
+  margin-top: 1rem;
+  background: white;
+  border: 2px solid #5A90C5;
+  color: #5A90C5;
+  padding: 0.65rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: background 0.4s ease, color 0.3s ease, transform 0.3s ease;
+  background-size: 200%;
+  background-position: left;
+}
+
+.features-button:hover {
+  background: linear-gradient(90deg, #5A90C5, #3b6794);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.arrow {
+  margin-left: 0.5rem;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.features-button:hover .arrow {
+  transform: translateX(4px);
+}
