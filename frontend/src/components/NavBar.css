@@ -1,0 +1,61 @@
+/* Navbar container: horizontal flex, spaced out */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background-color: white;
+  border-bottom: 1px solid #33333333;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Navigation links container */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 2rem; /* controls spacing between links */
+}
+
+/* Reset default spacing and position list items */
+.nav-links li {
+  position: relative;
+}
+
+/* Nav link style */
+.nav-links li a {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #6b7280;
+  text-decoration: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  transition: background-color 0.3s ease,
+    color 0.3s ease border-radius 0.3s ease;
+}
+
+/* Vertical divider between links using ::before */
+.nav-links li:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  left: -1rem; /* pull it between the gap */
+  top: 10%;
+  bottom: 10%;
+  width: 2px;
+  background-color: #000000;
+}
+
+/* Hover effect */
+.nav-links li a:hover {
+  background-color: #5a90c5;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+/* Focus effect — for keyboard navigation */
+.nav-links li a:focus {
+  outline: 2px solid #5A90C5;
+  outline-offset: 2px;
+}
