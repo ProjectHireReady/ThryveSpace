@@ -7,10 +7,6 @@ import NavBar from './components/NavBar';
 import Home from './pages/HomePage';
 
 
-function Home() {
-  return <h2> Home Page (To be replaced)</h2>;
-}
-
 function About() {
   return <h2> About Page (To be replaced)</h2>;
 }
