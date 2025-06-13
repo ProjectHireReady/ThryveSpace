@@ -3,7 +3,7 @@ import JournalModal from '../components/JournalModal';
 const InputsPage = () => {
   
   return (
-    < JournalModal />
+    <JournalModal />
   );
 };
 
