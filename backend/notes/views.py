@@ -1,79 +1,34 @@
 # backend/notes/views.py
-import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user_model
+# Remove these imports if they are only for save_note function:
+# import json
+# from django.http import JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# from django.shortcuts import get_object_or_404
+# from django.contrib.auth import get_user_model
 
-# Import your models from their new locations
-from notes.models import Note
-from moods.models import Mood
+# Import DRF generics and APIView, and your models and serializers
+from rest_framework import generics # For ListCreateAPIView
+from rest_framework.views import APIView # If you want to use this instead of generics
+from rest_framework.response import Response # For custom responses
+from rest_framework import status # For HTTP status codes
 
-# The global JOURNAL_ENTRIES list and its related comment are now completely obsolete.
-# You can remove this entire line or keep it commented out for historical context.
+from .models import Note
+from .serializers import NoteSerializer # Import your new NoteSerializer
+# Remove the Mood import if Mood is only used within NoteSerializer's create method
+# from moods.models import Mood
 
-@csrf_exempt
-def save_note(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON in request body.'}, status=400)
+class NoteListCreateAPIView(generics.ListCreateAPIView):
+    # For GET requests (listing notes)
+    queryset = Note.objects.all().order_by('-created_at') # Order by most recent
+    serializer_class = NoteSerializer
 
-        # Extract data from the request
-        user_id = data.get('user_id')
-        mood_name = data.get('mood') # Assuming frontend sends mood 'name' (e.g., 'happy')
-        content = data.get('note', '') # 'content' is the field name in your Note model
+    # No need for a separate 'create' method here unless you have custom logic
+    # beyond what the serializer's create method handles.
+    # The serializer's create() method will be called automatically on POST.
 
-        # --- Validation & Object Fetching ---
-        if not user_id:
-            return JsonResponse({'error': 'user_id is required.'}, status=400)
+    # You might want to override perform_create to set the user if you are using authentication
+    # def perform_create(self, serializer):
+    #    serializer.save(user=self.request.user) # Example if user is authenticated
 
-        # Get the custom User model
-        User = get_user_model()
-        try:
-            # Fetch the User object using the provided user_id
-            # Assuming user_id from frontend is the UUID primary key of the User model
-            user_obj = get_object_or_404(User, id=user_id)
-        except Exception: # Catch any error, like invalid UUID format
-            return JsonResponse({'error': 'Invalid or non-existent user_id.'}, status=400)
-
-
-        mood_obj = None
-        if mood_name:
-            try:
-                # Fetch the Mood object by its name (case-insensitive for robustness)
-                mood_obj = get_object_or_404(Mood, name__iexact=mood_name)
-            except Exception:
-                # If mood name is provided but doesn't exist, return an error
-                return JsonResponse({'error': f"Mood '{mood_name}' not found."}, status=400)
-
-        # --- Create and Save Note Object ---
-        try:
-            note = Note.objects.create(
-                user=user_obj,
-                mood=mood_obj, # This will be None if 'mood_name' was not provided in request
-                content=content
-            )
-
-            # --- Prepare Response Data ---
-            # Use a dictionary to build your response data for clarity
-            response_data = {
-                'id': str(note.id), # Convert UUID to string for JSON
-                'user_id': str(note.user.id),
-                'mood': note.mood.name if note.mood else None, # Return mood's name if exists, else None
-                'content': note.content,
-                'created_at': note.created_at.isoformat(), # ISO 8601 format for timestamps
-                'updated_at': note.updated_at.isoformat(),
-            }
-            return JsonResponse({
-                'message': 'Note saved successfully!', # Changed from "Journal entry saved successfully!"
-                'data': response_data
-            }, status=201)
-
-        except Exception as e:
-            # Catch any unexpected database errors during creation
-            return JsonResponse({'error': f'An unexpected error occurred while saving: {str(e)}'}, status=500)
-    else:
-        # Handle non-POST requests
-        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+# Remove the old @csrf_exempt def save_note(request): function entirely.
+# Its logic is now handled by NoteSerializer.create() and ListCreateAPIView's default POST behavior.
