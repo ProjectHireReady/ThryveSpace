@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import MoodsPage from './pages/moods';
-import InputsPage from './pages/inputs';
+import JournalsPage from './pages/journals';
 import EntriesPage from './pages/entries';
 import React from 'react';
 import NavBar from './components/NavBar';
@@ -22,7 +22,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/moods" element={<MoodsPage />} />
-        <Route path="/inputs" element={<InputsPage />} />
+        <Route path="/journals" element={<JournalsPage />} />
         <Route path="/entries" element={<EntriesPage />} />
       </Routes>
     </>

@@ -1,10 +1,10 @@
 import JournalModal from '../components/JournalModal';
 
-const InputsPage = () => {
+const JournalsPage = () => {
   
   return (
     <JournalModal />
   );
 };
 
-export default InputsPage;
+export default JournalsPage;
