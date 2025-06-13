@@ -3,6 +3,7 @@ import happy from '../assets/moods/happy.png';
 import sad from '../assets/moods/low.webp';
 import angry from '../assets/moods/angry.webp';
 import calm from '../assets/moods/calm.webp';
+import './MoodSelector.css'; 
 
 const moods = [
   { label: 'Happy', emoji: '😊', image: happy },

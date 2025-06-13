@@ -1,0 +1,116 @@
+.entries-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: 'Arial', sans-serif;
+}
+
+.page-title {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.subtext {
+  font-size: 0.9rem;
+  color: #777;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.entry-card {
+  display: flex;
+  background-color: inherit;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.date-box {
+  background-color: #e3efff;
+  padding: 1rem;
+  text-align: center;
+  border-radius: 8px;
+  margin-right: 1rem;
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.day {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.month {
+  font-size: 0.35rem;
+  letter-spacing: 0.5px;
+  color: #555;
+}
+
+.entry-content {
+  background-color: #DBEAF533;
+  width: 100%;
+  padding: 1rem;
+  height: 195px;
+  border-radius: 8px;
+
+  
+}
+.mood-label {
+  font-weight: 300;
+  margin-bottom: 0.5rem;
+  color: #5A90C5;
+}
+
+.mood-text {
+  color: #4169e1;
+}
+
+.emoji , .delete-icon{
+  font-size: 1.2rem;
+}
+
+.entry-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0.75rem;
+
+  
+}
+
+.entry-actions {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+}
+
+.icon-btn, .delete-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.15s ease;
+}
+
+.icon-btn:hover, .delete-icon:hover {
+  transform: scale(1.1);
+}
+
+.icon-btn svg {
+  color: #444;
+}
+.divider {
+  height: 2px;
+  color: #DBEAF533;
+  margin: 1rem 0;
+}

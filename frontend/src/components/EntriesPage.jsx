@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Trash, Pencil } from 'lucide-react';
+import './EntriesPage.css'; 
 
 const EntriesPage = () => {
   const [entries, setEntries] = useState([]);

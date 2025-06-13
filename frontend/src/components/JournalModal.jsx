@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trash, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import './JournalModal.css'; 
 
 const JournalEntry = ({ mood, onClose }) => {
   const navigate = useNavigate();
