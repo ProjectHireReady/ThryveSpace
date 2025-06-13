@@ -1,6 +1,6 @@
 # Notes API Documentation
 
-This document outlines the usage of the API endpoint for creating and managing notes.
+This document describes the API endpoint for creating and managing notes.
 
 ---
 
@@ -8,144 +8,169 @@ This document outlines the usage of the API endpoint for creating and managing n
 
 **Endpoint:** `POST /api/v1/notes/`
 
-**Description:**
-This endpoint allows clients (e.g., the frontend application) to submit a new note entry. The entry is linked to a specific user and can optionally be associated with a mood. The data is persisted to the database.
+**Description:**  
+Allows clients to create a new note entry linked to a user, optionally associated with a mood. Data is saved to the database.
 
 ### Request
 
--   **Method:** `POST`
--   **URL:** `http://localhost:8000/api/v1/notes/`
--   **Headers:**
-    -   `Content-Type: application/json`
+- **Method:** `POST`
+- **URL:** `http://localhost:8000/api/v1/notes/`
+- **Headers:**
+    - `Content-Type: application/json`
 
 **Body (JSON):**
 
-| Field     | Type     | Required | Description                                               | Example                                     |
-| :-------- | :------- | :------- | :-------------------------------------------------------- | :------------------------------------------ |
-| `user_id` | `string` | Yes      | The UUID of the user creating the note entry.             | `"a1b2c3d4-e5f6-7890-1234-567890abcdef"`    |
-| `mood`    | `string` | No       | The name of the mood associated with the note (e.g., "happy", "sad"). Must exist in the `Mood` database table. | `"happy"`                                   |
-| `note`    | `string` | Yes      | The actual content/text of the note entry.                | `"Today was a productive day, feeling grateful."` |
+| Field       | Type     | Required | Description                                                                                             | Example                                    |
+| :---------- | :------- | :------- | :------------------------------------------------------------------------------------------------------ | :----------------------------------------- |
+| `user_id`   | `string` | Yes      | UUID of the user creating the note.                                                                     | `"068a9f5f-22c1-4149-9b54-33fbac32e6a7"`   |
+| `mood_name` | `string` | No       | Name of the mood (must exist in the `Mood` table).                                                      | `"Surprised"`                              |
+| `note`      | `string` | Yes      | Content of the note.                                                                                    | `"Today was a productive day, feeling grateful."` |
+
+**Notes:**
+- Use `mood_name` (not `mood`) to match the serializer input.
+- Use `note` (not `content`) to match the model field.
 
 **Example Request Body:**
 
 ```json
 {
-    "user_id": "YOUR_USER_UUID_HERE",
-    "mood": "happy",
-    "note": "This is a note entry about a happy day!"
+    "user_id": "068a9f5f-22c1-4149-9b54-33fbac32e6a7",
+    "mood_name": "Surprised",
+    "note": "This is a new note entry about a happy day!"
 }
-
+```
 
 ---
 
-#### Inside the "2.1. Success Response (HTTP 201 Created)" section:
+### 2. Responses
 
-Replace the "Example Success Response" with this:
+#### 2.1. Success (HTTP 201 Created)
 
-```markdown
-**Example Success Response:**
+**Example Response:**
 
 ```json
 {
-    "message": "Note saved successfully!",
-    "data": {
-        "id": "e79c3bbe-7a07-45d5-90d5-2feb055203b2",
-        "user_id": "YOUR_USER_UUID_HERE",
-        "mood": "Happy",
-        "content": "This is a note entry saved to the database!",
-        "created_at": "2025-06-09T17:36:57.253022+00:00",
-        "updated_at": "2025-06-09T17:36:57.253061+00:00"
-    }
+    "id": "e743e219-3b61-4d1e-98f4-382ee65be0cb",
+    "user": "068a9f5f-22c1-4149-9b54-33fbac32e6a7",
+    "mood": {
+        "id": "f9e41069-1dcb-4f29-a261-abff2ff2adbd",
+        "name": "Surprised",
+        "emoji": "😲",
+        "category": "neutral"
+    },
+    "note": "This is a new note created with the refactored API.",
+    "created_at": "2025-06-13T15:30:52.509487Z",
+    "updated_at": "2025-06-13T15:30:52.509513Z"
 }
+```
 
----
+**Notes:**
+- The response returns the created object directly.
+- `user` is the UUID.
+- `mood` is a nested object.
+- Field names match the model.
 
-#### Replace the entire "2.2. Error Responses" section with this updated content:
-
-```markdown
 #### 2.2. Error Responses
 
-**HTTP 400 Bad Request:**
+**HTTP 400 Bad Request**  
+Validation errors or incorrect data.
 
-Occurs for various validation failures or incorrect data.
+- **Missing `user_id`:**
 
--   **Missing `user_id`:**
-    * **Request Body Example:**
-        ```json
-        {
-            "mood": "happy",
-            "note": "This is a test note without user_id."
-        }
-        ```
-    * **Response Body Example:**
-        ```json
-        {
-            "error": "user_id is required."
-        }
-        ```
-
--   **Invalid or Non-existent `user_id`:**
-    * **Request Body Example:**
-        ```json
-        {
-            "user_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-            "mood": "happy",
-            "note": "This is a test note with an invalid user_id."
-        }
-        ```
-    * **Response Body Example:**
-        ```json
-        {
-            "error": "Invalid or non-existent user_id."
-        }
-        ```
-
--   **Invalid JSON in request body:**
-    * **Request Body Example:**
-        ```
-        {"user_id": "...", "mood": "...", "note": "..." // Malformed JSON
-        ```
-    * **Response Body Example:**
-        ```json
-        {
-            "error": "Invalid JSON in request body."
-        }
-        ```
-
--   **Mood not found:**
-    * **Request Body Example:**
-        ```json
-        {
-            "user_id": "YOUR_VALID_USER_UUID_HERE",
-            "mood": "hppy",
-            "note": "This is a test note with a misspelled mood."
-        }
-        ```
-    * **Response Body Example:**
-        ```json
-        {
-            "error": "Mood 'hppy' not found."
-        }
-        ```
-
-**HTTP 405 Method Not Allowed:**
-
-Occurs if an HTTP method other than `POST` is used on this endpoint.
-
--   **Example Response (e.g., for a `GET` request to `/api/v1/notes/`):**
+    **Request:**
     ```json
     {
-        "error": "Method not allowed."
+        "mood_name": "happy",
+        "note": "This is a test note without user_id."
+    }
+    ```
+    **Response:**
+    ```json
+    {
+        "user_id": ["This field is required."]
     }
     ```
 
-**HTTP 500 Internal Server Error:**
+- **Invalid `user_id` format:**
 
-Occurs for unexpected server-side errors during processing.
-
--   **Example Response:**
+    **Request:**
     ```json
     {
-        "error": "An unexpected error occurred while saving: [details of error]"
+        "user_id": "NOT-A-VALID-UUID",
+        "mood_name": "happy",
+        "note": "This is a test note with an invalid user_id format."
     }
     ```
+    **Response:**
+    ```json
+    {
+        "user_id": ["Must be a valid UUID."]
+    }
+    ```
+
+- **Non-existent `user_id`:**
+
+    **Request:**
+    ```json
+    {
+        "user_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+        "mood_name": "happy",
+        "note": "This is a test note with a non-existent user_id."
+    }
+    ```
+    **Response:**
+    ```json
+    {
+        "user_id": "Invalid or non-existent user_id."
+    }
+    ```
+
+- **Invalid JSON:**
+
+    **Request:** (malformed)
+    ```json
+    {"user_id": "...", "mood_name": "...", "note": "..." // Malformed JSON
+    ```
+    **Response:**
+    ```json
+    {
+        "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    }
+    ```
+
+- **Mood not found:**
+
+    **Request:**
+    ```json
+    {
+        "user_id": "YOUR_VALID_USER_UUID_HERE",
+        "mood_name": "hppy",
+        "note": "This is a test note with a misspelled mood."
+    }
+    ```
+    **Response:**
+    ```json
+    {
+        "mood": "Mood 'hppy' not found."
+    }
+    ```
+
+**HTTP 405 Method Not Allowed**  
+If a method other than POST is used.
+
+**Example:**
+```json
+{
+    "detail": "Method \"GET\" not allowed."
+}
+```
+
+**HTTP 500 Internal Server Error**  
+Unexpected server-side errors.
+
+**Example:**
+```json
+{
+    "detail": "A server error occurred."
+}
+```
