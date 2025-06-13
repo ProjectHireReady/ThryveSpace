@@ -1,6 +1,15 @@
 import { Routes, Route } from 'react-router-dom';
+import MoodsPage from './pages/moods';
+import JournalsPage from './pages/journals';
+import EntriesPage from './pages/entries';
+import React from 'react';
 import NavBar from './components/NavBar';
 import Home from './pages/HomePage';
+
+
+function About() {
+  return <h2> About Page (To be replaced)</h2>;
+}
 
 function App() {
   return (
@@ -11,6 +20,10 @@ function App() {
       {/* Define routes for the app */}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/moods" element={<MoodsPage />} />
+        <Route path="/journals" element={<JournalsPage />} />
+        <Route path="/entries" element={<EntriesPage />} />
       </Routes>
     </>
   );
