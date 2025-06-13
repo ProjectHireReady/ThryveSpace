@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+.contact-section {
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #e6f3fb, #f4f9fd);
+  display: flex;
+  justify-content: center;
+}
+
+.contact-container {
+  display: flex;
+  gap: 30px;
+  max-width: 1200px;
+  width: 100%;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Image */
+.image-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.contact-image {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Form */
+.form-wrapper {
+  flex: 1;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  color: #1e3a8a;
+}
+
+/* Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 24px rgba(115, 150, 185, 0.04); /* less blue tint */
+  border-radius: 20px;
+}
+
+/* Form content */
+.form-heading {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: #374151;
+  /* color: #1e3a8a; */
+}
+
+.form-subtext {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #6B7280;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border: none;
+  border: 1px solid rgba(90, 144, 197, 0.4); /* subtle blue border */
+  background: rgba(255, 255, 255, 0.4);
+  font-size: 16px;
+  color: #333333;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #333333;
+  font-family: 'Nunito', sans-serif;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border: 1px solid #5A90C5; /* highlight blue on focus */
+  background: rgba(255, 255, 255, 0.5);
+}
+
+
+.form-button {
+  background-color: #5578A3;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.form-button:hover {
+  background:  #487ab0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contact-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .image-wrapper,
+  .form-wrapper {
+    width: 100%;
+  }
+}
