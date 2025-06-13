@@ -8,7 +8,7 @@ class Note(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notes')
     mood = models.ForeignKey(Mood, on_delete=models.SET_NULL, null=True, blank=True, related_name='notes')
-    content = models.TextField() # This is the field for your journal text
+    note = models.TextField() # This is the field for your journal text
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
