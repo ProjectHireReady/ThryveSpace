@@ -6,12 +6,9 @@
 # from django.shortcuts import get_object_or_404
 # from django.contrib.auth import get_user_model
 
-# Import DRF generics and APIView, and your models and serializers
+# Import DRF generics, our models and serializers
 from rest_framework import generics # For ListCreateAPIView
-from rest_framework.views import APIView # If you want to use this instead of generics
-from rest_framework.response import Response # For custom responses
-from rest_framework import status # For HTTP status codes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny #temporary
 from .models import Note
 from .serializers import NoteSerializer # Import your new NoteSerializer
 
@@ -24,10 +21,14 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
     POST /api/notes/   → Create a journal entry linked to a mood (optional)
     """
     serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]   # allow anonymous calls
 
     def get_queryset(self):
-        return Note.objects.filter(user=self.request.user).order_by('-created_at')
+        """
+        • During prototyping we return ALL notes so you can see what you create.
+        • Once auth is ready, switch to `request.user` filter.
+        """
+        return Note.objects.all().order_by('-created_at')
 
     # Optional (if you want to set user automatically on POST)
     # def perform_create(self, serializer):
@@ -38,5 +39,5 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
     # beyond what the serializer's create method handles.
     # The serializer's create() method will be called automatically on POST.
 
-# Remove the old @csrf_exempt def save_note(request): function entirely.
-# Its logic is now handled by NoteSerializer.create() and ListCreateAPIView's default POST behavior.
+# Note: The legacy `save_note` function is no longer needed—
+# its functionality is now covered by the serializer and ListCreateAPIView.
