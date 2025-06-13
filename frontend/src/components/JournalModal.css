@@ -1,8 +1,7 @@
 .journal-page {
   font-family: 'Poppins', sans-serif;
   background-color: #f9fafb;
-  min-height: 100vh;
-  padding: 2rem;
+  padding: 0 2rem;
   position: relative;
   text-align: center;
 }
@@ -11,6 +10,7 @@
   font-size: 32px;
   font-weight: 600;
   margin-bottom: 0.25rem;
+  padding-top: 0;
 }
 
 .subtext {
@@ -124,7 +124,7 @@
 
 .close-button {
   position: absolute;
-  top: 1.5rem;
+  top: 2px;
   right: 2rem;
   background: #e0ecf7;
   border: none;

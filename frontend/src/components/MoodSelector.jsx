@@ -16,7 +16,7 @@ export default function MoodSelector() {
   const navigate = useNavigate();
 
   const handleClick = (mood) => {
-    navigate('/inputs', { state: { mood } }); // Sends selected mood to the next page
+    navigate('/journals', { state: { mood } }); // Sends selected mood to the next page
   };
 
   return (
