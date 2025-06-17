@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import Home from './pages/HomePage';
+import MoodJournalPage from './pages/MoodJournalPage';
+
 
 function App() {
   return (
@@ -11,7 +13,8 @@ function App() {
       {/* Define routes for the app */}
       <Routes>
         <Route path="/" element={<Home />} />
-      </Routes>
+        <Route path="/mood" element={<MoodJournalPage />} />
+        </Routes>
     </>
   );
 }
