@@ -24,6 +24,7 @@ Allows clients to create a new note entry linked to a user, optionally associate
 | :---------- | :------- | :------- | :------------------------------------------------------------------------------------------------------ | :----------------------------------------- |
 | `user_id`   | `string` | Yes      | UUID of the user creating the note.                                                                     | `"068a9f5f-22c1-4149-9b54-33fbac32e6a7"`   |
 | `mood_name` | `string` | No       | Name of the mood (must exist in the `Mood` table).                                                      | `"Surprised"`                              |
+feature-backend/implement-notes-api
 | `note`      | `string` | No      | Content of the note.                                                                                    | `"Today was a productive day, feeling grateful."` |
 
 **Notes:**

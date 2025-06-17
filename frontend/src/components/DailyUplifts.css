@@ -1,0 +1,159 @@
+.daily-uplifts {
+  background-color: rgba(255, 255, 255, 0.5);
+  /* soft overlay on card background */
+  border-radius: 1rem;
+}
+
+.uplifts-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.uplifts-header {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #374151;
+  margin-bottom: 3rem;
+}
+
+/* Grid Area */
+.uplifts-grid-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.uplifts-grid {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.uplift-card {
+  width: 280px;
+  height: 320px;
+  font-weight: 600;
+  border-radius: 1rem;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Center content horizontally */
+  justify-content: center;
+  /* Center content vertically */
+  text-align: center;
+  /* Center text in title/text */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.uplift-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.uplift-icon {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 1rem;
+  object-fit: contain;
+}
+
+.uplift-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 0.5rem;
+}
+
+.uplift-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b7280;
+  line-height: 1.5;
+  padding: 0 0.5rem;
+  max-width: 90%;
+}
+
+/* Button with arrows */
+.uplift-arrows {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+  padding: 0 1rem;
+  pointer-events: none; /* stops arrows from blocking hover on cards */
+}
+
+.uplift-arrow {
+  background-color: #5a90c5;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  pointer-events: auto; /* enable clicks */
+}
+
+.uplift-arrow:hover {
+  background-color: #487ab0;
+}
+
+/* Responsiveness */
+@media (max-width: 900px) {
+  .uplift-card {
+    flex: 0 0 45%;
+    /* about 2 per row */
+  }
+}
+
+@media (max-width: 600px) {
+  .uplift-card {
+    flex: 0 0 90%;
+    /* 1 per row */
+  }
+}
+
+/* make arrows look good on mobile */
+@media (max-width: 600px) {
+  .uplift-arrows {
+    top: auto;
+    bottom: -3rem;
+    transform: none;
+    justify-content: center;
+    gap: 2rem;
+  }
+}
+
+/* Pastel Backgrounds for cards */
+.bg-mint {
+  background-color: #d1f0e8;
+}
+
+.bg-peach {
+  background-color: #ffe4bd;
+}
+
+.bg-babyblue {
+  background-color: #cce2ff;
+}
+
+.bg-lavender {
+  background-color: #edd8ff;
+}
+
+.bg-yellow {
+  background-color: #ffefa3;
+}
+
+.bg-airyblue {
+  background-color: #dce7ff;
+}

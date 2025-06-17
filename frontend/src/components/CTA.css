@@ -1,0 +1,54 @@
+.cta-container {
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  height: calc(100vw * 0.75);
+  overflow: hidden;
+  
+}
+.contact-header {
+  text-align: center;
+  width: 100%;
+}
+
+.cta-image {
+  position: absolute;
+  top: 0;
+  left: 52.75%;
+  transform: translateX(-50.4%);
+  width: 111%;          /* Stretch beyond edges to cover gaps */
+  height: auto;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cta-button {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px 35px;
+  background-color: #3F6BA2;
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 1;
+}
+
+.cta-button:hover {
+  background-color: #487ab0;
+}
+
+@media (max-width: 768px) {
+  .cta-image {
+    left: 52.5%;
+    transform: translateX(-50%);
+    width: 115%; /* slightly more on narrow screens */
+  }
+}

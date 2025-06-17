@@ -36,7 +36,9 @@ pip install -r requirements.txt    # Install dependencies
 
 ### 📁 .env Configuration
 
-Create a `.env` file inside the `backend/` directory (same level as `manage.py`):
+Cregit status
+
+ate a `.env` file inside the `backend/` directory (same level as `manage.py`):
 
 ```
 SECRET_KEY=your-secret-key

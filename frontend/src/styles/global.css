@@ -1,11 +1,11 @@
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Lobster+Two&family=Nunito:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lobster+Two&family=Nunito:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap");
 
 /* Define font variables */
 :root {
-  --font-logo: 'Lobster Two', cursive;
-  --font-body: 'Nunito', sans-serif;
-  --font-heading: 'Poppins', sans-serif;
+  --font-logo: "Lobster Two", cursive;
+  --font-body: "Nunito", sans-serif;
+  --font-heading: "Poppins", sans-serif;
 }
 
 /* Base reset */
@@ -18,19 +18,51 @@
 /* Apply body font and background */
 body {
   font-family: var(--font-body);
-  background-color: #F7F9FB;
+  background-color: #f7f9fb;
 }
 
 /* Apply heading font */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
 }
 
-/* Logo styles based on your design */
+/* Logo styles */
 .logo {
   font-family: var(--font-logo);
   font-weight: 400;
-  font-size: 44px;
+  font-size: 26px;
+  color: #5a90c5;
+  text-decoration: none;
   line-height: 1;
   letter-spacing: 0.009em;
+}
+
+.section {
+  margin-bottom: 1rem;
+  padding: 4rem 4.7%;
+  position: relative;
+}
+
+.section-border {
+  padding-bottom: 4rem;
+  margin-bottom: 3rem;
+  position: relative; /* for pseudo-element */
+}
+
+.section-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 5%;
+  width: 90%; /* 100% - 5% left - 5% right */
+  border-bottom: 1px solid #5a90c5;
+}
+
+.button {
+  font-family: var(--font-heading);
 }
