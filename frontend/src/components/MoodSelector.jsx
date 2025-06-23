@@ -1,4 +1,3 @@
-import React from 'react';
 import happy from '../assets/moods/happy.png';
 import sad from '../assets/moods/low.webp';
 import angry from '../assets/moods/angry.webp';
@@ -14,8 +13,8 @@ const moods = [
 
 export default function MoodSelector({ onMoodSelect }) {
   return (
-    <div className="container">
-      <h1 className="h0">How are you feeling today?</h1>
+    <div className="mood-selector">
+      <h1 className="mood-header">How are you feeling today?</h1>
       <h2 className="subtext">
         You can pick a mood or just write — whatever feels right today.
       </h2>
