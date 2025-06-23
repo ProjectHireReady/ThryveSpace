@@ -1,25 +1,43 @@
+/* Layout & Page */
 .journal-page {
   font-family: 'Poppins', sans-serif;
   background-color: #f9fafb;
   padding: 2rem;
   position: relative;
   text-align: center;
-  height: 100vh;
+  min-height: 100vh;
 }
 
-.heading {
-  font-size: 32px;
+h1.journal-heading {
+  font-size: 40px;
   font-weight: 600;
-  margin-top: 2rem;
-  margin-bottom: 0.25rem;
-  padding-top: 0;
+  margin-top: 7rem;
+  margin-bottom: 1rem;
+  color: #333333;
 }
 
-.subtext {
+/* Text */
+.subtext-modal,
+.footer-modal {
+  font-size: 16px;
   color: #6b7280;
   margin-bottom: 3rem;
 }
 
+.text-block {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+
+.footer-modal {
+  margin-top: 60px;
+}
+
+/* Entry Container  */
 .entry-container {
   display: flex;
   justify-content: center;
@@ -27,20 +45,21 @@
   max-width: 800px;
   margin: 0 auto 2rem;
   height: 200px;
+  gap: 1rem;
 }
 
+/* Entry Box */
 .date-box {
-  background-color: #dbeafe;
+  background-color: #dbeaf5;
   width: 185px;
-  height: 142px;
+  padding: 16px 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 10px;
   align-items: center;
   border-radius: 4px 0 0 4px;
   flex-shrink: 0;
-  margin: 30px 10px;
+  margin: 10px 0 10px 10px;
 }
 
 .date-box .day {
@@ -50,29 +69,24 @@
 
 .date-box .month {
   font-size: 36px;
-  color: #000000;
-  font-weight: 900;
+  color: #333333;
+  font-weight: 600;
 }
 
+/* Entry Card */
 .entry-card {
   flex-grow: 1;
-  background-color: #edf6fd;
-  padding: 0.5rem;
+  background-color: rgba(219, 234, 245, 0.3);
+  padding: 1rem;
   border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 4px rgba(0,0,0,0.05);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
   text-align: left;
-  height: auto;
-  align-items: stretch;
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-
-.emoji {
-  margin-right: 8px;
-  font-size: 1.2rem;
+  position: relative;
+  height: auto;
+  align-items: stretch;
 }
 
 .mood-line {
@@ -80,33 +94,54 @@
   align-items: center;
   margin-bottom: 0.5rem;
 }
+
+.emoji {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
 .label {
   font-size: 1rem;
-    color: #2563eb;
-    margin-right: 10px;
-
+  margin-right: 10px;
 }
 
+/* Input Field */
 .entry-input {
   width: 100%;
+  min-height: 40px;
+  max-height: 200px;
+  font-size: 1rem;
+  padding: 0.75rem 0;
+  line-height: 1.5;
+  background: inherit;
   border: none;
   border-bottom: 1px solid #ccc;
-  background: inherit;
-  padding: 18px 0;
-  font-size: 14px;
   outline: none;
+  transition: height 0.2s ease;
+  resize: none;
+  overflow-y: hidden;
+  cursor: pointer;
 }
 
-.entry-footer {
-  text-align: right;
-  margin-top: 50px;
-  position: absolute;
-  bottom: 2px;
-  right: 10px;
-  gap: 10px;
-  display: flex;
+.entry-input:focus,
+.entry-input:hover {
+  overflow-y: auto;
 }
 
+.entry-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.entry-input::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.entry-input::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* Delete Icon */
 .delete-icon {
   background: none;
   border: none;
@@ -115,15 +150,10 @@
   color: #6b7280;
 }
 .delete-icon:hover {
-  color: #2563eb;
+  color: #333333;
 }
 
-.footer-note {
-  margin-top: 120px;
-  color: #6b7280;
-  font-size: 14px;
-}
-
+/* Close Button */
 .close-button {
   position: absolute;
   top: 2px;
@@ -142,43 +172,40 @@
 .close-button:hover {
   background-color: #cbd5e1;
 }
+
+/* Modal */
 .journal-modal {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
+/* Popup */
 .popup {
-    position: fixed;
-    bottom: 10%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1001;
+  position: fixed;
+  bottom: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
 }
 
-.submit-button {
-    color: #6B7280;
-    background-color: inherit;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
+.popup-box {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
 }
-.submit-button:hover {
-    color: #2563eb;
-    background-color: #e0ecf7;
-    transition: background-color 0.3s ease;
-}
+
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -186,19 +213,13 @@
   width: 100%;
   height: 100%;
   background-color: #6b7280;
-  opacity: 0.3; /* Semi-transparent */
+  opacity: 0.3;
   color: white;
   z-index: 999;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-}
-
-.popup-box {
-  text-align: center;
-  font-size: 3rem;
-  font-weight: bold;
 }
 
 .popup-close {
@@ -210,44 +231,20 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-
 }
-
 .popup-close:hover {
   background-color: #f5f5f5;
 }
 
-/* Styles for the entry input field */
-.entry-input {
-  width: 100%;
-  min-height: 40px;
-  max-height: 200px;
-  font-size: 1rem;
-  padding: 0.75rem;
-  line-height: 1.5;
+/* Buttons */
+.submit-button {
+  color: #6B7280;
   background-color: inherit;
-  transition: height 0.2s ease;
-  resize: none;
-  overflow-y: hidden; /* 👈 hides scroll by default */
+  border: none;
   cursor: pointer;
+  font-size: 16px;
 }
-
-/* Show scrollbar only when focused or hovered AND overflowing */
-.entry-input:focus,
-.entry-input:hover {
-  overflow-y: auto;
-}
-
-/* Hide scrollbar track (for WebKit browsers) */
-.entry-input::-webkit-scrollbar {
-  width: 6px;
-}
-
-.entry-input::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.entry-input::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+.submit-button:hover {
+  color: #333333;
+  transition: background-color 0.3s ease;
 }
