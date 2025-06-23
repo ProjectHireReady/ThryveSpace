@@ -1,45 +1,48 @@
-import React, { useEffect } from 'react';
-import './JournalModal.css';
+import { useEffect } from "react";
+import { X } from "lucide-react"; // Lucide close icon
+import "./JournalModal.css";
 
 export default function JournalModal({ isOpen, onClose, children }) {
-  // useEffect runs whenever `isOpen` or `onClose` changes
   useEffect(() => {
-    // Handler for keyboard events
-    function onKeyDown(e) {
-      // If Escape key is pressed, call onClose to close the modal
-      if (e.key === 'Escape') onClose();
+    // Function to close modal when Escape key is pressed
+    function handleKeyDown(e) {
+      if (e.key === "Escape") onClose();
     }
 
-    // If the modal is open, add event listener for keydown
+    // Add keydown listener only if modal is open
     if (isOpen) {
-      window.addEventListener('keydown', onKeyDown);
+      window.addEventListener("keydown", handleKeyDown);
     }
 
-    // Cleanup function: removes the event listener when modal closes or component unmounts
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, onClose]); // dependencies: re-run effect if these change
+    // Remove listener when component unmounts or modal closes
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
-  // If modal is not open, do not render anything
+  // If modal is closed, don’t render anything
   if (!isOpen) return null;
 
-  // Render modal overlay and modal content
   return (
-    // Overlay covers entire screen, clicking it triggers onClose to close modal
     <div
       className="modal-overlay"
-      onClick={onClose}
-      role="dialog"        // Accessibility: indicates this is a dialog/modal
-      aria-modal="true"    // Accessibility: indicates rest of page is inert when modal open
+      onClick={onClose} // Close modal if user clicks outside the content
+      role="dialog"
+      aria-modal="true"
     >
-      {/* 
-        Modal content box
-        Stops click propagation so clicking inside modal doesn't close it 
-      */}
       <div
         className="modal-content"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside the modal
       >
-        {/* Modal content is rendered here */}
+        <button
+          className="modal-close"
+          onClick={onClose}
+          aria-label="Close modal"
+        >
+          <X size={20} stroke="black" />
+        </button>
+
+        {/* Render modal content */}
         {children}
       </div>
     </div>
