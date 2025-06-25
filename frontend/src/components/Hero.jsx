@@ -1,5 +1,6 @@
 // Hero.jsx
 import { useEffect } from "react";
+import { Link } from "react-router-dom"; //navigate to mood screen
 import heroBg from "../assets/hero-img.svg";
 import "./Hero.css";
 
@@ -15,12 +16,14 @@ function Hero() {
       <div className="overlay"></div>
       <div className="hero-content">
         <div className="text-group">
-          <h1>Mental Wellness Companion</h1>
+          <h1>Mental Wellness Buddy</h1>
           <p>
-            Track moods, reflect, gain insights. <br />
-            A private gentle space for you.
+            Track moods. reflect calmly. <br />A private gentle space for you.
           </p>
-          <button className="hero-btn button">Track Mood</button>
+
+          <Link to="/mood">
+            <button className="hero-btn button">Track Mood</button>
+          </Link>
         </div>
       </div>
     </section>

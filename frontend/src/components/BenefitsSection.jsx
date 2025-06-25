@@ -2,11 +2,13 @@ import "./BenefitsSection.css";
 
 function BenefitsSection() {
   return (
+    // This section highlights the main benefits of using ThryveSpace
     <section className="benefits-section section section-border">
       <div className="section-wrapper">
         <h2 className="benefits-section">Why ThryveSpace?</h2>
       </div>
 
+      {/* Container for the three core benefits */}
       <div className="benefits-container">
         <div className="benefit-item">
           <div className="outer-circle">
@@ -16,8 +18,10 @@ function BenefitsSection() {
           <p className="benefit-desc">
             Easy to use. Track moods and inputs in moments. No complexity.
           </p>
-          <div className="vertical-divider"></div>
         </div>
+
+         {/* Divider between Benefit 1 and 2 */}
+        <div className="divider" />
 
         <div className="benefit-item">
           <div className="outer-circle">
@@ -28,8 +32,9 @@ function BenefitsSection() {
             Your privacy first. Data stored locally. Account optional. You
             control.
           </p>
-          <div className="vertical-divider"></div>
         </div>
+
+       {/* Divider between Benefit 2 and 3 */}
 
         <div className="benefit-item">
           <div className="outer-circle">

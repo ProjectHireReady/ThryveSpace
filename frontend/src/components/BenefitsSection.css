@@ -1,4 +1,4 @@
-.benefits-section{
+.benefits-section {
   max-width: 1100px;
   margin: 0 auto;
 }
@@ -8,7 +8,7 @@ h2.benefits-section {
   font-weight: bold;
   text-align: center;
   color: #374151;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .benefits-container {
@@ -16,7 +16,7 @@ h2.benefits-section {
   justify-content: space-between;
   max-width: 1000px;
   margin: 0 auto;
-  position: relative;
+  align-items: stretch;
 }
 
 .benefit-item {
@@ -26,17 +26,23 @@ h2.benefits-section {
   align-items: center;
   text-align: center;
   padding: 0 20px;
-  position: relative;
 }
 
 h3.benefit-title {
   font-size: 20px;
+  color: #333333;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 0;
 }
 
 p.benefit-desc {
   font-size: 16px;
   font-weight: 600;
-  
+  color: #6b7280;
+  margin-top: 8px;
+  margin-bottom: 2rem;
+  max-width: 260px;
 }
 
 .outer-circle {
@@ -63,30 +69,15 @@ p.benefit-desc {
   font-size: 16px;
 }
 
-.benefit-title {
-  font-size: 16px;
-  color: #333333;
-  font-weight: bold;
-  text-transform: uppercase;
-  margin: 0;
-}
-
-.benefit-desc {
-  font-size: 14px;
-  color: #6b7280;
-  margin-top: 8px;
-  max-width: 260px;
-}
-
-.vertical-divider {
-  position: absolute;
-  top: 0;
-  right: 0;
+/* Manual divider */
+.divider {
   width: 1px;
-  height: 100%;
-  background-color: #6b7280;
+  background-color: #adadaa;
+  height: auto;
+  margin: 0 10px;
 }
 
+/* Responsiveness */
 @media (max-width: 768px) {
   .benefits-container {
     flex-direction: column;
@@ -94,7 +85,7 @@ p.benefit-desc {
     gap: 2rem;
   }
 
-  .vertical-divider {
+  .divider {
     display: none;
   }
 }

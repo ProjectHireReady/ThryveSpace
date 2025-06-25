@@ -1,20 +1,32 @@
-/* src/components/JournalModal.css */
-
+/* Overlay that covers the whole screen and centers modal content */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
+/* Fullscreen modal container */
 .modal-content {
-  background-color: white;
-  padding: 1rem 1.5rem;
-  min-width: 100%;
-  max-width: 100%;
-  min-height: 100%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Close button placed at top-right inside the modal */
+.modal-close {
+  position: absolute;
+  top: clamp(1rem, 5vw, 3rem);
+  right: 3rem;
+  background-color: #dbeaf5;
+  border: none;
+  border-radius: 50%;
+  padding: 0.4rem;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
