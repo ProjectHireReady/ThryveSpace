@@ -68,6 +68,34 @@ Visit: http://127.0.0.1:8000/
 
 ---
 
+Creating a Superuser
+1. Open your terminal and navigate to your Django project directory.
+2. Run the following command: `python manage.py createsuperuser`
+3. Follow the prompts to enter:
+    - Username
+    - Email address
+    - Password
+
+Example:
+
+```
+$ python manage.py createsuperuser
+Username (leave blank to use 'your_username'): admin
+Email address: admin@example.com (or leave blank)
+Password: 
+Password (again): 
+Superuser created successfully.
+```
+
+
+Logging in to the Admin Endpoint
+1. Start the Django development server: `python manage.py runserver`
+2. Open a web browser and navigate to http://localhost:8000/admin/
+3. Enter the superuser credentials:
+    - Username: admin
+    - Password: your_password
+
+
 ## 🛡 .gitignore Best Practices
 
 Make sure the following are ignored:

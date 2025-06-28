@@ -6,7 +6,6 @@
 # from django.shortcuts import get_object_or_404
 # from django.contrib.auth import get_user_model
 
-feature-backend/implement-notes-api
 # Import DRF generics and APIView, and your models and serializers
 from rest_framework import generics # For ListCreateAPIView
 from rest_framework.views import APIView # If you want to use this instead of generics
@@ -20,7 +19,6 @@ from .serializers import NoteSerializer # Import your new NoteSerializer
 # from moods.models import Mood
 
 class NoteListCreateAPIView(generics.ListCreateAPIView):
- feature-backend/implement-notes-api
     # For GET requests (listing notes)
     queryset = Note.objects.all().order_by('-created_at') # Order by most recent
     serializer_class = NoteSerializer
@@ -29,8 +27,6 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
     # No need for a separate 'create' method here unless you have custom logic
     # beyond what the serializer's create method handles.
     # The serializer's create() method will be called automatically on POST.
-
-feature-backend/implement-notes-api
     # You might want to override perform_create to set the user if you are using authentication
     # def perform_create(self, serializer):
     #    serializer.save(user=self.request.user) # Example if user is authenticated
