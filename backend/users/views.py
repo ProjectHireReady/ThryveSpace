@@ -4,10 +4,9 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import login
 from .models import CustomUser
-from .serializers import CreateGuestSerializer
+from .serializers import CreateGuestSerializer, ResetTokenSerializer
 
 
-# Create your views here.
 class GuestCreateView(APIView):
     permission_classes = [AllowAny]
 
@@ -36,3 +35,23 @@ class GuestCreateView(APIView):
         serializer = CreateGuestSerializer(user)
         login(request, user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ResetTokenView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ResetTokenSerializer(data=request.data)
+        print(f"Reset token data: {request.data}")
+        if serializer.is_valid():
+            user = serializer.context["user"]
+            user.reset_token = None
+            user.save()
+
+            login(request, user)
+            print(f"User {user} requested a reset. New session id is {request.session.session_key}")
+            return Response(
+                {"message": "Session reset successful.", "user_id": str(user.id)},
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
