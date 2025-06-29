@@ -37,4 +37,6 @@ class CustomUser(AbstractUser):
         self.save()
 
     def __str__(self):
+        if self.is_guest:
+            return self.id.hex  # Return UUID as string for guest users
         return self.username
