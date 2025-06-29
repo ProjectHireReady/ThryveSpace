@@ -27,15 +27,6 @@ class CustomUser(AbstractUser):
             self.reset_token = generate_reset_token()
         super().save(*args, **kwargs)
 
-    def promote_to_registered(self, username, email, password):
-        # Promote a guest to a registered user
-        self.username = username
-        self.email = email
-        self.set_password(password)
-        self.is_guest = False
-        self.reset_token = None
-        self.save()
-
     def __str__(self):
         if self.is_guest:
             return self.id.hex  # Return UUID as string for guest users

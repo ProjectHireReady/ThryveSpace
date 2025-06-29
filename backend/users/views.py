@@ -1,10 +1,15 @@
 from rest_framework.views import APIView
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import login
 from .models import CustomUser
-from .serializers import CreateGuestSerializer, ResetTokenSerializer
+from .serializers import (
+    CreateGuestSerializer,
+    ResetTokenSerializer,
+    GuestUpgradeSerializer,
+)
 
 
 class GuestCreateView(APIView):
@@ -49,9 +54,23 @@ class ResetTokenView(APIView):
             user.save()
 
             login(request, user)
-            print(f"User {user} requested a reset. New session id is {request.session.session_key}")
+            print(
+                f"User {user} requested a reset. New session id is {request.session.session_key}"
+            )
             return Response(
                 {"message": "Session reset successful.", "user_id": str(user.id)},
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GuestUpgradeView(generics.UpdateAPIView):
+    serializer_class = GuestUpgradeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    '''def perform_update(self, serializer):
+        print("Calling perform_update")
+        serializer.save()'''
