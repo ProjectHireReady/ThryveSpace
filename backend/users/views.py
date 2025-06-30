@@ -3,12 +3,13 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate, logout
 from .models import CustomUser
 from .serializers import (
     CreateGuestSerializer,
     ResetTokenSerializer,
     GuestUpgradeSerializer,
+    LoginSerializer,
 )
 
 
@@ -71,6 +72,37 @@ class GuestUpgradeView(generics.UpdateAPIView):
     def get_object(self):
         return self.request.user
 
-    '''def perform_update(self, serializer):
-        print("Calling perform_update")
-        serializer.save()'''
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = authenticate(
+            request,
+            username=serializer.validated_data["username"],
+            password=serializer.validated_data["password"],
+        )
+
+        if user is not None:
+            login(request, user)
+            return Response(
+                {"message": "Login successful", "user_id": str(user.id)},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"error": "Invalid credentials"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        logout(request)
+        return Response(
+            {"message": "Logged out successfully"}, status=status.HTTP_200_OK
+        )

@@ -52,7 +52,10 @@ class GuestUpgradeSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data.get("password", instance.password))
         instance.is_guest = False
         instance.reset_token = None
-        print("updating instance", instance, instance.is_guest)
         instance.save()
-        print("instance updated", instance, instance.is_guest)
         return instance
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(write_only=True, style={"input_type": "password"})
