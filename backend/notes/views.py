@@ -8,10 +8,7 @@ from rest_framework import status  # For HTTP status codes
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Note
-from .serializers import NoteSerializer  # Import your new NoteSerializer
-
-# Remove the Mood import if Mood is only used within NoteSerializer's create method
-# from moods.models import Mood
+from .serializers import NoteSerializer
 
 
 class NoteListCreateAPIView(generics.ListCreateAPIView):
@@ -23,8 +20,6 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         """This method returns the queryset of notes for the authenticated user."""
-        print(f"User: {self.request.user}")
-        print(f"session_key: {self.request.session.session_key}")
         if not self.request.user.is_authenticated:
             return Note.objects.none()
         return Note.objects.filter(user=self.request.user).order_by("-created_at")

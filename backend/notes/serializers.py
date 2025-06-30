@@ -16,8 +16,6 @@ class NoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        # --- IMPORTANT CHANGE HERE ---
-        # Ensure 'note' is in this tuple/list instead of 'content'
         fields = [
             "id",
             "user",

@@ -6,10 +6,7 @@ from django.contrib.auth.admin import (
 from .models import CustomUser
 
 
-# Define an Admin class for your CustomUser
 class CustomUserAdmin(BaseUserAdmin):
-    # The fieldsets control the layout of fields in the admin change form.
-    # You'll want to include 'id' here to see the UUID.
     fieldsets = BaseUserAdmin.fieldsets + (
         (None, {"fields": ("id",)}),  # Add the 'id' field to a new section
     )
@@ -22,7 +19,7 @@ class CustomUserAdmin(BaseUserAdmin):
         "is_staff",
         "is_guest",
         "reset_token",
-    )  # Added 'id' to list view
+    )
 
     list_filter = BaseUserAdmin.list_filter + (
         "is_guest",
