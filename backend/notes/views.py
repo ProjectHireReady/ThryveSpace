@@ -1,5 +1,10 @@
 # backend/notes/views.py
-feature-backend/notes-edit-delete
+feature-backend/api-guest-filtering-22
+
+from rest_framework import generics  # For ListCreateAPIView
+from rest_framework.response import Response  # For custom responses
+from rest_framework import status  # For HTTP status codes
+
 
 
 from rest_framework import generics, status
@@ -8,46 +13,12 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework import serializers # Good for ValidationError
 from .permissions import IsOwner # Only import IsOwner
 from .models import Note
-from .serializers import NoteSerializer
-feature-backend/notes-edit-delete
+feature-backend/api-guest-filtering-22
+from .serializers import NoteSerializer  # Import your NoteSerializer
 
-
-
-# --- This is for list and create ---
+# This view handles both GET (list notes) and POST (create note)
 class NoteListCreateAPIView(generics.ListCreateAPIView):
-feature-backend/notes-edit-delete
-    queryset = Note.objects.all()
-    serializer_class = NoteSerializer
-    # Changed to DRF's standard permission for this behavior
-    permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def perform_create(self, serializer):
-        user_id_str = self.request.data.get('user_id')
-        mood_name = self.request.data.get('mood_name')
-        note_content = self.request.data.get('note', '')
-
-        if not user_id_str:
-            raise serializers.ValidationError({'user_id': 'user_id is required.'})
-
-        try:
-            user_obj = CustomUser.objects.get(id=user_id_str)
-        except (CustomUser.DoesNotExist, ValueError):
-            raise serializers.ValidationError({'user_id': 'Invalid or non-existent user_id.'})
-
-        mood_obj = None
-        if mood_name:
-            try:
-                mood_obj = Mood.objects.get(name__iexact=mood_name)
-            except Mood.DoesNotExist:
-                raise serializers.ValidationError({'mood_name': f"Mood '{mood_name}' not found."})
-
-        # Save the note with the determined user, mood, and content
-        serializer.save(user=user_obj, mood=mood_obj, note=note_content)
-
-
-# --- This is for Retrieve, Update, Delete ---
-class NoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Note.objects.all()
     serializer_class = NoteSerializer
     # Corrected permission class name
     permission_classes = [IsAuthenticated, IsOwner]
@@ -82,17 +53,15 @@ class NoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True) # Validate the data
-
-        self.perform_update(serializer) # Perform the actual update on the instance
-
-        # If you were prefetching related objects, you might need to refresh
-        # the instance from the DB to get updated nested fields.
-        # Otherwise, the serializer.instance after perform_update is usually fine.
-        # In this case, let's re-serialize the instance for consistent output.
-        return Response(self.get_serializer(instance).data)
-
-    # perform_destroy is usually handled fine by the default RetrieveUpdateDestroyAPIView
-    # You only need to override it if you have custom logic for deletion (e.g., logging)
-    # def perform_destroy(self, instance):
-    #     instance.delete()
+feature-backend/api-guest-filtering-22
+    def get_queryset(self):
+        """
+        Optionally filters notes by guest_uuid (user.id),
+        returns all notes ordered by most recent by default.
+        """
+        guest_uuid = self.request.query_params.get('guest_uuid')
+        queryset = Note.objects.all().order_by('-created_at')
+        if guest_uuid:
+            queryset = queryset.filter(user__id=guest_uuid)
+        return queryset
 
