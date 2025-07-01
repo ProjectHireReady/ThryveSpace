@@ -19,6 +19,9 @@ class Mood(models.Model):
     is_active = models.BooleanField(
         default=True
     )  # To indicate if the mood is currently active
+    image_url = models.URLField(
+        blank=True, null=True
+    )  # Optional field for an image URL associated with the mood
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

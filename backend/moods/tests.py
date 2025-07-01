@@ -38,7 +38,9 @@ class MoodAPITests(APITestCase):
         self.assertEqual(len(data), self.initial_count + 1)
         self.assertEqual(data[self.initial_count]["name"], self.active_mood.name)
         self.assertEqual(data[self.initial_count]["emoji"], self.active_mood.emoji)
-        self.assertEqual(data[self.initial_count]["category"], self.active_mood.category)
+        self.assertEqual(
+            data[self.initial_count]["category"], self.active_mood.category
+        )
 
     def test_endpoint_caching(self):
         """
