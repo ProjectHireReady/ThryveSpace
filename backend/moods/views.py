@@ -4,10 +4,12 @@ from .serializers import MoodSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
+
 class MoodListView(generics.ListAPIView):
     """
     API view to retrieve a list of all moods.
     """
+
     queryset = Mood.objects.filter(is_active=True)
     serializer_class = MoodSerializer
     permission_classes = [permissions.AllowAny]
