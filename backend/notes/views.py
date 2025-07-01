@@ -1,4 +1,6 @@
 # backend/notes/views.py
+feature-backend/notes-edit-delete
+
 
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -7,13 +9,13 @@ from rest_framework import serializers # Good for ValidationError
 from .permissions import IsOwner # Only import IsOwner
 from .models import Note
 from .serializers import NoteSerializer
-from moods.models import Mood
-from users.models import CustomUser
-import uuid # This import is not strictly needed in the final code here, but fine to keep for now if you might use it.
+feature-backend/notes-edit-delete
+
 
 
 # --- This is for list and create ---
 class NoteListCreateAPIView(generics.ListCreateAPIView):
+feature-backend/notes-edit-delete
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
     # Changed to DRF's standard permission for this behavior
@@ -93,3 +95,4 @@ class NoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     # You only need to override it if you have custom logic for deletion (e.g., logging)
     # def perform_destroy(self, instance):
     #     instance.delete()
+

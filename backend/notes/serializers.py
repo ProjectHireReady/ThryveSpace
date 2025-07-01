@@ -7,14 +7,18 @@ from users.serializers import CustomUserSerializer # Assuming you have this
 from moods.models import Mood # Import Mood model
 from users.models import CustomUser # Import CustomUser model
 
+
 class NoteSerializer(serializers.ModelSerializer):
+ feature-backend/notes-edit-delete
     user = CustomUserSerializer(read_only=True) # Nested user for output
     user_id = serializers.CharField(write_only=True) # For input
     mood = MoodSerializer(read_only=True) # Nested mood for output
     mood_name = serializers.CharField(write_only=True, required=False, allow_blank=True) # For input
 
+
     class Meta:
         model = Note
+ feature-backend/notes-edit-delete
         fields = ['id', 'user', 'mood', 'note', 'created_at', 'updated_at', 'user_id', 'mood_name']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -33,9 +37,11 @@ class NoteSerializer(serializers.ModelSerializer):
         except CustomUser.DoesNotExist:
             raise serializers.ValidationError({'user_id': 'Invalid user ID.'})
 
+
         mood_obj = None
         if mood_name:
             try:
+feature-backend/notes-edit-delete
                 mood_obj = Mood.objects.get(name__iexact=mood_name)
             except Mood.DoesNotExist:
                 raise serializers.ValidationError({'mood_name': f"Mood '{mood_name}' not found."})
