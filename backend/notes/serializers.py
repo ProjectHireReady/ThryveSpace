@@ -7,6 +7,7 @@ from moods.models import Mood
 User = get_user_model()
 
 class NoteSerializer(serializers.ModelSerializer):
+feature-backend/notes-edit-delete
     mood_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
     mood = MoodSerializer(read_only=True)
 
@@ -22,6 +23,7 @@ class NoteSerializer(serializers.ModelSerializer):
         mood_obj = None
         if mood_name:
             try:
+
                 mood_obj = Mood.objects.get(name__iexact=mood_name)
             except Mood.DoesNotExist:
                 raise serializers.ValidationError({'mood_name': f"Mood '{mood_name}' not found."})
