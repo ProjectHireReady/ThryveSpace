@@ -1,10 +1,9 @@
-# backend/notes/urls.py
 from django.urls import path
 feature-backend/notes-edit-delete
-from .views import NoteListCreateAPIView, NoteDetailAPIView # Import the new view
+from .views import NoteListCreateAPIView, NoteDetailAPIView
 
 urlpatterns = [
-    path('notes/', NoteListCreateAPIView.as_view(), name='note-list-create'),
-    path('notes/<uuid:id>/', NoteDetailAPIView.as_view(), name='note-detail'), # New URL pattern
+    path('', NoteListCreateAPIView.as_view(), name='note-list-create'),
+    path('<uuid:pk>/', NoteDetailAPIView.as_view(), name='note-detail'),
 ]
 

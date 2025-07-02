@@ -1,15 +1,19 @@
+# backend/users/views.py
+
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import login, authenticate, logout
+
 from .models import CustomUser
 from .serializers import (
     CreateGuestSerializer,
     ResetTokenSerializer,
     GuestUpgradeSerializer,
     LoginSerializer,
+    CustomUserSerializer,
 )
 
 
@@ -31,14 +35,14 @@ class GuestCreateView(APIView):
             print(f"existing user: {user}")
 
             login(request, user)
-            return Response(CreateGuestSerializer(user).data, status=status.HTTP_200_OK)
+            return Response(CustomUserSerializer(user).data, status=status.HTTP_200_OK)
 
         user = CustomUser.objects.create()
         request.session["_auth_user_id"] = str(user.id)
 
         print(f"new user: {user}")
 
-        serializer = CreateGuestSerializer(user)
+        serializer = CustomUserSerializer(user)
         login(request, user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -77,24 +81,19 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
-        user = authenticate(
-            request,
-            username=serializer.validated_data["username"],
-            password=serializer.validated_data["password"],
-        )
+        user = serializer.validated_data['user']
+        login(request, user)
 
-        if user is not None:
-            login(request, user)
-            return Response(
-                {"message": "Login successful", "user_id": str(user.id)},
-                status=status.HTTP_200_OK,
-            )
         return Response(
-            {"error": "Invalid credentials"},
-            status=status.HTTP_401_UNAUTHORIZED,
+            {
+                "message": "Login successful",
+                "user_id": serializer.validated_data['user_id'],
+                "token": serializer.validated_data['token']
+            },
+            status=status.HTTP_200_OK,
         )
 
 
@@ -106,3 +105,16 @@ class LogoutView(APIView):
         return Response(
             {"message": "Logged out successfully"}, status=status.HTTP_200_OK
         )
+
+
+class RegisterView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = (AllowAny,)
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        password = self.request.data.get('password')
+        if password:
+            user.set_password(password)
+            user.save()
