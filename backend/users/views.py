@@ -3,6 +3,8 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
 from django.contrib.auth import login, authenticate, logout
 from .models import CustomUser
 from .serializers import (
@@ -14,33 +16,27 @@ from .serializers import (
 
 
 class GuestCreateView(APIView):
+    authentication_classes = [TokenAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request):
-        session_key = request.session.session_key
+        user = request.user
+        print(request.META.get("HTTP_AUTHORIZATION"))
+        print(request.auth)
+        if user.is_anonymous:
+            print("Creating a new guest user")
+            user = CustomUser.objects.create()
 
-        if not session_key:
-            request.session.create()
-            session_key = request.session.session_key
+            token, created = Token.objects.get_or_create(user=user)
+            print(f"Token created: {token.key} for user {user.id}")
 
-        print(f"session key: {session_key}")
-
-        if request.session.get("_auth_user_id"):
-            user = CustomUser.objects.get(id=request.session["_auth_user_id"])
-
-            print(f"existing user: {user}")
-
-            login(request, user)
-            return Response(CreateGuestSerializer(user).data, status=status.HTTP_200_OK)
-
-        user = CustomUser.objects.create()
-        request.session["_auth_user_id"] = str(user.id)
-
-        print(f"new user: {user}")
+            data = CreateGuestSerializer(user).data
+            data["token"] = token.key
+            return Response(data, status=status.HTTP_201_CREATED)
+        print(f"existing user: {user}")
 
         serializer = CreateGuestSerializer(user)
-        login(request, user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ResetTokenView(APIView):
