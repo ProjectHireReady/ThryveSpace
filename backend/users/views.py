@@ -5,13 +5,11 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import login, authenticate, logout
 from .models import CustomUser
 from .serializers import (
     CreateGuestSerializer,
     ResetTokenSerializer,
     GuestUpgradeSerializer,
-    LoginSerializer,
 )
 
 
@@ -27,7 +25,7 @@ class GuestCreateView(APIView):
             print("Creating a new guest user")
             user = CustomUser.objects.create()
 
-            token, created = Token.objects.get_or_create(user=user)
+            token, _ = Token.objects.get_or_create(user=user)
             print(f"Token created: {token.key} for user {user.id}")
 
             data = CreateGuestSerializer(user).data
@@ -50,12 +48,17 @@ class ResetTokenView(APIView):
             user.reset_token = None
             user.save()
 
-            login(request, user)
-            print(
-                f"User {user} requested a reset. New session id is {request.session.session_key}"
-            )
+            Token.objects.filter(user=user).delete()
+            print(f"Resetting token for user {user.id}")
+
+            token = Token.objects.create(user=user)
+            print(f"User {user} requested a reset. New Token id is {token.key}")
             return Response(
-                {"message": "Session reset successful.", "user_id": str(user.id)},
+                {
+                    "message": "Token reset successful.",
+                    "token": token.key,
+                    "user_id": str(user.id),
+                },
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -64,41 +67,17 @@ class ResetTokenView(APIView):
 class GuestUpgradeView(generics.UpdateAPIView):
     serializer_class = GuestUpgradeSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def get_object(self):
         return self.request.user
-
-
-class LoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        user = authenticate(
-            request,
-            username=serializer.validated_data["username"],
-            password=serializer.validated_data["password"],
-        )
-
-        if user is not None:
-            login(request, user)
-            return Response(
-                {"message": "Login successful", "user_id": str(user.id)},
-                status=status.HTTP_200_OK,
-            )
-        return Response(
-            {"error": "Invalid credentials"},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
 
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        logout(request)
+        request.user.auth_token.delete()
         return Response(
             {"message": "Logged out successfully"}, status=status.HTTP_200_OK
         )

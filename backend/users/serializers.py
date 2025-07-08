@@ -56,11 +56,6 @@ class GuestUpgradeSerializer(serializers.ModelSerializer):
         return instance
 
 
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    password = serializers.CharField(write_only=True, style={"input_type": "password"})
-
-
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
