@@ -1,44 +1,53 @@
-import happy from '../assets/moods/happy.png';
-import sad from '../assets/moods/low.webp';
-import angry from '../assets/moods/angry.webp';
-import calm from '../assets/moods/calm.webp';
+import { useEffect, useState } from 'react';
 import './MoodSelector.css';
+import { getMoods } from '../api/moods';
 
-const moods = [
-  { label: 'Happy', emoji: '😊', image: happy },
-  { label: 'Sad', emoji: '😢', image: sad },
-  { label: 'Angry', emoji: '😠', image: angry },
-  { label: 'Calm', emoji: '😌', image: calm },
-];
-
+// MoodSelector lets the user choose a mood and passes it to the parent
 export default function MoodSelector({ onMoodSelect }) {
+  const [moods, setMoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [disabled, setDisabled] = useState(false);
+
+  // Load moods from the backend when the component mounts
+  useEffect(() => {
+    getMoods()
+      .then((res) => setMoods(res.data))
+      .catch(() => setError('Could not load moods.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Handle mood selection and prevent multiple clicks
+  const handleSelect = (mood) => {
+    if (disabled) return;
+    setDisabled(true);
+    onMoodSelect(mood); // Send selected mood to parent
+  };
+
   return (
     <div className="mood-selector">
       <h1 className="mood-header">How are you feeling today?</h1>
-      <h2 className="subtext">
-        You can pick a mood or just write — whatever feels right today.
-      </h2>
+      <h2 className="subtext">You can pick a mood or just write — whatever feels right today.</h2>
 
-      <div className="mood-grid">
-        {moods.map((mood, index) => (
-          <div
-            key={index}
-            className="mood-item"
-            style={{ cursor: 'pointer', textAlign: 'center' }}
-            onClick={() => onMoodSelect(mood)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                onMoodSelect(mood);
-              }
-            }}
-            aria-label={`Select mood ${mood.label}`}
-          >
-            <img src={mood.image} alt={mood.label} />
-            <p className="mood-label">{mood.label}</p>
-          </div>
-        ))}
+      {loading && <p className="mood-loading-message">Loading moods...</p>}
+      {error && <p className="mood-error-message">{error}</p>}
+
+      <div className={`mood-grid ${disabled ? 'disabled' : ''}`}>
+        {!loading &&
+          moods.map((mood) => (
+            <div
+              key={mood.id}
+              className="mood-item"
+              onClick={() => handleSelect(mood)}
+              role="button"
+              tabIndex={disabled ? -1 : 0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleSelect(mood)}
+              aria-label={`Select mood ${mood.name}`}
+            >
+              <img src={mood.image_url} alt={`Mood: ${mood.name}`} />
+              <p className="mood-label">{mood.name}</p>
+            </div>
+          ))}
       </div>
     </div>
   );

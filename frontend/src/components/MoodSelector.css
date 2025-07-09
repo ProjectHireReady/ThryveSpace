@@ -82,3 +82,22 @@ h2.subtext {
   margin-top: 8px;
   color: #333;
 }
+
+/* Mood Selector Messages */
+.mood-loading-message,
+.mood-error-message {
+  margin-top: 1rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.mood-error-message {
+  color: #cc3d3d; 
+}
+
+/* Disable interaction after mood is picked */
+.mood-grid.disabled .mood-item {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
