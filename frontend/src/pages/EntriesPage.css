@@ -5,6 +5,14 @@
   font-family: "Nunito", sans-serif;
   background-color: #f9fbfd;
   min-height: 100vh;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.entries-page.no-scroll {
+  overflow-y: hidden;
+  height: 100vh;
+  overscroll-behavior: contain;
 }
 
 /* HEADER & TOP SECTION */

@@ -14,34 +14,42 @@
   padding: 14px 8px;
 }
 
-/* Day display inside date box */
 .date-box .day {
   font-size: 38px;
   font-weight: 600;
 }
 
-/* Month display inside date box */
 .date-box .month {
   font-size: 36px;
   font-weight: 900;
   color: #333333;
 }
 
-/* Main content area of the entry card showing mood, note, and actions */ 
+/* Main content area of the entry card */
 .entry-card {
   flex-grow: 1;
   max-width: 900px;
-  background-color: rgba(219, 234, 245, 0.3);
+  background-color: #e6f0fa;
   padding: 1rem;
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+  border-radius: 0 6px 6px 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  justify-content: space-between; /* ensures footer stays visible */
   gap: 10px;
   position: relative;
+  overflow: hidden;
+  min-height: 180px; /* optional, ensures enough room for icons */
 }
 
-/* Row displaying selected mood (emoji + label) */
+.entry-card:hover {
+  background-color: #dbeaf5;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Mood Row */
 .mood-line {
   display: flex;
   align-items: center;
@@ -49,27 +57,134 @@
   font-size: 1rem;
 }
 
-/* Emoji size inside mood line */
 .emoji {
   font-size: 1.2rem;
 }
 
-/* Mood label styling */
+.mood-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.emoji-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  stroke-width: 2;
+  color: #4b5563;
+  vertical-align: middle;
+}
+
 .label {
   font-weight: 500;
   color: #374151;
 }
 
-/* User's journal note styling */
+/* Edit mode textarea */
+.entry-edit-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: #f0f4f8;
+  /* border: 1px solid #ccd; */
+  border-radius: 8px;
+  line-height: 1.5;
+  color: #333;
+  resize: vertical;
+  transition: box-shadow 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.entry-edit-textarea:focus {
+  outline: none;
+  border-color: #5a90c5;
+  box-shadow: 0 0 0 2px rgba(90, 144, 197, 0.2);
+}
+
+/* When editing, slightly highlight card */
+.entry-card.editing-mode {
+  background-color: #f6faff;
+}
+
+/* Footer icons */
+.save-icon,
+.cancel-icon {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  margin-left: 0.5rem;
+}
+
+.save-icon:hover {
+  color: #2e7d32; /* green */
+}
+
+.cancel-icon:hover {
+  color: #cc3d3d; /* red */
+}
+
+/* Note Styling */
 .note {
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.6;
   color: #333;
   font-weight: 700;
+  white-space: pre-line;
+  overflow-wrap: break-word;
   margin: 0.5rem 0;
+  cursor: pointer;
 }
 
-/* Footer section with edit/delete icons aligned to the right */
+/* Wrapper for expandable/collapsible note */
+.note-wrapper {
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+
+/* Collapsed state - show 2 lines */
+.note-wrapper.collapsed {
+  max-height: 3.2em; /* ≈ 2 lines */
+  opacity: 0.9;
+  position: relative;
+}
+
+/* Expanded state - fixed space + scroll */
+.note-wrapper.expanded {
+  position: relative;
+  max-height: 8em;
+  opacity: 1;
+  padding-bottom: 0.5em;
+  overflow-y: auto;
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  scroll-behavior: smooth;
+
+  /* Hide scrollbar - Chrome, Safari */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.note-wrapper.expanded::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+/* Read more link */
+.read-more {
+  color: #5a90c5;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-flex;
+  margin-left: 2px;
+  gap: 4px;
+  cursor: pointer;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* Footer with edit/delete icons */
 .entry-footer {
   display: flex;
   justify-content: flex-end;
@@ -77,7 +192,6 @@
   margin-top: auto;
 }
 
-/* Base styles for icon buttons (edit & delete) */
 .icon-button {
   background: none;
   border: none;
@@ -89,17 +203,14 @@
   transition: transform 0.2s ease;
 }
 
-/* Subtle zoom effect on icon hover */
 .icon-button:hover {
   transform: scale(1.1);
 }
 
-/* Edit icon color */
 .edit-icon svg {
-  color: #5A90C5;
+  color: #5a90c5;
 }
 
-/* Delete icon color */
 .delete-icon svg {
-  color: #6B7280;
+  color: #6b7280;
 }
