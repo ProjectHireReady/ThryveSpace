@@ -10,6 +10,7 @@ from .serializers import (
     CreateGuestSerializer,
     ResetTokenSerializer,
     GuestUpgradeSerializer,
+    SignUpSerializer,
 )
 
 
@@ -80,4 +81,28 @@ class LogoutView(APIView):
         request.user.auth_token.delete()
         return Response(
             {"message": "Logged out successfully"}, status=status.HTTP_200_OK
+        )
+
+
+class SignUpView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = SignUpSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        token = Token.objects.create(user=user)
+
+        serializer = SignUpSerializer(user)
+
+        return Response(
+            {
+                "message": "User registered successfully",
+                "token": token.key,
+                "user": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
         )

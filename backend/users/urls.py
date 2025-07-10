@@ -4,6 +4,7 @@ from .views import (
     ResetTokenView,
     GuestUpgradeView,
     LogoutView,
+    SignUpView,
 )
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -13,4 +14,5 @@ urlpatterns = [
     path("upgrade/", GuestUpgradeView.as_view(), name="upgrade_guest"),
     path("login/", obtain_auth_token, name="user_login"),
     path("logout/", LogoutView.as_view(), name="user_logout"),
+    path("register/", SignUpView.as_view(), name="user_signup"),
 ]
