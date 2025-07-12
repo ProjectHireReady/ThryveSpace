@@ -6,11 +6,12 @@ import FaqSection from "../components/FaqSection";
 import CTA from "../components/CTA";
 import ContactSection from "../components/ContactSection";
 import Footer from "../components/Footer";
+import { Link } from 'react-router-dom';
 function HomePage() {
   return (
     <>
       <Hero />
-      <FeaturesPreview />
+      <FeaturesPreview featuresPagePath="/features" />
       <DailyUplifts />
       <BenefitsSection />
       <FaqSection />

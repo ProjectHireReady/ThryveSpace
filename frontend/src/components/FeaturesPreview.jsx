@@ -1,4 +1,5 @@
 import "./FeaturesPreview.css";
+import { Link } from 'react-router-dom';
 import {
   FiBarChart2,
   FiSmile,
@@ -6,7 +7,7 @@ import {
   FiArrowUpRight,
 } from "react-icons/fi";
 
-function FeaturesPreview() {
+function FeaturesPreview({ featuresPagePath }) { 
   return (
     <section className="features-preview-alt">
       <div className="features-alt-container">
@@ -15,9 +16,10 @@ function FeaturesPreview() {
           <p className="features-subtext">
             A quick glance at how we support your journey
           </p>
-          <button className="features-button">
-            Discover More <FiArrowUpRight className="arrow" />
-          </button>
+          <Link to="/features" className="features-button">
+        Discover More
+        <FiArrowUpRight className="arrow" />
+      </Link>
         </div>
 
         <div className="features-alt-items">
