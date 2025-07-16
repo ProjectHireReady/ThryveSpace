@@ -1,11 +1,20 @@
 import React from 'react';
 
-function App() {
+// Import your images from the new assets folder
+import moodTrackingSvg from './assets/images/mood-tracking.svg';
+import aiSvg from './assets/images/AI.svg';
+import noPressureSvg from './assets/images/No-pressure.svg';
+import personalSvg from './assets/images/Personal.svg';
+import privacySvg from './assets/images/Privacy.svg';
+
+// This is the component for the ThryveSpace Features page
+function FeaturesPage() {
   return (
     <>
+      {/* My CSS styles are all here, keeping them self-contained for this component for now */}
       <style>
         {`
-        /* Basic Resets and Global Styles */
+        /* Basic Resets and Global Styles for this page's content */
         :root {
             --primary-blue: #5A90C5; /* This is the main blue color I'm using */
             --text-dark: #333;
@@ -24,6 +33,8 @@ function App() {
         }
 
         body {
+            /* Note: body styles here might be overridden by global.css or main.jsx body styles.
+               These are primarily for ensuring consistency if this component were standalone. */
             font-family: 'Inter', sans-serif; /* My default font for the whole page */
             line-height: 1.6;
             color: var(--text-dark);
@@ -39,7 +50,7 @@ function App() {
             padding: 0 var(--padding-x);
         }
 
-        /* Styling for all the main feature sections */
+        /* Main Content Sections */
         .feature-section {
             padding: var(--section-padding-y) var(--padding-x);
             display: flex;
@@ -131,7 +142,7 @@ function App() {
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 20px;
-            color: var(--primary-blue);
+            color: var(--primary-blue); /* This heading is blue */
             border-radius: 4px;
         }
 
@@ -185,7 +196,22 @@ function App() {
                 justify-content: center;
             }
         }
-        
+
+        @media (max-width: 768px) {
+            /* Removed header-specific responsive styles */
+            .feature-section {
+                padding: 60px var(--padding-x);
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .hero-section p {
+                font-size: 1rem;
+            }
+        }
+
         @media (max-width: 480px) {
             :root {
                 --padding-x: 15px;
@@ -219,6 +245,7 @@ function App() {
         `}
       </style>
 
+      {/* The Header Section has been removed from here, as it's handled by the global NavBar. */}
 
       {/* Main Content Area */}
       <main>
@@ -234,10 +261,12 @@ function App() {
             <h2>Mood Tracking</h2>
             <h3>Intuitive Mood Tracking</h3>
             <p>Log feelings easily with emojis or slider. Add private notes. Build your emotional landscape. See patterns, gain self-awareness. Process experiences privately.</p>
+            {/* Emojis on a new line, original style */}
             <p className="emojis">&#128515; &#128522; &#128532;</p>
           </div>
           <div className="feature-image">
-            <img src="/images/mood-tracking.svg" alt="Mood Tracking" />
+            {/* Image path now uses the imported variable */}
+            <img src={moodTrackingSvg} alt="Mood Tracking" />
           </div>
         </section>
 
@@ -249,7 +278,8 @@ function App() {
             <p>Analyzes mood entries for trends. Offers gentle, proactive suggestions & personalized insights. Prepare for emotional dips, reinforce positive habits. Empowering, proactive self care.</p>
           </div>
           <div className="feature-image">
-            <img src="/images/AI.svg" alt="AI-Powered Mood Prediction" />
+            {/* Image path now uses the imported variable */}
+            <img src={aiSvg} alt="AI-Powered Mood Prediction" />
           </div>
         </section>
 
@@ -261,7 +291,8 @@ function App() {
             <p>Full features, no login required. Data saved locally and privately. Explore freely, no commitment. Comfort and control from the start.</p>
           </div>
           <div className="feature-image">
-            <img src="/images/No-pressure.svg" alt="No-Pressure Sign-Up" />
+            {/* Image path now uses the imported variable */}
+            <img src={noPressureSvg} alt="No-Pressure Sign-Up" />
           </div>
         </section>
 
@@ -273,7 +304,8 @@ function App() {
             <p>A dedicated, private space to reflect deeply. Write freely, anytime. Powerful for self-reflection, stress reduction, clarity. Cultivate this habit securely.</p>
           </div>
           <div className="feature-image">
-            <img src="/images/personal.svg" alt="Personal Journal" />
+            {/* Image path now uses the imported variable */}
+            <img src={personalSvg} alt="Personal Journal" />
           </div>
         </section>
 
@@ -285,7 +317,8 @@ function App() {
             <p>Data stored locally by default. Optional secure account for backup/sync. We never sell your data. Feel safe. Focus on well-being with peace of mind.</p>
           </div>
           <div className="feature-image">
-            <img src="/images/Privacy.svg" alt="Privacy & Security" />
+            {/* Image path now uses the imported variable */}
+            <img src={privacySvg} alt="Privacy & Security" />
           </div>
         </section>
       </main>
@@ -300,4 +333,4 @@ function App() {
   );
 }
 
-export default App;
+export default FeaturesPage;
