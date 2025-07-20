@@ -15,33 +15,28 @@ function FeaturesPage() {
       <style>
         {`
         /* Basic Resets and Global Styles for this page's content */
+        /* Removed :root variables as they are in global.css */
+        /* Removed * reset as it's in global.css */
+
+        /* Removed body styles as they are in global.css */
+        
+        /* Keeping these custom variables for colors specific to this page's design,
+           if they are not already in global.css :root.
+           If they ARE in global.css, you can remove these too.
+           For now, assuming these are page-specific or not yet global. */
         :root {
-            --primary-blue: #5A90C5; /* This is the main blue color I'm using */
+            --primary-blue: #5A90C5;
             --text-dark: #333;
-            --text-light: #666; /* This light grey is for body text and those secondary headlines */
-            --background-light: #f9f9f9; /* Just a light background color */
-            --line-blue: #A7D9F8; /* This is the light blue for all the dividing lines */
+            --text-light: #666;
+            --background-light: #f9f9f9;
+            --line-blue: #A7D9F8;
             --max-width: 1200px;
             --padding-x: 20px;
-            --section-padding-y: 80px; /* Vertical padding for each section */
+            --section-padding-y: 80px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            /* Note: body styles here might be overridden by global.css or main.jsx body styles.
-               These are primarily for ensuring consistency if this component were standalone. */
-            font-family: 'Inter', sans-serif; /* My default font for the whole page */
-            line-height: 1.6;
-            color: var(--text-dark);
-            background-color: #fff; /* Keeping the page background white */
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+        /* Removed * reset as it's in global.css */
+        /* Removed body styles as they are in global.css */
 
         /* This container helps center my content and keeps it from getting too wide */
         .container {
