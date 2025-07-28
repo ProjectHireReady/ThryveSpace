@@ -32,7 +32,7 @@ export const EntriesProvider = ({ children }) => {
   const addEntry = async (payload) => {
     try {
       const res = await postNote(payload);
-      setEntries((prev) => [res.data, ...prev]); 
+      setEntries((prev) => [res.data, ...prev]);
     } catch (err) {
       console.error("Error adding entry:", err);
       throw err;

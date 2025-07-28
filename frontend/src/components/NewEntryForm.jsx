@@ -1,4 +1,6 @@
 // Imports
+import KindnessMessage from "./KindnessMessage";
+import LoginPrompt from "./LoginPrompt";
 import { useState } from "react";
 import { Check, Trash } from "lucide-react";
 import { useEntries } from "../context/EntriesContext"; // Custom context to handle entries
@@ -12,6 +14,9 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const [entry, setEntry] = useState(""); // User’s typed note
   const [submitting, setSubmitting] = useState(false); // To disable buttons while submitting
   const [showPopup, setShowPopup] = useState(false); // Controls success message
+
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
 
   // Handle submit button click
   const handleSubmit = async () => {
@@ -128,6 +133,17 @@ export default function NewEntryForm({ mood, onSubmit }) {
           </p>
         </div>
       )}
+
+      {showPopup && (
+        <>
+          <KindnessMessage onDismiss={() => setTimeout(() => {
+            setShowLoginPrompt(true);
+          }, 1500)} />
+          {showLoginPrompt && <LoginPrompt />}
+        </>
+      )}
+
+
     </div>
   );
 }
