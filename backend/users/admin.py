@@ -17,13 +17,7 @@ class CustomUserAdmin(BaseUserAdmin):
         "email",
         "id",
         "is_staff",
-        "is_guest",
-        "reset_token",
     )
-
-    list_filter = BaseUserAdmin.list_filter + (
-        "is_guest",
-    )  # Add 'is_guest' to the filter options
     readonly_fields = ("id",)  # Make the ID read-only so it can't be changed
 
 
