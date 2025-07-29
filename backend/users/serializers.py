@@ -25,7 +25,6 @@ class SignUpSerializer(serializers.ModelSerializer):
             email=validated_data.get("email", ""),
             first_name=validated_data.get("first_name", ""),
             last_name=validated_data.get("last_name", ""),
-            is_guest=False,
         )
         user.set_password(validated_data["password"])
         user.save()
