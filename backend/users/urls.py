@@ -14,5 +14,5 @@ urlpatterns = [
     path("upgrade/", GuestUpgradeView.as_view(), name="upgrade_guest"),
     path("login/", obtain_auth_token, name="user_login"),
     path("logout/", LogoutView.as_view(), name="user_logout"),
-    path("register/", SignUpView.as_view(), name="user_signup"),
+    path("signup/", SignUpView.as_view(), name="user_signup"),
 ]
