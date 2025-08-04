@@ -24,6 +24,5 @@ urlpatterns = [
     path('api/v1/moods/', include('moods.urls')),
     path('api/v1/notes/', include('notes.urls')),
     path('api/v1/auth/', include('users.urls')),
-    path('api/v1/token/', obtain_auth_token, name='api_token_auth'),
 
 ]
