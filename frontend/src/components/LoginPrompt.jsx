@@ -1,27 +1,28 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import {
-  shouldShowLoginPrompt,
-  markLoginPromptShown,
-} from "../utils/localStorageUtils";
+import { shouldShowLoginPrompt, markLoginPromptShown } from "../utils/localStorageUtils"; // ✅ Move logic here
 import "./KindnessMessage.css";
 
-export default function LoginPrompt() {
+export default function LoginPrompt({ onComplete }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    // ✅ Only show if allowed by localStorage
     if (shouldShowLoginPrompt()) {
-      setTimeout(() => setVisible(true), 1500); // 1.5s delay after kindness
+      const timer = setTimeout(() => {
+        setVisible(true);
+        markLoginPromptShown(); // ✅ Mark it once shown
+      }, 1500);
+      return () => clearTimeout(timer);
     }
   }, []);
 
   const handleDismiss = () => {
     setVisible(false);
-    markLoginPromptShown();
+    onComplete?.(); // notify parent
   };
 
   const handleSignIn = () => {
-    // e.g. redirect to /sign in
     window.location.href = "/signin";
   };
 

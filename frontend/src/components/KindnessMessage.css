@@ -1,19 +1,21 @@
 .kindness-popup {
   position: fixed;
-  top: 80px;
-  right: 20px;
-  max-width: 300px;
-  padding: 1rem;
-  background: #fff8f0;
-  border: 1px solid #ffd6d6;
-  border-radius: 12px;
-  color: #5c3b3b;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.12);
-  z-index: 1000;
-  font-size: 0.95rem;
-  transition: opacity 300ms ease-in-out;
+  bottom: 6%; /* slightly higher than bottom edge */
+  left: 50%;
+  transform: translateX(-50%); /* only horizontal centering */
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid #080809; /* Dark bluish border */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* slightly deeper shadow */
+  z-index: 1001;
+
+  opacity: 0;
+  transform: translate(-50%, 30px); /* start slightly below */
+  animation: slideUpFade 0.4s ease-out forwards;
 }
 
+/* Button row styling remains same */
 .btn-row {
   display: flex;
   justify-content: space-between;
@@ -36,12 +38,14 @@
   color: #5c3b3b;
 }
 
-/* Fade animation */
-.fade {
-  animation: fadeIn 300ms ease-in;
+/* Smooth slide-up + fade-in animation */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 30px); /* below start point */
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0); /* final position */
+  }
 }
-@keyframes fadeIn {
-  from { opacity: 0 }
-  to { opacity: 1 }
-}
-

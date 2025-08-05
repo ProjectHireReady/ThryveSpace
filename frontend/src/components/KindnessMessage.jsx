@@ -12,6 +12,7 @@ export default function KindnessMessage({ onDismiss }) {
   useEffect(() => {
     if (shouldShowKindness()) {
       setVisible(true);
+      markKindnessShown(); //mark immediately, not only on dismiss
     }
   }, []);
 
