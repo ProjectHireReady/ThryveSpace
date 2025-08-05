@@ -1,54 +1,25 @@
-// Imports
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { Check, Trash } from "lucide-react";
+import { useEntries } from "../context/EntriesContext";
+import { formatGuestPayload } from "../utils/guestUtils";
 import KindnessMessage from "./KindnessMessage";
 import LoginPrompt from "./LoginPrompt";
-import { useState } from "react";
-import { Check, Trash } from "lucide-react";
-import { useEntries } from "../context/EntriesContext"; // Custom context to handle entries
 import "./NewEntryForm.css";
 
-// This component shows the journaling form after a mood is selected
+// This component shows the journaling form for guests
 export default function NewEntryForm({ mood, onSubmit }) {
-  const { addEntry } = useEntries(); // Function to save a journal entry
+  const { addEntry } = useEntries();
+  const { isLoggedIn } = useAuth();
 
-  // Local state
-  const [entry, setEntry] = useState(""); // User’s typed note
-  const [submitting, setSubmitting] = useState(false); // To disable buttons while submitting
-  const [showPopup, setShowPopup] = useState(false); // Controls success message
+  const [entry, setEntry] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
+  const [showKindness, setShowKindness] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-
-  // Handle submit button click
-  const handleSubmit = async () => {
-    // Don’t submit if input is empty
-    if (!entry.trim()) return alert("Please write something!");
-
-    const payload = {
-      mood_id: mood?.id || null,
-      note: entry,
-    };
-
-    try {
-      setSubmitting(true); // Start loading
-      await addEntry(payload); // Save entry using context
-
-      setShowPopup(true); // Show success message
-
-      // After 2 seconds, hide popup, clear input, and close modal
-      setTimeout(() => {
-        setShowPopup(false);
-        setEntry("");
-        onSubmit?.(); // close the modal
-      }, 2000);
-    } catch (err) {
-      console.error("Error saving entry:", err);
-      alert("Could not save your note. Please try again.");
-    } finally {
-      setSubmitting(false); // End loading
-    }
-  };
-
-  // Get today’s day and month (formatted)
+  // Get today's date
   const getToday = () => {
     const date = new Date();
     return {
@@ -59,6 +30,36 @@ export default function NewEntryForm({ mood, onSubmit }) {
 
   const { day, month } = getToday();
 
+  const handleSubmit = async () => {
+  if (!entry.trim()) return alert("Please write something!");
+
+  const payload = isLoggedIn
+    ? { note: entry, mood_id: mood?.id || null } // Backend structure
+    : formatGuestPayload(entry, mood); // Guest fallback
+
+  try {
+    setSubmitting(true);
+    await addEntry(payload);
+
+    setEntry("");
+
+    // Step 1: Show Kindness message
+    setShowKindness(true);
+
+    // Step 2: After 3 seconds, hide Kindness and show Login Prompt
+    setTimeout(() => {
+      setShowKindness(false);
+      setShowLoginPrompt(true);
+    }, 3000); // 3 seconds delay
+  } catch (err) {
+    console.error("Error saving entry:", err);
+    alert("Could not save your note. Please try again.");
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+
   return (
     <div className="journal-page">
       <h1 className="journal-heading">Want to reflect more?</h1>
@@ -66,39 +67,35 @@ export default function NewEntryForm({ mood, onSubmit }) {
         <p className="subtext-modal">Say how you feel in words.</p>
       </div>
 
-      {/* Entry input area */}
       <div className="entry-container">
-        {/* Shows today's date */}
+        {/* Date box */}
         <div className="date-box">
           <div className="day">{day}</div>
           <div className="month">{month}</div>
         </div>
 
-        {/* Journal card */}
         <div className="entry-card">
-          {/* Selected mood preview */}
+          {/* Mood preview (if selected) */}
           <div className="mood-line">
             <span className="emoji">{mood?.emoji}</span>
-            <span className="label">Feeling: {mood?.label}</span>
+            <span className="label">Feeling: {mood?.name}</span>
           </div>
 
-          {/* Text input for the journal note */}
+          {/* Entry textarea */}
           <textarea
             className="entry-input"
             value={entry}
             onChange={(e) => setEntry(e.target.value)}
-            placeholder="How did your day go..."
+            placeholder="What’s on your mind today?"
             rows={1}
             onInput={(e) => {
-              // Auto-resize textarea as user types
               e.target.style.height = "auto";
               e.target.style.height = e.target.scrollHeight + "px";
             }}
+            disabled={submitting}
           />
 
-          {/* Buttons */}
           <div className="entry-footer">
-            {/* Submit entry */}
             <button
               onClick={handleSubmit}
               className="submit-button"
@@ -108,7 +105,6 @@ export default function NewEntryForm({ mood, onSubmit }) {
               <Check />
             </button>
 
-            {/* Clear text area */}
             <button
               onClick={() => setEntry("")}
               className="delete-icon"
@@ -121,27 +117,24 @@ export default function NewEntryForm({ mood, onSubmit }) {
         </div>
       </div>
 
-      {/* Popup message after successful entry */}
-      {showPopup ? (
-        <div className="popup">
-          Thanks for sharing. Keep taking care of yourself.
-        </div>
-      ) : (
-        <div className="text-block">
-          <p className="footer-modal">
-            We listen gently once you have finished
-          </p>
-        </div>
-      )}
+      {/* Kindness message */}
+      {showKindness && <KindnessMessage />}
 
-      {showPopup && (
-        <>
-          <KindnessMessage onDismiss={() => setTimeout(() => {
-            setShowLoginPrompt(true);
-          }, 1500)} />
-          {showLoginPrompt && <LoginPrompt />}
-        </>
-      )}
+      {/* Login prompt */}
+      {showLoginPrompt && (
+        <LoginPrompt
+        onComplete={() => {
+          onSubmit?.();
+          window.location.href = "/entries";
+        }}/>
+        )}
+
+      {/* Default footer when nothing else is shown */}
+      {!showKindness && !showLoginPrompt && (
+        <div className="text-block">
+          <p className="footer-modal">We listen gently once you have finished</p>
+        </div>
+        )}
 
 
     </div>
