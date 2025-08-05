@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Search,
   PlusCircle,
@@ -26,6 +26,7 @@ function EntriesPage() {
 
   const [searchTerm, setSearchTerm] = useState("");     // For filtering entries
   const [showModal, setShowModal] = useState(false);    // Journal modal toggle
+  const [selectedMood, setSelectedMood] = useState(null); // For mood selection
 
   // Open modal when "Add Entry" is clicked
   const handleAddEntry = () => setShowModal(true);
@@ -34,13 +35,17 @@ function EntriesPage() {
   const closeModal = () => setShowModal(false);
 
   // Filter entries by user search
-  const filteredEntries = entries.filter((entry) =>
-    entry.note?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEntries = useMemo(() => {
+    return entries.filter((entry) =>
+      entry.note?.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [entries, searchTerm]);
 
   // Conditions for displaying UI elements
-  const shouldShowSearchAndAdd = entries.length > 0 && !loading && !error;
-  const shouldShowAddOnly = entries.length === 0 && !loading && !error;
+  // handles if entries is undefined or null
+  const hasEntries = Array.isArray(entries) && entries.length > 0;
+
+  const shouldShowSearchAndAdd = hasEntries && !loading && !error;const shouldShowAddOnly = !hasEntries && !loading && !error;
+
 
   return (
     <section
@@ -100,9 +105,14 @@ function EntriesPage() {
             <AlertCircle className="error-icon" size={36} />
           </div>
           <p className="error-message">{error}</p>
-          <button className="retry-btn" onClick={fetchEntries}>
+          <div className="btns">
+            <button className="retry-btn" onClick={fetchEntries}>
             Retry
-          </button>
+            </button>
+            <button className="add-btn" onClick={handleAddEntry}>
+              <PlusCircle size={19}/> Add Entry
+            </button>
+          </div>
         </div>
       ) : filteredEntries.length === 0 ? (
         // Empty or no search result
@@ -123,9 +133,22 @@ function EntriesPage() {
         </div>
       )}
 
-      {/* Modal Form */}
-      <JournalModal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <NewEntryForm mood={null} onSubmit={closeModal} />
+            {/* Modal Form */}
+
+      <JournalModal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setSelectedMood(null); // reset mood when modal closes
+        }}
+      >
+        <NewEntryForm
+          mood={selectedMood}
+          onSubmit={() => {
+            closeModal();
+            setSelectedMood(null); // reset after submission too
+          }}
+        />
       </JournalModal>
     </section>
   );

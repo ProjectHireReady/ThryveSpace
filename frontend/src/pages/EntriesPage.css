@@ -257,3 +257,9 @@
   font-size: 20px;
   gap: 2.5rem;
 }
+
+.btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
