@@ -11,7 +11,6 @@ class CustomUser(AbstractUser):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=150, unique=True, blank=True, null=True)
-    is_guest = models.BooleanField(default=False)  # <-- This line was missing
 
     def __str__(self):
         return self.username or str(self.id)
