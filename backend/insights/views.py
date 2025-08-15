@@ -21,7 +21,7 @@ CATEGORY_VALUE_MAP = {
 @method_decorator(cache_page(60 * 5), name="dispatch")  # cache for 5 minutes
 class WeeklyInsightView(APIView):
     """
-    GET /api/v1/insights/week/?week_offset=0
+    GET /api/v1/insights/history/?week_offset=0
 
     Returns:
       - graph: 7 points (Mon..Sun) where each point is the latest note's mood_value for that day (or null)
