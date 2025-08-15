@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "users",
     "moods",
     "notes",
+    "insights",
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
