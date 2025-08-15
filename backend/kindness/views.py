@@ -16,7 +16,7 @@ except ImportError:
 
 
 class KindnessMessageView(APIView):
-    authentication_classes = [TokenAuthentication]  # optional but recommended
+    authentication_classes = [TokenAuthentication]  
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
