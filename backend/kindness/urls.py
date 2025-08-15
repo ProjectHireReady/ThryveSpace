@@ -1,2 +1,7 @@
 from django.urls import path
-urlpatterns=[]
+from .views import KindnessMessageView
+
+urlpatterns = [
+    path('kindness/', KindnessMessageView.as_view(), name='kindness-message'),
+]
+
