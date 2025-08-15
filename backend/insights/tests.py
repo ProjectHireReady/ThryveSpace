@@ -1,4 +1,4 @@
-# insights/tests/test_weekly_insights.py
+# insights/tests/tests.py
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.urls import reverse
