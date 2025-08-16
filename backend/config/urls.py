@@ -26,4 +26,5 @@ urlpatterns = [
     path("api/v1/notes/", include("notes.urls")),
     path("api/v1/auth/", include("users.urls")),
     path("api/v1/insights/", include("insights.urls")),
+    path('messages/', include('kindness.urls')),
 ]
