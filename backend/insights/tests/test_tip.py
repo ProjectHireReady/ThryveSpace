@@ -1,3 +1,5 @@
+# insights/tests/test_tipy.py
+from django.core.cache import cache
 from datetime import datetime, timedelta, time
 from django.utils import timezone
 from django.urls import reverse
@@ -19,6 +21,7 @@ def at_local(day, hour=9, minute=0):
 
 class WeeklyTipTests(APITestCase):
     def setUp(self):
+        cache.clear()
         self.user = User.objects.create_user(username="u_tip", password="pass1234")
         self.other = User.objects.create_user(username="u_other", password="pass1234")
         self.token = Token.objects.create(user=self.user)

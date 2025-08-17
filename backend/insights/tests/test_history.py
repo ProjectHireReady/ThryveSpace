@@ -1,4 +1,5 @@
-# insights/tests/tests.py
+# insights/tests/test_history.py
+from django.core.cache import cache
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.urls import reverse
@@ -14,6 +15,7 @@ User = get_user_model()
 
 class WeeklyInsightsTests(APITestCase):
     def setUp(self):
+        cache.clear() 
         self.user = User.objects.create_user(username="u1", password="pass1234")
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
