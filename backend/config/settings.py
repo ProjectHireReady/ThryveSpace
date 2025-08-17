@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "users",
     "moods",
     "notes",
+    "insights",
     "kindness",
 ]
 

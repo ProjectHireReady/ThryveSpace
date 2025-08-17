@@ -7,6 +7,30 @@ from moods.models import Mood
 User = get_user_model()
 
 
+# Implement truncation
+class NoteInsightSerializer(serializers.ModelSerializer):
+    """
+    Serializer for insight operations.
+    """
+
+    mood = MoodSerializer(read_only=True)
+
+    class Meta:
+        model = Note
+        fields = ["id", "user", "mood", "note", "created_at", "updated_at"]
+        read_only_fields = ["id", "user", "created_at", "updated_at"]
+
+    def truncate_note(self, note_text, max_length=10):
+        if len(note_text) > max_length:
+            return note_text[:max_length] + "..."
+        return note_text
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["note"] = self.truncate_note(representation["note"])
+        return representation
+
+
 class NoteSerializer(serializers.ModelSerializer):
     """
     Serializer for READ, UPDATE, DELETE operations.
