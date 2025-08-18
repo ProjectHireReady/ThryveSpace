@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
+from django.db import transaction
 from config.permissions import IsOwner
 from .models import Note
 from .serializers import (
@@ -62,6 +63,7 @@ class NoteMigrationAPIView(APIView):
     Handles bulk saving of guest notes during user signup.
     """
 
+    # We use the correct serializer that handles the incoming payload
     serializer_class = NoteMigrationSerializer
     permission_classes = [IsAuthenticated]
 
@@ -71,32 +73,52 @@ class NoteMigrationAPIView(APIView):
 
         user = request.user
         validated_entries = serializer.validated_data["entries"]
-
-        success_count = 0
+        notes_to_create = []
         errors = []
 
-        for entry_data in validated_entries:
-            try:
-                mood_name = entry_data.pop("mood_name", None)
-                mood_obj = None
-                if mood_name:
-                    mood_obj = Mood.objects.get(name__iexact=mood_name)
+        try:
+            # Step 1: Prepare notes for bulk creation, checking for mood existence
+            for entry_data in validated_entries:
+                try:
+                    mood_id = entry_data.get('mood_id')
+                    mood = Mood.objects.get(id=mood_id)
+                    
+                    notes_to_create.append(
+                        Note(
+                            note=entry_data['note'],
+                            mood=mood,
+                            user=user,
+                            created_at=entry_data.get('created_at'),
+                        )
+                    )
+                except Mood.DoesNotExist:
+                    errors.append(f"Mood with ID '{mood_id}' not found for note '{entry_data.get('note')}'.")
+                except Exception as e:
+                    errors.append(f"Error preparing entry '{entry_data.get('note')}': {str(e)}")
 
-                Note.objects.create(user=user, mood=mood_obj, **entry_data)
-                success_count += 1
-            except Mood.DoesNotExist:
-                errors.append(
-                    f"Mood '{mood_name}' not found for entry '{entry_data.get('note')}'."
+            if errors:
+                # If there are any errors in the data, return them without saving anything
+                return Response(
+                    {"message": "Validation failed for some entries.", "success_count": 0, "errors": errors},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
-            except Exception as e:
-                errors.append(
-                    f"Error saving entry '{entry_data.get('note')}': {str(e)}"
-                )
 
-        response_data = {
-            "message": f"Migration complete. {success_count} entries saved.",
-            "success_count": success_count,
-            "errors": errors,
-        }
+            # Step 2: Use an atomic transaction for all-or-nothing save
+            with transaction.atomic():
+                Note.objects.bulk_create(notes_to_create)
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "message": f"Migration complete. {len(notes_to_create)} entries saved.",
+                    "success_count": len(notes_to_create),
+                    "errors": [],
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        
+        except Exception as e:
+            # Catch any database-level exceptions and return a server error
+            return Response(
+                {"error": f"An error occurred during migration: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

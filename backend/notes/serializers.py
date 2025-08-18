@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Note
+from .models import Note, Mood
 from moods.serializers import MoodSerializer
 from django.contrib.auth import get_user_model
 from moods.models import Mood
@@ -58,10 +58,23 @@ class NoteCreateSerializer(serializers.ModelSerializer):
         fields = ["note", "mood_name"]
 
 
+class MigratedNoteSerializer(serializers.Serializer):
+    note = serializers.CharField(max_length=500, required=True)
+    mood_id = serializers.UUIDField(required=True)
+    created_at = serializers.DateTimeField(required=False, allow_null=True)
+
+    def validate_mood_id(self, value):
+        try:
+            Mood.objects.get(id=value)
+        except Mood.DoesNotExist:
+            raise serializers.ValidationError(f"Mood with ID {value} does not exist.")
+        return value
+
+
 class NoteMigrationSerializer(serializers.Serializer):
     """
     Serializer for the bulk migration endpoint.
-    It validates a list of 'NoteCreateSerializer' objects.
+    It validates a list of 'MigratedNoteSerializer' objects.
     """
 
-    entries = NoteCreateSerializer(many=True)
+    entries = MigratedNoteSerializer(many=True)
