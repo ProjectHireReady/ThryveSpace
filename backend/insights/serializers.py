@@ -12,3 +12,8 @@ class WeekSummarySerializer(serializers.Serializer):
     week_end = serializers.DateField()
     graph = GraphPointSerializer(many=True)
     timeline = NoteInsightSerializer(many=True)
+
+
+class InsightTipSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=["tip"])
+    message = serializers.CharField()
