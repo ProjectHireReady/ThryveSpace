@@ -1,34 +1,32 @@
 import { useState } from "react";
-import {
-  Search,
-  PlusCircle,
-  LoaderCircle,
-  AlertCircle,
-} from "lucide-react";
-
+import { PlusCircle, LoaderCircle, AlertCircle, Search, FileDown } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useEntries } from "../context/EntriesContext";
+import { downloadGuestEntriesPDF } from "../utils/exportPDF";
 import EntryCard from "../components/EntryCard";
 import JournalModal from "../components/JournalModal";
 import NewEntryForm from "../components/NewEntryForm";
-import { useEntries } from "../context/EntriesContext";
-
 import "./EntriesPage.css";
 
 function EntriesPage() {
   // Fetch entries and actions from context
-  const {
-    entries,
-    loading,
-    error,
-    fetchEntries,
-    updateEntry,
-    removeEntry,
-  } = useEntries();
+  const { entries, loading, error, fetchEntries, updateEntry, removeEntry } =
+    useEntries();
 
-  const [searchTerm, setSearchTerm] = useState("");     // For filtering entries
-  const [showModal, setShowModal] = useState(false);    // Journal modal toggle
+  const [searchTerm, setSearchTerm] = useState(""); // For filtering entries
+  const [showModal, setShowModal] = useState(false); // Journal modal toggle
+  const [selectedMood, setSelectedMood] = useState(null); // For mood selection
+
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   // Open modal when "Add Entry" is clicked
   const handleAddEntry = () => setShowModal(true);
+
+  const handleDownloadPDF = () => {
+    if (entries.length === 0) return alert("No entries to export.");
+    downloadGuestEntriesPDF(entries);
+  };
 
   // Close modal after successful entry
   const closeModal = () => setShowModal(false);
@@ -54,11 +52,11 @@ function EntriesPage() {
           <h1 className="main-header">My Entries</h1>
         </div>
 
-        {/* Search + Add Entry (only if entries exist) */}
+        {/* Search + Add Entry + Export (only if entries exist) */}
         {shouldShowSearchAndAdd && (
           <div className="action-row">
             <div className="search-wrapper">
-              <Search className="search-icon" size={16} />
+              <Search className="search-icon" size={18} />
               <input
                 type="text"
                 className="search-input"
@@ -67,9 +65,16 @@ function EntriesPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className="add-btn" onClick={handleAddEntry}>
-              <PlusCircle size={19} /> Add Entry
-            </button>
+            <div className="button-group">
+              <button className="add-btn" onClick={handleAddEntry}>
+                <PlusCircle size={19} /> Add Entry
+              </button>
+              {!isLoggedIn && entries.length > 0 && (
+                <button className="export-btn" onClick={handleDownloadPDF}>
+                   <FileDown size={18} /> Export PDF
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -111,7 +116,7 @@ function EntriesPage() {
         </p>
       ) : (
         // Render list of entries
-        <div className="entries-list">
+        <div className="entries-grid">
           {filteredEntries.map((entry) => (
             <EntryCard
               key={entry.id}
@@ -124,8 +129,21 @@ function EntriesPage() {
       )}
 
       {/* Modal Form */}
-      <JournalModal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <NewEntryForm mood={null} onSubmit={closeModal} />
+
+      <JournalModal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setSelectedMood(null); // reset mood when modal closes
+        }}
+      >
+        <NewEntryForm
+          mood={selectedMood}
+          onSubmit={() => {
+            closeModal();
+            setSelectedMood(null); // reset after submission too
+          }}
+        />
       </JournalModal>
     </section>
   );

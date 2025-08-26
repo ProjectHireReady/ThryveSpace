@@ -1,89 +1,124 @@
-// src/context/EntriesContext.js
-
-// This file handles all entries/notes logic
-
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { getNotes, postNote, updateNote, deleteNote } from "../api/notes";
+import {
+  getOrCreateGuestId,
+  clearGuestId,
+  createGuestEntry,
+} from "../utils/guestUtils";
+import { useAuth } from "./AuthContext";
 
-// Create the context
 const EntriesContext = createContext();
+export const useEntries = () => useContext(EntriesContext);
 
-// Provider component
 export const EntriesProvider = ({ children }) => {
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+
+  const [guestId, setGuestId] = useState(() => getOrCreateGuestId());
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Fetch all entries (GET)
+  const storageKey = `entries-${guestId}`;
+
+  useEffect(() => {
+    fetchEntries();
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      const saved = localStorage.getItem(storageKey);
+      setEntries(saved ? JSON.parse(saved) : []);
+    }
+  }, [guestId]);
+
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      const res = await getNotes();
-      setEntries(res.data);
-      setError(null);
+      if (isLoggedIn) {
+        const res = await getNotes();
+        setEntries(res.data);
+      } else {
+        const saved = localStorage.getItem(storageKey);
+        setEntries(saved ? JSON.parse(saved) : []);
+      }
     } catch (err) {
-      setError("Failed to load entries. Please try again.");
+      console.error("Error fetching entries:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Add a new entry (POST)
+  const saveGuestEntries = (newEntries) => {
+    localStorage.setItem(storageKey, JSON.stringify(newEntries));
+    setEntries(newEntries);
+  };
+
   const addEntry = async (payload) => {
-    try {
+    if (isLoggedIn) {
       const res = await postNote(payload);
-      setEntries((prev) => [res.data, ...prev]); 
-    } catch (err) {
-      console.error("Error adding entry:", err);
-      throw err;
+      setEntries((prev) => [res.data, ...prev]);
+    } else {
+      const newEntry = createGuestEntry(payload); // Use helper
+      const updated = [newEntry, ...entries];
+      saveGuestEntries(updated);
     }
   };
 
-  // Update an existing entry (PATCH)
   const updateEntry = async (id, payload) => {
-    try {
+    if (isLoggedIn) {
       const res = await updateNote(id, payload);
-      setEntries((prev) =>
-        prev.map((entry) => (entry.id === id ? res.data : entry))
+      setEntries((prev) => prev.map((e) => (e.id === id ? res.data : e)));
+    } else {
+      const updated = entries.map((e) =>
+        e.id === id
+          ? {
+              ...e,
+              ...payload,
+              updated_at: new Date().toISOString(),
+            }
+          : e
       );
-    } catch (err) {
-      console.error("Error updating entry:", err);
-      throw err;
+      saveGuestEntries(updated);
     }
   };
 
-  // Delete an entry (DELETE)
   const removeEntry = async (id) => {
-    try {
+    if (isLoggedIn) {
       await deleteNote(id);
-      setEntries((prev) => prev.filter((entry) => entry.id !== id));
-    } catch (err) {
-      console.error("Error deleting entry:", err);
-      throw err;
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+    } else {
+      const updated = entries.filter((e) => e.id !== id);
+      saveGuestEntries(updated);
     }
   };
 
-  // Fetch on mount
-  useEffect(() => {
-    fetchEntries();
-  }, []);
+  const clearEntries = () => {
+    localStorage.removeItem(storageKey);
+    setEntries([]);
+  };
+
+  const resetGuest = () => {
+    clearEntries();
+    clearGuestId();
+    const newId = getOrCreateGuestId();
+    setGuestId(newId);
+  };
 
   return (
     <EntriesContext.Provider
       value={{
         entries,
         loading,
-        error,
         fetchEntries,
         addEntry,
         updateEntry,
         removeEntry,
+        clearEntries,
+        resetGuest,
+        guestId,
       }}
     >
       {children}
     </EntriesContext.Provider>
   );
 };
-
-// Custom hook to use the context
-export const useEntries = () => useContext(EntriesContext);

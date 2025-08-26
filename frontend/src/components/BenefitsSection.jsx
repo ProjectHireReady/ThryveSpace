@@ -20,7 +20,7 @@ function BenefitsSection() {
           </p>
         </div>
 
-         {/* Divider between Benefit 1 and 2 */}
+        {/* Divider between Benefit 1 and 2 */}
         <div className="divider" />
 
         <div className="benefit-item">
@@ -34,7 +34,8 @@ function BenefitsSection() {
           </p>
         </div>
 
-       {/* Divider between Benefit 2 and 3 */}
+        {/* Divider between Benefit 2 and 3 */}
+        <div className="divider" />
 
         <div className="benefit-item">
           <div className="outer-circle">

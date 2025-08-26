@@ -1,6 +1,6 @@
 // /src/api/notes.js
 
-import axios from "../lib/axiosInstance"; // Use the custom Axios setup with CSRF and baseURL
+import axios from "../lib/axiosInstance"; // Use the custom Axios setup with the baseURL
 
 // Get all journal entries (GET /notes/)
 export const getNotes = () => {

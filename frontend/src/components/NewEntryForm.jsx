@@ -1,49 +1,19 @@
-// Imports
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { Check, Trash } from "lucide-react";
-import { useEntries } from "../context/EntriesContext"; // Custom context to handle entries
+import { useEntries } from "../context/EntriesContext";
+import { formatGuestPayload } from "../utils/guestUtils";
 import "./NewEntryForm.css";
 
-// This component shows the journaling form after a mood is selected
 export default function NewEntryForm({ mood, onSubmit }) {
-  const { addEntry } = useEntries(); // Function to save a journal entry
+  const { addEntry } = useEntries();
+  const { isLoggedIn } = useAuth();
 
-  // Local state
-  const [entry, setEntry] = useState(""); // User’s typed note
-  const [submitting, setSubmitting] = useState(false); // To disable buttons while submitting
-  const [showPopup, setShowPopup] = useState(false); // Controls success message
+  const [entry, setEntry] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
-  // Handle submit button click
-  const handleSubmit = async () => {
-    // Don’t submit if input is empty
-    if (!entry.trim()) return alert("Please write something!");
-
-    const payload = {
-      mood_id: mood?.id || null,
-      note: entry,
-    };
-
-    try {
-      setSubmitting(true); // Start loading
-      await addEntry(payload); // Save entry using context
-
-      setShowPopup(true); // Show success message
-
-      // After 2 seconds, hide popup, clear input, and close modal
-      setTimeout(() => {
-        setShowPopup(false);
-        setEntry("");
-        onSubmit?.(); // close the modal
-      }, 2000);
-    } catch (err) {
-      console.error("Error saving entry:", err);
-      alert("Could not save your note. Please try again.");
-    } finally {
-      setSubmitting(false); // End loading
-    }
-  };
-
-  // Get today’s day and month (formatted)
+  // Today's date
   const getToday = () => {
     const date = new Date();
     return {
@@ -54,76 +24,97 @@ export default function NewEntryForm({ mood, onSubmit }) {
 
   const { day, month } = getToday();
 
+  const handleSubmit = async () => {
+    // if (!entry.trim()) return alert("Please write something!");
+    if (!entry.trim() && !mood) return alert("Please pick a mood or write something!");
+
+
+    const payload = isLoggedIn
+      ? { note: entry, mood_id: mood?.id || null }
+      : formatGuestPayload(entry, mood);
+
+    try {
+      setSubmitting(true);
+      await addEntry(payload);
+
+      setShowPopup(true);
+      setTimeout(() => {
+        setShowPopup(false);
+        setEntry("");
+        onSubmit?.();
+      }, 2000);
+    } catch (err) {
+      console.error("Error saving entry:", err);
+      alert("Could not save your note. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="journal-page">
-      <h1 className="journal-heading">Want to reflect more?</h1>
-      <div className="text-block">
-        <p className="subtext-modal">Say how you feel in words.</p>
+    <div className="new-entry-page">
+      <h1 className="new-entry-heading">Want to reflect more?</h1>
+
+      <div className="new-entry-text">
+        <p className="new-entry-subtext">Say how you feel in words.</p>
       </div>
 
-      {/* Entry input area */}
-      <div className="entry-container">
-        {/* Shows today's date */}
-        <div className="date-box">
-          <div className="day">{day}</div>
-          <div className="month">{month}</div>
+      <div className="new-entry-container">
+        {/* Date box */}
+        <div className="new-entry-date">
+          <div className="new-entry-day">{day}</div>
+          <div className="new-entry-month">{month}</div>
         </div>
 
-        {/* Journal card */}
-        <div className="entry-card">
-          {/* Selected mood preview */}
-          <div className="mood-line">
-            <span className="emoji">{mood?.emoji}</span>
-            <span className="label">Feeling: {mood?.label}</span>
-          </div>
+        <div className="new-entry-card">
+          {/* Mood preview */}
+          {mood && (
+            <div className="new-entry-mood">
+              <span className="new-entry-emoji">
+                <img src={mood.imageUrl} alt={mood.name} />
+              </span>
+            </div>
+          )}
 
-          {/* Text input for the journal note */}
+          {/* Entry textarea */}
           <textarea
-            className="entry-input"
+            className="new-entry-input"
             value={entry}
             onChange={(e) => setEntry(e.target.value)}
-            placeholder="How did your day go..."
+            placeholder="What’s on your mind today?"
             rows={1}
-            onInput={(e) => {
-              // Auto-resize textarea as user types
-              e.target.style.height = "auto";
-              e.target.style.height = e.target.scrollHeight + "px";
-            }}
+            disabled={submitting}
           />
 
-          {/* Buttons */}
-          <div className="entry-footer">
-            {/* Submit entry */}
+          <div className="new-entry-footer">
             <button
               onClick={handleSubmit}
-              className="submit-button"
+              className="new-entry-submit"
               aria-label="Submit Entry"
               disabled={submitting}
             >
-              <Check />
+              <Check size={20} />
             </button>
 
-            {/* Clear text area */}
             <button
               onClick={() => setEntry("")}
-              className="delete-icon"
+              className="new-entry-delete"
               aria-label="Clear Entry"
               disabled={submitting}
             >
-              <Trash />
+              <Trash size={20} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Popup message after successful entry */}
       {showPopup ? (
-        <div className="popup">
+        <div className="new-entry-popup">
           Thanks for sharing. Keep taking care of yourself.
         </div>
       ) : (
-        <div className="text-block">
-          <p className="footer-modal">
+        <div className="new-entry-text">
+          <p className="new-entry-footer-text">
             We listen gently once you have finished
           </p>
         </div>
