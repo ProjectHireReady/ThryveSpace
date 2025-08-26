@@ -1,3 +1,4 @@
+// import Fade from "../components/Fade";
 import Hero from "../components/Hero";
 import FeaturesPreview from "../components/FeaturesPreview";
 import DailyUplifts from "../components/DailyUplifts";
@@ -9,14 +10,16 @@ import Footer from "../components/Footer";
 function HomePage() {
   return (
     <>
-      <Hero />
-      <FeaturesPreview />
-      <DailyUplifts />
-      <BenefitsSection />
-      <FaqSection />
-      <CTA />
-      <ContactSection />
-      <Footer />
+      {/* <Fade> */}
+        <Hero />
+        <FeaturesPreview />
+        <DailyUplifts />
+        <BenefitsSection />
+        <FaqSection />
+        <CTA />
+        <ContactSection />
+        <Footer />
+      {/* </Fade> */}
     </>
   );
 }
