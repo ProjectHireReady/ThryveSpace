@@ -4,8 +4,17 @@
 /* Define font variables */
 :root {
   --font-logo: "Lobster Two", cursive;
-  --font-body: "Nunito", sans-serif;
+  --font-body: "Poppins", sans-serif;
   --font-heading: "Poppins", sans-serif;
+   --font-alt: "Nunito", sans-serif; /* For navbar, cards, etc. */
+
+  /* Text colors */
+  --color-h1: #2c2c2c;
+  /* --color-h2: #111827; */
+  --color-h2: #1e3a8a;
+  --color-h3: #333333;
+  --color-h4: #333333;
+  --color-text: #6b7280;
 }
 
 /* Base reset */
@@ -29,6 +38,25 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
+}
+
+/* Heading colors */
+h1 {
+  color: var(--color-h1);
+}
+h2 {
+  color: var(--color-h2);
+}
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-h3);
+}
+
+/* Paragraph color */
+p {
+  color: var(--color-text);
 }
 
 /* Logo styles */
@@ -65,4 +93,13 @@ h6 {
 
 .button {
   font-family: var(--font-heading);
+}
+
+footer p {
+  color: white;
+}
+
+/* Utility: Nunito font */
+.nunito {
+  font-family: var(--font-alt);
 }
