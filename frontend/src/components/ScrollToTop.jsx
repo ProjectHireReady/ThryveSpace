@@ -6,7 +6,6 @@ function ScrollToTop() {
   const { pathname } = useLocation();
 
   useLayoutEffect(() => {
-    // Use "instant" for now (fallback to auto if unsupported)
     try {
       window.scrollTo({ top: 0, behavior: "instant" });
     } catch {
