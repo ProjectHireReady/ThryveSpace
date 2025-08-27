@@ -34,5 +34,7 @@ export const formatGuestPayload = (note, mood) => ({
   name: mood?.name || "",
   emoji: mood?.emoji || "",
   category: mood?.category || "",
-  imageUrl: mood?.image_url || "", // backend sometimes uses snake_case
+  imageUrl: mood?.image_url || mood?.imageUrl || "", // backend sometimes uses snake_case
 });
+
+

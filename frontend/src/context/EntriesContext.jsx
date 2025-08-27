@@ -11,7 +11,8 @@ const EntriesContext = createContext();
 export const useEntries = () => useContext(EntriesContext);
 
 export const EntriesProvider = ({ children }) => {
-  const { isLoggedIn } = useAuth();
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   const [guestId, setGuestId] = useState(() => getOrCreateGuestId());
   const [entries, setEntries] = useState([]);
@@ -69,7 +70,13 @@ export const EntriesProvider = ({ children }) => {
       setEntries((prev) => prev.map((e) => (e.id === id ? res.data : e)));
     } else {
       const updated = entries.map((e) =>
-        e.id === id ? { ...e, ...payload } : e
+        e.id === id
+          ? {
+              ...e,
+              ...payload,
+              updated_at: new Date().toISOString(),
+            }
+          : e
       );
       saveGuestEntries(updated);
     }

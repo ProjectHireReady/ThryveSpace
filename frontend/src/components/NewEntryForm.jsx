@@ -7,7 +7,6 @@ import KindnessMessage from "./KindnessMessage";
 import LoginPrompt from "./LoginPrompt";
 import "./NewEntryForm.css";
 
-// This component shows the journaling form for guests
 export default function NewEntryForm({ mood, onSubmit }) {
   const { addEntry } = useEntries();
   const { isLoggedIn } = useAuth();
@@ -15,11 +14,10 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const [entry, setEntry] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-
-  const [showKindness, setShowKindness] = useState(false)
+  const [showKindness, setShowKindness] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Get today's date
+  // Today's date
   const getToday = () => {
     const date = new Date();
     return {
@@ -31,112 +29,131 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const { day, month } = getToday();
 
   const handleSubmit = async () => {
-  if (!entry.trim()) return alert("Please write something!");
+    if (!entry.trim() && !mood)
+      return alert("Please pick a mood or write something!");
 
-  const payload = isLoggedIn
-    ? { note: entry, mood_id: mood?.id || null } // Backend structure
-    : formatGuestPayload(entry, mood); // Guest fallback
+    const payload = isLoggedIn
+      ? { note: entry, mood_id: mood?.id || null }
+      : formatGuestPayload(entry, mood);
 
-  try {
-    setSubmitting(true);
-    await addEntry(payload);
+    try {
+      setSubmitting(true);
+      await addEntry(payload);
 
-    setEntry("");
+      // Always clear entry
+      setEntry("");
 
-    // Step 1: Show Kindness message
-    setShowKindness(true);
+      // Show kindness/login flow
+      setShowKindness(true);
+      setTimeout(() => {
+        setShowKindness(false);
+        setShowLoginPrompt(true);
+      }, 3000);
 
-    // Step 2: After 3 seconds, hide Kindness and show Login Prompt
-    setTimeout(() => {
-      setShowKindness(false);
-      setShowLoginPrompt(true);
-    }, 3000); // 3 seconds delay
-  } catch (err) {
-    console.error("Error saving entry:", err);
-    alert("Could not save your note. Please try again.");
-  } finally {
-    setSubmitting(false);
-  }
-};
-
+      // Show popup if no kindness/login (fallback)
+      setShowPopup(true);
+      setTimeout(() => {
+        setShowPopup(false);
+        onSubmit?.();
+      }, 2000);
+    } catch (err) {
+      console.error("Error saving entry:", err);
+      alert("Could not save your note. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="journal-page">
-      <h1 className="journal-heading">Want to reflect more?</h1>
-      <div className="text-block">
-        <p className="subtext-modal">Say how you feel in words.</p>
+    <div className="new-entry-page">
+      <h1 className="new-entry-heading">Want to reflect more?</h1>
+
+      <div className="new-entry-text">
+        <p className="new-entry-subtext">Say how you feel in words.</p>
       </div>
 
-      <div className="entry-container">
+      <div className="new-entry-container">
         {/* Date box */}
-        <div className="date-box">
-          <div className="day">{day}</div>
-          <div className="month">{month}</div>
+        <div className="new-entry-date">
+          <div className="new-entry-day">{day}</div>
+          <div className="new-entry-month">{month}</div>
         </div>
 
-        <div className="entry-card">
-          {/* Mood preview (if selected) */}
-          <div className="mood-line">
-            <span className="emoji">{mood?.emoji}</span>
-            <span className="label">Feeling: {mood?.name}</span>
-          </div>
+        <div className="new-entry-card">
+          {/* Mood preview */}
+          {mood && (
+            <div className="new-entry-mood">
+              <span className="new-entry-emoji">
+                {mood.imageUrl ? (
+                  <img src={mood.imageUrl} alt={mood.name} />
+                ) : (
+                  mood.emoji
+                )}
+              </span>
+              <span className="label">Feeling: {mood?.name}</span>
+            </div>
+          )}
 
           {/* Entry textarea */}
           <textarea
-            className="entry-input"
+            className="new-entry-input"
             value={entry}
             onChange={(e) => setEntry(e.target.value)}
             placeholder="What’s on your mind today?"
             rows={1}
-            onInput={(e) => {
-              e.target.style.height = "auto";
-              e.target.style.height = e.target.scrollHeight + "px";
-            }}
             disabled={submitting}
           />
 
-          <div className="entry-footer">
+          <div className="new-entry-footer">
             <button
               onClick={handleSubmit}
-              className="submit-button"
+              className="new-entry-submit"
               aria-label="Submit Entry"
               disabled={submitting}
             >
-              <Check />
+              <Check size={20} />
             </button>
 
             <button
               onClick={() => setEntry("")}
-              className="delete-icon"
+              className="new-entry-delete"
               aria-label="Clear Entry"
               disabled={submitting}
             >
-              <Trash />
+              <Trash size={20} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Kindness message */}
+      {/* Kindness and login prompts */}
       {showKindness && <KindnessMessage />}
-
-      {/* Login prompt */}
       {showLoginPrompt && (
         <LoginPrompt
-        onComplete={() => {
-          onSubmit?.();
-          window.location.href = "/entries";
-        }}/>
-        )}
+          onComplete={() => {
+            onSubmit?.();
+            window.location.href = "/entries";
+          }}
+        />
+      )}
 
-      {/* Default footer when nothing else is shown */}
+      {/* Popup or footer */}
       {!showKindness && !showLoginPrompt && (
-        <div className="text-block">
-          <p className="footer-modal">We listen gently once you have finished</p>
-        </div>
-        )}
-
-
+        <>
+          {showPopup ? (
+            <div className="new-entry-popup">
+              Thanks for sharing. Keep taking care of yourself.
+            </div>
+          ) : (
+            <div className="new-entry-text">
+              <p className="new-entry-footer-text">
+                We listen gently once you have finished
+              </p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
+
