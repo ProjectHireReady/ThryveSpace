@@ -1,19 +1,17 @@
-/* Page base styles: spacing, font, background */
+/* Page base styles */
 
 .entries-page {
-  padding: 1.5rem 2rem;
-  font-family: "Nunito", sans-serif;
-  background-color: #f9fbfd;
+  padding: 1.5rem 4rem;
   min-height: 100vh;
   justify-content: center;
   overflow: hidden;
 }
 
-.entries-page.no-scroll {
+/* .entries-page.no-scroll {
   overflow-y: hidden;
   height: 100vh;
   overscroll-behavior: contain;
-}
+} */
 
 /* HEADER & TOP SECTION */
 .top-bar {
@@ -60,10 +58,10 @@
 
 /* Main page title */
 .main-header {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  color: #333333;
   margin-top: 1rem;
+  margin-bottom: 2.5rem;
 }
 
 /* Wrapper for search input and Add Entry button */
@@ -84,16 +82,26 @@
 /* Positioning wrapper for search input and icon */
 .search-wrapper {
   position: relative;
+  display: inline-block;
+  width: 300px; 
 }
 
 /* Input field for searching entries */
 .search-input {
-  padding: 0.4rem 0.7rem 0.4rem 2rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  min-width: 160px;
+  font-family: var(--font-heading);
+  padding: 0.4rem 0.7rem 0.4rem 2rem; /* left padding for icon space */
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 1.02rem;
+  width: 100%; 
   background-color: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none; 
+  border-color: #5a90c5; 
+  box-shadow: 0 0 4px rgba(90, 144, 197, 0.2); 
 }
 
 .search-icon {
@@ -104,10 +112,15 @@
   color: #5a90c5;
 }
 
+.button-group {
+  display: flex;
+  gap: 1.5rem;
+}
+
 /* Add Entry button */
 .add-btn {
   background-color: #5a90c5;
-  font-family: "Nunito", sans-serif;
+  font-family: "poppins", sans-serif;
   font-size: 16px;
   border: none;
   padding: 0.45rem 0.9rem;
@@ -123,6 +136,25 @@
 }
 .add-btn:hover {
   background-color: #4a7cb0;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.export-btn {
+  background-color: #fff;
+  color: #5a90c5;
+  border: 1px solid #5a90c5;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: "poppins", sans-serif;
+  transition: background-color 0.3s;
+}
+
+.export-btn:hover {
+  background-color: #f3f3f3;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 /* Shared style for loading, empty, or error messages */
@@ -251,11 +283,18 @@
 }
 
 /* Wrapper for list of entry cards */
-.entries-list {
+/* .entries-list {
   display: flex;
   flex-direction: column;
   font-size: 20px;
   gap: 2.5rem;
+} */
+
+.entries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 20px;
 }
 
 .btns {

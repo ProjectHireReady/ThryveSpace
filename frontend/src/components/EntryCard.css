@@ -1,216 +1,218 @@
-/* Container for each entry block, aligns date and card side by side */
-.entry-container {
-  display: flex;
-  justify-content: flex-start;
-  max-width: 100%;
-  margin: 0;
-  padding: 0 3rem;
+/* Gray palette (3 tones only) */
+:root {
+  --gray-light: #d1d5db;  /* backgrounds, hover states, open borders */
+  --gray-medium: #9ca3af; /* secondary text, icons, subtle borders */
+  /* --gray-dark: #111827;   main text */
+  --gray-hover: #f3f4f6;  /* softer hover backgrounds */
 }
 
-/* Styles for the date column (left side of entry card) */
-.date-box {
-  background-color: #dbeaf5;
-  width: 160px;
-  padding: 14px 8px;
+/* Entry Card */
+.entry-card-wrapper {
+  background-color: #fdfdfd;
+  border: 1px solid var(--gray-light);
+  border-radius: 14px;
+  margin-bottom: 1rem;
+  max-width: 500px;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.date-box .day {
-  font-size: 38px;
-  font-weight: 600;
+.entry-card-wrapper.open {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--gray-light);
 }
 
-.date-box .month {
-  font-size: 36px;
-  font-weight: 900;
-  color: #333333;
-}
-
-/* Main content area of the entry card */
-.entry-card {
-  flex-grow: 1;
-  max-width: 900px;
-  background-color: #e6f0fa;
-  padding: 1rem;
-  border-radius: 0 6px 6px 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* ensures footer stays visible */
-  gap: 10px;
-  position: relative;
-  overflow: hidden;
-  min-height: 180px; /* optional, ensures enough room for icons */
-}
-
-.entry-card:hover {
-  background-color: #dbeaf5;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Mood Row */
-.mood-line {
+/* Accordion Header */
+.entry-card-wrapper .accordion-header {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 1rem;
-}
-
-.emoji {
-  font-size: 1.2rem;
-}
-
-.mood-img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.emoji-icon {
-  width: 1.2rem;
-  height: 1.2rem;
-  stroke-width: 2;
-  color: #4b5563;
-  vertical-align: middle;
-}
-
-.label {
-  font-weight: 500;
-  color: #374151;
-}
-
-/* Edit mode textarea */
-.entry-edit-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-family: inherit;
-  background-color: #f0f4f8;
-  /* border: 1px solid #ccd; */
-  border-radius: 8px;
-  line-height: 1.5;
-  color: #333;
-  resize: vertical;
-  transition: box-shadow 0.2s ease;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.entry-edit-textarea:focus {
-  outline: none;
-  border-color: #5a90c5;
-  box-shadow: 0 0 0 2px rgba(90, 144, 197, 0.2);
-}
-
-/* When editing, slightly highlight card */
-.entry-card.editing-mode {
-  background-color: #f6faff;
-}
-
-/* Footer icons */
-.save-icon,
-.cancel-icon {
-  background-color: transparent;
-  border: none;
+  justify-content: space-between;
   cursor: pointer;
-  color: #333;
-  margin-left: 0.5rem;
+  padding: 0.75rem 1rem;
+  gap: 1rem;
+  background-color: #fff;
+  border-bottom: none;
+  transition: background-color 0.2s ease;
 }
 
-.save-icon:hover {
-  color: #2e7d32; /* green */
+.entry-card-wrapper .accordion-header:hover {
+  background-color: var(--gray-hover);
 }
 
-.cancel-icon:hover {
-  color: #cc3d3d; /* red */
-}
-
-/* Note Styling */
-.note {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #333;
-  font-weight: 700;
-  white-space: pre-line;
-  overflow-wrap: break-word;
-  margin: 0.5rem 0;
-  cursor: pointer;
-}
-
-/* Wrapper for expandable/collapsible note */
-.note-wrapper {
-  transition: max-height 0.4s ease, opacity 0.3s ease;
-  overflow: hidden;
-}
-
-/* Collapsed state - show 2 lines */
-.note-wrapper.collapsed {
-  max-height: 3.2em; /* ≈ 2 lines */
-  opacity: 0.9;
-  position: relative;
-}
-
-/* Expanded state - fixed space + scroll */
-.note-wrapper.expanded {
-  position: relative;
-  max-height: 8em;
-  opacity: 1;
-  padding-bottom: 0.5em;
-  overflow-y: auto;
-  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-  scroll-behavior: smooth;
-
-  /* Hide scrollbar - Chrome, Safari */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
-}
-
-.note-wrapper.expanded::-webkit-scrollbar {
-  display: none; /* Chrome, Safari */
-}
-
-/* Read more link */
-.read-more {
-  color: #5a90c5;
-  font-size: 0.9rem;
-  font-weight: 600;
-  display: inline-flex;
-  margin-left: 2px;
-  gap: 4px;
-  cursor: pointer;
-  margin-top: 2px;
-  line-height: 1;
-}
-
-/* Footer with edit/delete icons */
-.entry-footer {
+/* Date Box */
+.entry-card-wrapper .date-box {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: auto;
+  flex-direction: column;
+  align-items: center;
+  width: 3rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--gray-medium);
+  text-align: center;
 }
 
-.icon-button {
+.entry-card-wrapper .date-box .day {
+  font-size: 1.1rem;
+  font-weight: bold;
+  /* color: var(--gray-dark); */
+}
+
+.entry-card-wrapper .date-box .month {
+  font-size: 0.7rem;
+  color: var(--gray-medium);
+  text-transform: uppercase;
+}
+
+/* Mood Line */
+.entry-card-wrapper .mood-line {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  /* color: var(--gray-dark); */
+}
+
+/* Mood styling */
+.entry-card-wrapper .emoji,
+.entry-card-wrapper .mood-img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.entry-card-wrapper .emoji-icon {
+  color: var(--gray-medium);
+}
+
+.entry-card-wrapper .label {
+  font-weight: 500;
+}
+
+/* Expand Icon */
+.entry-card-wrapper .expand-icon {
+  display: flex;
+  align-items: center;
+  color: var(--gray-medium);
+  margin-left: 12px;
+}
+
+/* Accordion Body */
+.entry-card-wrapper .accordion-body {
+  padding: 0.75rem 1rem 1rem 4rem;
+  background-color: #fff;
+  border-top: 1px solid var(--gray-medium);
+  animation: fadeIn 0.25s ease;
+}
+
+/* Note Wrapper / Content */
+.entry-card-wrapper .note-wrapper {
+  margin-bottom: 0.75rem;
+}
+
+.entry-card-wrapper .note-wrapper .note {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  /* color: var(--gray-dark); */
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* Editing Mode */
+.entry-card-wrapper.editing {
+  background-color: #f8fafc;
+  border-color: var(--gray-medium);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.entry-card-wrapper.editing .accordion-header {
+  background-color: transparent; 
+  border-bottom: none;
+}
+
+.entry-card-wrapper.editing .accordion-body {
+  padding-left: 1rem; 
+}
+
+/* Textarea Editing */
+.entry-card-wrapper .entry-edit-textarea {
+  width: 100%;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+  background-color: transparent; 
+  border: 1px solid var(--gray-medium);
+  border-radius: 8px; 
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.entry-card-wrapper.editing .entry-edit-textarea:focus {
+  outline: none;
+  border-color: var(--gray-medium);
+  background-color: #ffffff;
+}
+
+/* Read More */
+.entry-card-wrapper .read-more {
+  font-size: 13px;
+  color: #3b82f6;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Footer Actions */
+.entry-card-wrapper .entry-footer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.entry-card-wrapper .icon-button {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
+  color: var(--gray-medium);
+  padding: 6px;
+  border-radius: 10px;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.icon-button:hover {
-  transform: scale(1.1);
+.entry-card-wrapper .icon-button:hover {
+  background-color: var(--gray-light);
 }
 
-.edit-icon svg {
-  color: #5a90c5;
+/* Action Button Colors */
+.entry-card-wrapper .save-icon {
+  color: #10b981;
 }
 
-.delete-icon svg {
-  color: #6b7280;
+.entry-card-wrapper .cancel-icon {
+  color: #ef4444;
+}
+
+.entry-card-wrapper .edit-icon {
+  color: #3b82f6;
+}
+
+.entry-card-wrapper .delete-icon {
+  color: #f97316;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

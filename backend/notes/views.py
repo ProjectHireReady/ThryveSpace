@@ -1,71 +1,124 @@
-# backend/notes/views.py
-
-from rest_framework import generics  # For ListCreateAPIView
-from rest_framework.response import Response  # For custom responses
-from rest_framework import status  # For HTTP status codes
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
+from django.db import transaction
+from config.permissions import IsOwner
 from .models import Note
-from .serializers import NoteSerializer
+from .serializers import (
+    NoteSerializer,
+    NoteCreateSerializer,
+    NoteMigrationSerializer,
+)
+from moods.models import Mood
 
 
-# This view handles both GET (list notes) and POST (create note)
 class NoteListCreateAPIView(generics.ListCreateAPIView):
+    """
+    Handles GET (list all notes for a user) and POST (create a new note).
+    """
 
-    serializer_class = NoteSerializer
-    # Corrected permission class name
+    serializer_class = NoteCreateSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = "id"
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop("partial", False)
-        instance = self.get_object()
-
-        # Create a mutable copy of request.data for processing
-        data = request.data.copy()
-
-        # Custom logic for mood_name during update
-        mood_name = data.get("mood_name")
-        if (
-            mood_name is not None
-        ):  # Check if mood_name was provided in the request payload
-            if mood_name:  # If provided and not empty, find the mood object
-                try:
-                    mood_obj = Mood.objects.get(name__iexact=mood_name)
-                    # Set the 'mood' field in the data to the Mood object's ID
-                    # This is what the serializer expects for the ForeignKey
-                    data["mood"] = str(mood_obj.id)
-                except Mood.DoesNotExist:
-                    return Response(
-                        {"mood_name": f"Mood '{mood_name}' not found."},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-            else:  # If mood_name was provided but empty, set mood to null
-                data["mood"] = None
-
-        # Remove mood_name from the data *before* passing to serializer,
-        # as it's a write_only field for custom logic, not a model field.
-        if "mood_name" in data:
-            data.pop("mood_name")
-
-        serializer = self.get_serializer(instance, data=data, partial=partial)
-        serializer.is_valid(raise_exception=True)  # Validate the data
 
     def get_queryset(self):
-        """
-        Optionally filters notes by guest_uuid (user.id),
-        returns all notes ordered by most recent by default.
-        """
-        guest_uuid = self.request.query_params.get("guest_uuid")
-        queryset = Note.objects.all().order_by("-created_at")
-        if guest_uuid:
-            queryset = queryset.filter(user__id=guest_uuid)
-        return queryset
+        return Note.objects.filter(user=self.request.user).order_by("-created_at")
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return NoteCreateSerializer
+        return NoteSerializer
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        mood_name = self.request.data.get("mood_name")
+
+        mood_obj = None
+        if mood_name:
+            try:
+                mood_obj = Mood.objects.get(name__iexact=mood_name)
+            except Mood.DoesNotExist:
+                raise ValidationError({"mood_name": f"Mood '{mood_name}' not found."})
+
+        serializer.save(user=user, mood=mood_obj)
 
 
 class NoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Note.objects.all()
+    """
+    Handles GET, PUT, PATCH, and DELETE for a single note.
+    """
+
     serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner]
     lookup_field = "pk"
+
+    def get_queryset(self):
+        user = self.request.user
+        return Note.objects.filter(user=user)
+
+
+class NoteMigrationAPIView(APIView):
+    """
+    Handles bulk saving of guest notes during user signup.
+    """
+
+    # We use the correct serializer that handles the incoming payload
+    serializer_class = NoteMigrationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        validated_entries = serializer.validated_data["entries"]
+        notes_to_create = []
+        errors = []
+
+        try:
+            # Step 1: Prepare notes for bulk creation, checking for mood existence
+            for entry_data in validated_entries:
+                try:
+                    mood_id = entry_data.get('mood_id')
+                    mood = Mood.objects.get(id=mood_id)
+                    
+                    notes_to_create.append(
+                        Note(
+                            note=entry_data['note'],
+                            mood=mood,
+                            user=user,
+                            created_at=entry_data.get('created_at'),
+                        )
+                    )
+                except Mood.DoesNotExist:
+                    errors.append(f"Mood with ID '{mood_id}' not found for note '{entry_data.get('note')}'.")
+                except Exception as e:
+                    errors.append(f"Error preparing entry '{entry_data.get('note')}': {str(e)}")
+
+            if errors:
+                # If there are any errors in the data, return them without saving anything
+                return Response(
+                    {"message": "Validation failed for some entries.", "success_count": 0, "errors": errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Step 2: Use an atomic transaction for all-or-nothing save
+            with transaction.atomic():
+                Note.objects.bulk_create(notes_to_create)
+
+            return Response(
+                {
+                    "message": f"Migration complete. {len(notes_to_create)} entries saved.",
+                    "success_count": len(notes_to_create),
+                    "errors": [],
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        
+        except Exception as e:
+            # Catch any database-level exceptions and return a server error
+            return Response(
+                {"error": f"An error occurred during migration: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

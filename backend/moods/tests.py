@@ -29,7 +29,7 @@ class MoodAPITests(APITestCase):
         """
         GET /api/v1/moods/ should return only moods where is_active=True
         """
-        url = reverse("mood-list")  # name in your router, adjust if needed
+        url = reverse("moods_list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
@@ -48,7 +48,7 @@ class MoodAPITests(APITestCase):
         Note: This is a simplistic check; for real cache tests, you may need to
         inspect headers or mock the cache backend.
         """
-        url = reverse("mood-list")
+        url = reverse("moods_list")
         first = self.client.get(url)
         second = self.client.get(url)
         # At minimum, both calls return the same payload

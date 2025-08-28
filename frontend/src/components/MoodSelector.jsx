@@ -5,7 +5,11 @@ import { guestMoods } from "../data/guestMoods";
 import { useAuth } from "../context/AuthContext";
 
 export default function MoodSelector({ onMoodSelect }) {
-  const { isLoggedIn } = useAuth(); // To detect login status
+
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+
+
   const [moods, setMoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,7 +63,7 @@ export default function MoodSelector({ onMoodSelect }) {
               }
               aria-label={`Select mood ${mood.name}`}
             >
-              <img src={mood.image_url} alt={`Mood: ${mood.name}`} />
+              <img src={mood.imageUrl} alt={`Mood: ${mood.name}`} />
               <p className="mood-label">{mood.name}</p>
             </div>
           ))}

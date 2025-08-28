@@ -2,9 +2,11 @@ from django.db import models
 from uuid import uuid4
 
 CATEGORY_CHOICES = [
-    ("positive", "Positive"),
+    ("very negative", "Very Negative"),
     ("negative", "Negative"),
     ("neutral", "Neutral"),
+    ("positive", "Positive"),
+    ("very positive", "Very Positive"),
 ]
 
 
