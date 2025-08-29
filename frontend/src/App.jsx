@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Routes, Route } from "react-router-dom";
+
 import NavBar from "./components/NavBar";
 import PageTransition from "./components/PageTransition";
+
 import Home from "./pages/HomePage";
 import FeaturesPage from "./pages/FeaturesPage";
 import MoodJournalPage from "./pages/MoodJournalPage";
@@ -10,32 +12,78 @@ import SignUpPage from "./pages/auth/SignUpPage";
 import LoginPage from "./pages/auth/LoginPage";
 import InsightsPage from "./pages/InsightsPage";
 
+// Auth & Entries context (per main.jsx / EntriesContext.jsx)
+import { useAuth } from "./context/AuthContext";
+import { useEntries } from "./context/EntriesContext";
+
 // Migration prompt + API
 import MigrationPrompt from "./components/MigrationPrompt";
 import { migrateGuestEntries } from "./utils/api";
 
 function App() {
-  // EXACT original initialization & logic
-  const [guestEntries, setGuestEntries] = useState(() => {
+  // Logged-in state
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+
+  // From EntriesContext 
+  const { guestId, clearEntries } = useEntries();
+  const guestStorageKey = `entries-${guestId}`;
+
+  // Read the SAME local key EntriesContext uses for guest entries
+  const localGuestEntries = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("guest_entries")) || [];
+      return JSON.parse(localStorage.getItem(guestStorageKey)) || [];
     } catch {
       return [];
     }
-  });
-  const showPrompt = guestEntries.length > 0;
+  }, [guestStorageKey]);
+
+  // Only show prompt after login *and* if guest entries exist
+  const shouldPrompt = isLoggedIn && localGuestEntries.length > 0;
+
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  // Toggle the prompt when conditions become true (side-effect → useEffect)
+  useEffect(() => {
+    setShowPrompt(shouldPrompt);
+  }, [shouldPrompt]);
 
   const handleConfirm = async () => {
     const token = localStorage.getItem("auth_token");
-    if (!token) return;
-    await migrateGuestEntries(guestEntries, token);
-    localStorage.removeItem("guest_entries");
-    setGuestEntries([]);
+    if (!token) {
+      console.warn("Missing auth_token — cannot migrate.");
+      return;
+    }
+
+    try {
+      setIsMigrating(true);
+
+      // Map to backend contract if needed
+      const payload = localGuestEntries.map((e) => ({
+        note: e.note ?? e.text ?? "",
+        mood_id: e.mood_id,
+        created_at: e.created_at,
+      }));
+
+      await migrateGuestEntries(payload, token);
+
+      // Purge local guest notes for this guestId
+      clearEntries();
+
+      setShowPrompt(false);
+    } catch (e) {
+      console.error("Migration failed:", e);
+      // TODO: toast/notify if you have a system in place
+    } finally {
+      setIsMigrating(false);
+    }
   };
 
   const handleDecline = () => {
-    localStorage.removeItem("guest_entries");
-    setGuestEntries([]);
+    // User declines → remove local guest notes
+    clearEntries();
+    setShowPrompt(false);
   };
 
   return (
@@ -43,15 +91,19 @@ function App() {
       {/* Show navigation bar on all pages */}
       <NavBar />
 
-      {/* Keep your original heading from the first snippet */}
+      {/* Optional heading */}
       <h1>ThryveSpace</h1>
 
-      {/* Original prompt condition */}
+      {/* Migration prompt */}
       {showPrompt && (
-        <MigrationPrompt onConfirm={handleConfirm} onDecline={handleDecline} />
+        <MigrationPrompt
+          onConfirm={handleConfirm}
+          onDecline={handleDecline}
+          loading={isMigrating}
+        />
       )}
 
-      {/* Defines Routes for the app */}
+      {/* Routes */}
       <Routes>
         <Route
           path="/"
@@ -61,8 +113,6 @@ function App() {
             </PageTransition>
           }
         />
-
-      {/* Mood Page route */}
         <Route
           path="/mood"
           element={
@@ -71,8 +121,6 @@ function App() {
             </PageTransition>
           }
         />
-
-      {/* Entries Page route */}
         <Route
           path="/entries"
           element={
@@ -81,8 +129,6 @@ function App() {
             </PageTransition>
           }
         />
-
-      {/* Features Page route */}
         <Route
           path="/features"
           element={
@@ -91,12 +137,8 @@ function App() {
             </PageTransition>
           }
         />
-
-        {/* Login & Signup Page route */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-
-       {/* Insights Page route */}
         <Route
           path="/insights"
           element={
@@ -111,4 +153,3 @@ function App() {
 }
 
 export default App;
-
