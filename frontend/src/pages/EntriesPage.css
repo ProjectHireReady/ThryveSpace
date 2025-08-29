@@ -296,3 +296,9 @@
   gap: 24px;
   padding: 20px;
 }
+
+.btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
