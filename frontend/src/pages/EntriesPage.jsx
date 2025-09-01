@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { PlusCircle, LoaderCircle, AlertCircle, Search, FileDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useEntries } from "../context/EntriesContext";
@@ -17,6 +17,7 @@ function EntriesPage() {
   const [showModal, setShowModal] = useState(false); // Journal modal toggle
   const [selectedMood, setSelectedMood] = useState(null); // For mood selection
 
+  // Auth info (needed for export button)
   const { user } = useAuth();
   const isLoggedIn = !!user;
 
@@ -32,13 +33,16 @@ function EntriesPage() {
   const closeModal = () => setShowModal(false);
 
   // Filter entries by user search
-  const filteredEntries = entries.filter((entry) =>
-    entry.note?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEntries = useMemo(() => {
+    return entries.filter((entry) =>
+      entry.note?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [entries, searchTerm]);
 
   // Conditions for displaying UI elements
-  const shouldShowSearchAndAdd = entries.length > 0 && !loading && !error;
-  const shouldShowAddOnly = entries.length === 0 && !loading && !error;
+  const hasEntries = Array.isArray(entries) && entries.length > 0;
+  const shouldShowSearchAndAdd = hasEntries && !loading && !error;
+  const shouldShowAddOnly = !hasEntries && !loading && !error;
 
   return (
     <section
@@ -71,7 +75,7 @@ function EntriesPage() {
               </button>
               {!isLoggedIn && entries.length > 0 && (
                 <button className="export-btn" onClick={handleDownloadPDF}>
-                   <FileDown size={18} /> Export PDF
+                  <FileDown size={18} /> Export PDF
                 </button>
               )}
             </div>
@@ -105,9 +109,14 @@ function EntriesPage() {
             <AlertCircle className="error-icon" size={36} />
           </div>
           <p className="error-message">{error}</p>
-          <button className="retry-btn" onClick={fetchEntries}>
-            Retry
-          </button>
+          <div className="btns">
+            <button className="retry-btn" onClick={fetchEntries}>
+              Retry
+            </button>
+            <button className="add-btn" onClick={handleAddEntry}>
+              <PlusCircle size={19} /> Add Entry
+            </button>
+          </div>
         </div>
       ) : filteredEntries.length === 0 ? (
         // Empty or no search result
@@ -129,7 +138,6 @@ function EntriesPage() {
       )}
 
       {/* Modal Form */}
-
       <JournalModal
         isOpen={showModal}
         onClose={() => {

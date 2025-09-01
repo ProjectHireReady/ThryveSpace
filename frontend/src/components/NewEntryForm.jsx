@@ -3,6 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import { Check, Trash } from "lucide-react";
 import { useEntries } from "../context/EntriesContext";
 import { formatGuestPayload } from "../utils/guestUtils";
+import KindnessMessage from "./KindnessMessage";
+import LoginPrompt from "./LoginPrompt";
 import "./NewEntryForm.css";
 
 export default function NewEntryForm({ mood, onSubmit }) {
@@ -13,7 +15,10 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const [submitting, setSubmitting] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
 
-  // Today's date
+  const [showKindness, setShowKindness] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // Get today's date
   const getToday = () => {
     const date = new Date();
     return {
@@ -25,22 +30,31 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const { day, month } = getToday();
 
   const handleSubmit = async () => {
-    // if (!entry.trim()) return alert("Please write something!");
-    if (!entry.trim() && !mood) return alert("Please pick a mood or write something!");
-
+    if (!entry.trim() && !mood)
+      return alert("Please pick a mood or write something!");
 
     const payload = isLoggedIn
-      ? { note: entry, mood_id: mood?.id || null }
-      : formatGuestPayload(entry, mood);
+      ? { note: entry, mood_id: mood?.id || null } // Backend structure
+      : formatGuestPayload(entry, mood); // Guest fallback
 
     try {
       setSubmitting(true);
       await addEntry(payload);
 
+      setEntry("");
+
+      // Step 1: Show Kindness message
+      setShowKindness(true);
+
+      // Step 2: After 3 seconds, hide Kindness and show Login Prompt
+      setTimeout(() => {
+        setShowKindness(false);
+        setShowLoginPrompt(true);
+      }, 3000); // 3 seconds delay
+
       setShowPopup(true);
       setTimeout(() => {
         setShowPopup(false);
-        setEntry("");
         onSubmit?.();
       }, 2000);
     } catch (err) {
@@ -67,7 +81,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
         </div>
 
         <div className="new-entry-card">
-          {/* Mood preview */}
+          {/* Mood preview (if selected) */}
           {mood && (
             <div className="new-entry-mood">
               <span className="new-entry-emoji">
@@ -83,7 +97,6 @@ export default function NewEntryForm({ mood, onSubmit }) {
             onChange={(e) => setEntry(e.target.value)}
             placeholder="What’s on your mind today?"
             rows={1}
-            disabled={submitting}
           />
 
           <div className="new-entry-footer">
@@ -108,11 +121,25 @@ export default function NewEntryForm({ mood, onSubmit }) {
         </div>
       </div>
 
+      {/* Kindness message */}
+      {showKindness && <KindnessMessage />}
+
+      {/* Login prompt */}
+      {showLoginPrompt && (
+        <LoginPrompt
+          onComplete={() => {
+            onSubmit?.();
+            window.location.href = "/entries";
+          }}
+        />
+      )}
+
       {showPopup ? (
         <div className="new-entry-popup">
           Thanks for sharing. Keep taking care of yourself.
         </div>
       ) : (
+        // Default footer when nothing else is shown
         <div className="new-entry-text">
           <p className="new-entry-footer-text">
             We listen gently once you have finished

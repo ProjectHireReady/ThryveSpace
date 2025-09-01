@@ -9,6 +9,14 @@ from .models import CustomUser
 from .serializers import SignUpSerializer, CustomUserSerializer
 
 
+class UserMeView(generics.RetrieveUpdateAPIView):
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+
 class LoginView(ObtainAuthToken):
     """
     Custom login view to obtain auth token.

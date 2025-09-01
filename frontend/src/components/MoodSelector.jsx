@@ -5,8 +5,10 @@ import { guestMoods } from "../data/guestMoods";
 import { useAuth } from "../context/AuthContext";
 
 export default function MoodSelector({ onMoodSelect }) {
+
   const { user } = useAuth();
   const isLoggedIn = !!user;
+
 
   const [moods, setMoods] = useState([]);
   const [loading, setLoading] = useState(true);
