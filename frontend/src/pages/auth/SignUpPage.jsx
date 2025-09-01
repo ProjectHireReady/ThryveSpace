@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import signupImage from "../../assets/auth/auth2.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; 
 import "./Auth.css";
 
 // email regex
@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState(null);
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,6 +40,7 @@ export default function SignupPage() {
 
     try {
       await signup({ firstName, lastName, email, password });
+      navigate("/login"); 
     } catch (err) {
       setLocalError(err?.message || authError || "Signup failed");
     }
@@ -73,7 +75,7 @@ export default function SignupPage() {
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-               placeholder="e.g., Williams"
+              placeholder="e.g., Williams"
               required
             />
 
@@ -82,7 +84,7 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-               placeholder="you@example.com"
+              placeholder="you@example.com"
               required
             />
 
@@ -91,7 +93,7 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-               placeholder="At least 6 characters"
+              placeholder="At least 6 characters"
               required
             />
 
