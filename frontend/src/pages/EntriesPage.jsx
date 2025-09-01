@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PlusCircle, LoaderCircle, AlertCircle, Search, FileDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useEntries } from "../context/EntriesContext";
@@ -10,8 +10,7 @@ import "./EntriesPage.css";
 
 function EntriesPage() {
   // Fetch entries and actions from context
-  const { entries, loading, error, fetchEntries, updateEntry, removeEntry } =
-    useEntries();
+  const { entries, loading, error, fetchEntries, updateEntry, removeEntry } = useEntries();
 
   const [searchTerm, setSearchTerm] = useState(""); // For filtering entries
   const [showModal, setShowModal] = useState(false); // Journal modal toggle
@@ -21,11 +20,23 @@ function EntriesPage() {
   const { user } = useAuth();
   const isLoggedIn = !!user;
 
+  // Auto-sync on mount and when login state changes 
+  useEffect(() => {
+    // If we already have entries for guests, you may choose to skip.
+    // For logged-in users, always ensure we have the backend truth.
+    // Avoid spamming while loading.
+    if (!loading) {
+      // Force ensures we bypass any stale caches in the context (if implemented).
+      fetchEntries?.({ force: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]); // re-run whenever user logs in/out
+
   // Open modal when "Add Entry" is clicked
   const handleAddEntry = () => setShowModal(true);
 
   const handleDownloadPDF = () => {
-    if (entries.length === 0) return alert("No entries to export.");
+    if (!entries || entries.length === 0) return alert("No entries to export.");
     downloadGuestEntriesPDF(entries);
   };
 
@@ -34,9 +45,20 @@ function EntriesPage() {
 
   // Filter entries by user search
   const filteredEntries = useMemo(() => {
-    return entries.filter((entry) =>
-      entry.note?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return entries;
+
+    return entries.filter((entry) => {
+      const noteMatch = entry.note?.toLowerCase().includes(term);
+      // Extras for nicer search:
+      const moodMatch =
+        typeof entry.mood_name === "string" &&
+        entry.mood_name.toLowerCase().includes(term);
+      const dateMatch =
+        typeof entry.created_at === "string" &&
+        entry.created_at.toLowerCase().includes(term);
+      return noteMatch || moodMatch || dateMatch;
+    });
   }, [entries, searchTerm]);
 
   // Conditions for displaying UI elements
@@ -46,9 +68,7 @@ function EntriesPage() {
 
   return (
     <section
-      className={`entries-page ${
-        !loading && entries.length === 0 ? "no-scroll" : ""
-      }`}
+      className={`entries-page ${!loading && entries.length === 0 ? "no-scroll" : ""}`}
     >
       {/* Header */}
       <div className="top-bar">
@@ -73,6 +93,7 @@ function EntriesPage() {
               <button className="add-btn" onClick={handleAddEntry}>
                 <PlusCircle size={19} /> Add Entry
               </button>
+              {/* Guests can export their local/guest entries */}
               {!isLoggedIn && entries.length > 0 && (
                 <button className="export-btn" onClick={handleDownloadPDF}>
                   <FileDown size={18} /> Export PDF
@@ -110,7 +131,10 @@ function EntriesPage() {
           </div>
           <p className="error-message">{error}</p>
           <div className="btns">
-            <button className="retry-btn" onClick={fetchEntries}>
+            <button
+              className="retry-btn"
+              onClick={() => fetchEntries?.({ force: true })}
+            >
               Retry
             </button>
             <button className="add-btn" onClick={handleAddEntry}>
@@ -147,9 +171,14 @@ function EntriesPage() {
       >
         <NewEntryForm
           mood={selectedMood}
-          onSubmit={() => {
+          onSubmit={async () => {
+            // Close modal immediately for snappy UX
             closeModal();
-            setSelectedMood(null); // reset after submission too
+            setSelectedMood(null);
+
+            // Then hard-refresh entries so the new one appears immediately
+            // (even if NewEntryForm already updated context, this guarantees sync with backend)
+            await fetchEntries?.({ force: true });
           }}
         />
       </JournalModal>
