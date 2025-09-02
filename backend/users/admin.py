@@ -13,7 +13,6 @@ class CustomUserAdmin(BaseUserAdmin):
     # The list_display controls which fields are shown in the user list view.
     # You might want to add 'id' here too.
     list_display = (
-        "username",
         "email",
         "id",
         "is_staff",
