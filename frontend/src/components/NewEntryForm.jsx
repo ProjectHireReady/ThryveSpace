@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Check, Trash } from "lucide-react";
 import { useEntries } from "../context/EntriesContext";
@@ -13,6 +14,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const { isLoggedIn } = useAuth();
 
   const [entry, setEntry] = useState("");
+  const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
 
@@ -56,6 +58,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
     alert("Could not save your note. Please try again.");
   } finally {
     setSubmitting(false);
+    navigate("/entries"); // instead of window.location.href
   }
 };
 
@@ -125,7 +128,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
         <LoginPrompt
         onComplete={() => {
           onSubmit?.();
-          window.location.href = "/entries";
+          navigate("/entries"); // instead of window.location.href
         }}/>
         )}
 
