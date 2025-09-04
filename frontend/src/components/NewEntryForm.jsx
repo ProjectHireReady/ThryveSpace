@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Check, Trash } from "lucide-react";
 import { useEntries } from "../context/EntriesContext";
@@ -10,6 +11,7 @@ import "./NewEntryForm.css";
 export default function NewEntryForm({ mood, onSubmit }) {
   const { addEntry } = useEntries();
   const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
 
   const [entry, setEntry] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -56,6 +58,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
       setTimeout(() => {
         setShowPopup(false);
         onSubmit?.();
+
       }, 2000);
     } catch (err) {
       console.error("Error saving entry:", err);
