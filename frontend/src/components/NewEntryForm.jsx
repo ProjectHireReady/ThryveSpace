@@ -58,7 +58,6 @@ export default function NewEntryForm({ mood, onSubmit }) {
     alert("Could not save your note. Please try again.");
   } finally {
     setSubmitting(false);
-    navigate("/entries"); // instead of window.location.href
   }
 };
 
