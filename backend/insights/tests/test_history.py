@@ -10,8 +10,6 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 
 from notes.models import Note
-# If you want to also test mood fallback, import Mood/MoodCategory and create them;
-# but these tests rely on mood_value_snapshot to avoid model coupling.
 
 User = get_user_model()
 
@@ -59,7 +57,7 @@ def test_history_returns_seven_days_and_latest_per_day(user_token_client):
 
     n1 = Note.objects.create(
         user=user,
-        text="early",
+        note="early",
         mood_value_snapshot=2,
         created_at=early,  # will be overwritten below to ensure DB saves it
     )
@@ -68,7 +66,7 @@ def test_history_returns_seven_days_and_latest_per_day(user_token_client):
 
     n2 = Note.objects.create(
         user=user,
-        text="late",
+        note="late",
         mood_value_snapshot=4,
         created_at=late,
     )
@@ -116,7 +114,7 @@ def test_history_is_user_scoped(user_token_client):
     # Create a note for a different user
     n_other = Note.objects.create(
         user=user2,
-        text="other user note",
+        note="other user note",
         mood_value_snapshot=5,
         created_at=dt_user2,
     )
@@ -141,7 +139,7 @@ def test_history_missing_days_show_nulls_in_graph(user_token_client):
     dt = _aware_dt(wednesday, 16, 0, 0)
     n = Note.objects.create(
         user=user,
-        text="mid-week",
+        note="mid-week",
         mood_value_snapshot=3,
         created_at=dt,
     )
@@ -158,7 +156,7 @@ def test_history_missing_days_show_nulls_in_graph(user_token_client):
 
 
 @pytest.mark.django_db
-def test_history_cache_basic_ttl_behavior(user_token_client, monkeypatch):
+def test_history_cache_basic_ttl_behavior(user_token_client):
     """
     First call populates cache (5 min TTL). A second call made immediately should
     return the same data even if new notes are created in between. Clearing cache
@@ -170,7 +168,7 @@ def test_history_cache_basic_ttl_behavior(user_token_client, monkeypatch):
     # Seed one note on Monday
     dt1 = _aware_dt(monday, 9, 0, 0)
     a = Note.objects.create(
-        user=user, text="A", mood_value_snapshot=2, created_at=dt1
+        user=user, note="A", mood_value_snapshot=2, created_at=dt1
     )
     Note.objects.filter(pk=a.pk).update(created_at=dt1)
 
@@ -185,7 +183,7 @@ def test_history_cache_basic_ttl_behavior(user_token_client, monkeypatch):
     # Create a new note same week (should not appear until cache expires/clears)
     dt2 = _aware_dt(monday + timedelta(days=1), 10, 0, 0)
     b = Note.objects.create(
-        user=user, text="B", mood_value_snapshot=5, created_at=dt2
+        user=user, note="B", mood_value_snapshot=5, created_at=dt2
     )
     Note.objects.filter(pk=b.pk).update(created_at=dt2)
 
