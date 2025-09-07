@@ -1,8 +1,8 @@
+# insights/services.py
 from dataclasses import dataclass
 from datetime import timedelta, date
 from typing import List, Dict, Optional
 
-from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Max, Subquery
 from django.db.models.functions import TruncDate
@@ -37,11 +37,24 @@ def cache_key(user_id: int, wr: WeekRange) -> str:
 
 
 def _mood_value_for(note: Note) -> Optional[int]:
-    if note.mood_value_snapshot is not None:
-        return int(note.mood_value_snapshot)
+    """
+    Determine a 1..5 mood value for a note.
+    Priority:
+      1) mood_value_snapshot if present on the model
+      2) note.mood.category.value (if available)
+      3) None
+    """
+    if getattr(note, "mood_value_snapshot", None) is not None:
+        try:
+            return int(note.mood_value_snapshot)
+        except (TypeError, ValueError):
+            return None
+
     # fallback to mood.category.value if you have that relationship
     try:
-        return int(getattr(note.mood.category, "value"))
+        category = getattr(note.mood, "category", None)
+        value = getattr(category, "value", None)
+        return int(value) if value is not None else None
     except Exception:
         return None
 
@@ -50,7 +63,7 @@ def fetch_weekly_latest_per_day(user, wr: WeekRange):
     """
     SQLite‑compatible reduction to one row per day (latest note of that day).
     """
-    # constrain by date range
+    # constrain by date range (end is exclusive)
     qs = Note.objects.filter(
         user=user,
         created_at__date__gte=wr.start,
@@ -92,8 +105,8 @@ def build_response(user, wr: WeekRange) -> Dict:
             mv = _mood_value_for(note)
             mid = getattr(note.mood, "id", None)
             graph.append({"date": d.isoformat(), "mood_value": mv, "mood_id": mid})
-            # timeline entry
-            snippet = (note.text or "").strip().replace("\n", " ")
+            # timeline entry (use your Note.note field; trim to 120 chars)
+            snippet = (getattr(note, "note", "") or "").strip().replace("\n", " ")
             if len(snippet) > 120:
                 snippet = snippet[:117].rstrip() + "..."
             timeline.append({
