@@ -1,7 +1,8 @@
+# insights/urls.py
 from django.urls import path
-from .views import WeeklyInsightView, WeeklyTipView
+from .views import WeeklyTipView, InsightsHistoryView
 
 urlpatterns = [
-    path("history/", WeeklyInsightView.as_view(), name="mood_history"),
-     path("tip/", WeeklyTipView.as_view(), name="mood_tip"),
+     path("api/v1/insights/tip", WeeklyTipView.as_view(), name="insights-tip"),
+    path("api/v1/insights/history", InsightsHistoryView.as_view(), name="insights-history"),
 ]
