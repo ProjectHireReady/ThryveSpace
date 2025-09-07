@@ -1,4 +1,5 @@
 # insights/services.py
+# insights/services.py
 from dataclasses import dataclass
 from datetime import timedelta, date
 from typing import List, Dict, Optional
@@ -8,9 +9,18 @@ from django.db.models import Max, Subquery
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
-from notes.models import Note  # adjust import if your app name differs
+from notes.models import Note  
 
 WEEK_CACHE_TTL = 300  # 5 minutes
+
+# Map Mood.category (string) -> 1..5
+CATEGORY_VALUE_MAP = {
+    "very negative": 1,
+    "negative": 2,
+    "neutral": 3,
+    "positive": 4,
+    "very positive": 5,
+}
 
 
 @dataclass
@@ -41,22 +51,25 @@ def _mood_value_for(note: Note) -> Optional[int]:
     Determine a 1..5 mood value for a note.
     Priority:
       1) mood_value_snapshot if present on the model
-      2) note.mood.category.value (if available)
+      2) map Mood.category (string) via CATEGORY_VALUE_MAP
       3) None
     """
-    if getattr(note, "mood_value_snapshot", None) is not None:
+    snap = getattr(note, "mood_value_snapshot", None)
+    if snap is not None:
         try:
-            return int(note.mood_value_snapshot)
+            return int(snap)
         except (TypeError, ValueError):
             return None
 
-    # fallback to mood.category.value if you have that relationship
-    try:
-        category = getattr(note.mood, "category", None)
-        value = getattr(category, "value", None)
-        return int(value) if value is not None else None
-    except Exception:
+    mood = getattr(note, "mood", None)
+    if not mood:
         return None
+
+    cat = getattr(mood, "category", None)
+    if isinstance(cat, str):
+        return CATEGORY_VALUE_MAP.get(cat)
+
+    return None
 
 
 def fetch_weekly_latest_per_day(user, wr: WeekRange):
