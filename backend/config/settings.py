@@ -19,6 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
+OPENAI_API_KEY = config("OPENAI_API_KEY")
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -32,6 +33,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
+    "django_rq",
     "users",
     "moods",
     "notes",
@@ -92,7 +94,9 @@ REST_FRAMEWORK = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -109,6 +113,32 @@ STATIC_URL = "static/"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Redis and Django RQ configuration constants
+USE_MOCK_AI = True
+MAX_DAILY_AI_LOGGED_IN = 3
+GUEST_RATE_LIMIT_MAX = 2
+REDIS_URL = config("REDIS_URL", default="redis://localhost:6379/0")
+
+# Redis cache configuration
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "KEY_PREFIX": "thryvespace",
+    }
+}
+
+# Django RQ configuration
+RQ_QUEUES = {
+    "default": {
+        "URL": REDIS_URL,
+        "DEFAULT_TIMEOUT": 500,
+    }
+}
 
 # -----------------------------
 # Kindness feature configuration
