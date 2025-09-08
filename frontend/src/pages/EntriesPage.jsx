@@ -1,54 +1,74 @@
-import { useState, useMemo } from "react";
-import { PlusCircle, LoaderCircle, AlertCircle, Search, FileDown } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import {
+  PlusCircle,
+  LoaderCircle,
+  AlertCircle,
+  Search,
+  FileDown,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useEntries } from "../context/EntriesContext";
 import { downloadGuestEntriesPDF } from "../utils/exportPDF";
 import EntryCard from "../components/EntryCard";
 import JournalModal from "../components/JournalModal";
 import NewEntryForm from "../components/NewEntryForm";
+import InsightBanner from "../components/InsightBanner";
+import { getInsights } from "../api/insights";
 import "./EntriesPage.css";
 
 function EntriesPage() {
-  // Fetch entries and actions from context
+  // Context
   const { entries, loading, error, fetchEntries, updateEntry, removeEntry } =
     useEntries();
 
-  const [searchTerm, setSearchTerm] = useState(""); // For filtering entries
-  const [showModal, setShowModal] = useState(false); // Journal modal toggle
-  const [selectedMood, setSelectedMood] = useState(null); // For mood selection
+  // State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [insight, setInsight] = useState(null);
 
-  // Auth info (needed for export button)
+  // Auth
   const { user } = useAuth();
   const isLoggedIn = !!user;
 
-  // Open modal when "Add Entry" is clicked
+  // Fetch insights
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const res = await getInsights();
+        setInsight(res.data); // expects { type, message }
+      } catch (err) {
+        console.error("Failed to fetch insights:", err);
+      }
+    };
+    fetchInsights();
+  }, []);
+
+  // Handlers
   const handleAddEntry = () => setShowModal(true);
+
+  const closeModal = () => setShowModal(false);
 
   const handleDownloadPDF = () => {
     if (entries.length === 0) return alert("No entries to export.");
     downloadGuestEntriesPDF(entries);
   };
 
-  // Close modal after successful entry
-  const closeModal = () => setShowModal(false);
-
-  // Filter entries by user search
+  // Derived values
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) =>
       entry.note?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [entries, searchTerm]);
 
-  // Conditions for displaying UI elements
   const hasEntries = Array.isArray(entries) && entries.length > 0;
   const shouldShowSearchAndAdd = hasEntries && !loading && !error;
   const shouldShowAddOnly = !hasEntries && !loading && !error;
 
   return (
     <section
-      className={`entries-page ${
-        !loading && entries.length === 0 ? "no-scroll" : ""
-      }`}
+      className={`entries-page ${!loading && entries.length === 0 ? "no-scroll" : ""
+        }`}
     >
       {/* Header */}
       <div className="top-bar">
@@ -56,7 +76,7 @@ function EntriesPage() {
           <h1 className="main-header">My Entries</h1>
         </div>
 
-        {/* Search + Add Entry + Export (only if entries exist) */}
+        {/* Search + Add Entry + Export */}
         {shouldShowSearchAndAdd && (
           <div className="action-row">
             <div className="search-wrapper">
@@ -82,7 +102,7 @@ function EntriesPage() {
           </div>
         )}
 
-        {/* Only Add button (if no entries or first time) */}
+        {/* Add button only */}
         {shouldShowAddOnly && (
           <div className="action-row">
             <button className="add-btn" onClick={handleAddEntry}>
@@ -92,18 +112,21 @@ function EntriesPage() {
         )}
       </div>
 
-      {/* Subheading (when entries exist) */}
+      {/* 🟢 Insights Banner */}
+      {insight && (
+        <InsightBanner type={insight.type} message={insight.message} />
+      )}
+
+      {/* Subheading */}
       {shouldShowSearchAndAdd && <h2 className="subheader">Recent Entries</h2>}
 
-      {/* Main Content States */}
+      {/* Content */}
       {loading ? (
-        // Loading state
         <div className="centered-message loading-state">
           <LoaderCircle className="loading-icon" size={24} />
           <p>Loading entries...</p>
         </div>
       ) : error ? (
-        // Error state
         <div className="centered-message error-state">
           <div className="error-icon-wrapper">
             <AlertCircle className="error-icon" size={36} />
@@ -119,12 +142,10 @@ function EntriesPage() {
           </div>
         </div>
       ) : filteredEntries.length === 0 ? (
-        // Empty or no search result
         <p className="centered-message empty-state">
           No entries found. Try adding one! 😊
         </p>
       ) : (
-        // Render list of entries
         <div className="entries-grid">
           {filteredEntries.map((entry) => (
             <EntryCard
@@ -137,19 +158,19 @@ function EntriesPage() {
         </div>
       )}
 
-      {/* Modal Form */}
+      {/* Modal */}
       <JournalModal
         isOpen={showModal}
         onClose={() => {
           setShowModal(false);
-          setSelectedMood(null); // reset mood when modal closes
+          setSelectedMood(null);
         }}
       >
         <NewEntryForm
           mood={selectedMood}
           onSubmit={() => {
             closeModal();
-            setSelectedMood(null); // reset after submission too
+            setSelectedMood(null);
           }}
         />
       </JournalModal>
