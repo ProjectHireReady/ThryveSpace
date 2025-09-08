@@ -26,10 +26,6 @@ def generate_note_feedback(note_id, user=None, note_text=""):
 
 def process_user_insights(user, week_offset=0):
     """Background job to process history-based insights."""
-    # Simulate Network delay
-    time.sleep(30)
-    print("delayed-LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
-
     summary = build_week_summary(user, week_offset)
 
     response = analyze_week_summary(summary)

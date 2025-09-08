@@ -153,6 +153,11 @@ def analyze_week_summary(payload: dict):
     Returns structured response (dict).
     """
 
+    if settings.USE_MOCK_AI:
+        return {
+            "content": "Mock analysis: This week shows a positive trend with consistent moods. Keep it up!",
+        }
+
     # Default system instructions
     system_prompt = (
         "You are an empathetic mental wellness assistant. "
