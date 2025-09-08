@@ -30,9 +30,13 @@ class WeekRange:
 
 def get_week_range(week_offset: int) -> WeekRange:
     """
-    Monday-based weeks in the project's TIME_ZONE.
-    week_offset=0 -> current week; 1 -> previous week; etc.
+    Computes Monday-based week ranges in the active time zone
+    (as defined by Django's TIME_ZONE setting).
+
+    week_offset=0 → current week
+    week_offset=1 → previous week, and so on.
     """
+
     now = timezone.localtime(timezone.now())
     # Monday = 0 ... Sunday = 6
     this_monday = (now - timedelta(days=now.weekday())).date()
