@@ -1,4 +1,3 @@
-# insights/tests/test_history.py
 import pytest
 from datetime import datetime, time, timedelta
 
@@ -45,6 +44,10 @@ def user_token_client(api_client):
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
     return user, api_client
 
+
+# ---------------------------------------------------------------------------
+# Core behavior
+# ---------------------------------------------------------------------------
 
 @pytest.mark.django_db
 def test_history_returns_seven_days_and_latest_per_day(user_token_client):
@@ -197,3 +200,91 @@ def test_history_cache_basic_ttl_behavior(user_token_client):
     resp3 = client.get(url)
     data3 = resp3.json()
     assert len(data3["timeline"]) == timeline_len_1 + 1
+
+
+# ---------------------------------------------------------------------------
+# New assertions matching current API contract
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_history_week_fields_are_inclusive(user_token_client):
+    user, client = user_token_client
+    url = reverse("insights-history")
+
+    resp = client.get(f"{url}?week_offset=0")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert "week" in data and "start" in data["week"] and "end" in data["week"]
+
+    start = datetime.fromisoformat(data["week"]["start"]).date()
+    end = datetime.fromisoformat(data["week"]["end"]).date()
+    # Inclusive week: end = start + 6 days
+    assert end == start + timedelta(days=6)
+
+
+@pytest.mark.django_db
+def test_history_accepts_week_alias(user_token_client):
+    user, client = user_token_client
+    url = reverse("insights-history")
+
+    resp_default = client.get(url)              # week_offset defaults to 0
+    resp_alias = client.get(f"{url}?week=0")    # alias
+    assert resp_default.status_code == 200
+    assert resp_alias.status_code == 200
+    assert resp_default.json()["graph"] == resp_alias.json()["graph"]
+
+
+@pytest.mark.django_db
+def test_history_graph_includes_mood_id_field(user_token_client):
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+    dt = _aware_dt(monday, 9, 0, 0)
+
+    # note without mood relation is fine; mood_id can be null
+    Note.objects.create(user=user, note="x", mood_value_snapshot=3, created_at=dt)
+    Note.objects.filter(note="x").update(created_at=dt)
+
+    url = reverse("insights-history")
+    resp = client.get(url)
+    assert resp.status_code == 200
+    graph = resp.json()["graph"]
+    assert len(graph) == 7
+    # Every graph item has mood_id key (may be None)
+    assert all("mood_id" in p for p in graph)
+
+
+@pytest.mark.django_db
+def test_mood_value_snapshot_overrides_category(user_token_client):
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+
+    # Create note with snapshot=5; snapshot should win over any mood category
+    dt = _aware_dt(monday, 10, 0, 0)
+    Note.objects.create(user=user, note="snap", mood_value_snapshot=5, created_at=dt)
+    Note.objects.filter(note="snap").update(created_at=dt)
+
+    url = reverse("insights-history")
+    resp = client.get(url)
+    g = resp.json()["graph"]
+    point = next(p for p in g if p["date"] == monday.isoformat())
+    assert point["mood_value"] == 5
+
+
+@pytest.mark.django_db
+def test_timeline_snippet_truncates_to_120(user_token_client):
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+    long_text = "A" * 200
+
+    dt = _aware_dt(monday, 11, 0, 0)
+    n = Note.objects.create(user=user, note=long_text, mood_value_snapshot=3, created_at=dt)
+    Note.objects.filter(pk=n.pk).update(created_at=dt)
+
+    url = reverse("insights-history")
+    resp = client.get(url)
+    timeline = resp.json()["timeline"]
+    item = next(t for t in timeline if t["date"] == monday.isoformat())
+    assert len(item["snippet"]) <= 120
+    if len(long_text) > 120:
+        assert item["snippet"].endswith("...")
