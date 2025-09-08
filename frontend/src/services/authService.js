@@ -40,3 +40,4 @@ export const getCurrentUser = async () => {
     throw error.response?.data || { message: "Failed to fetch current user" };
   }
 };
+
