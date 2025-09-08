@@ -20,4 +20,4 @@ class Note(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Note by {self.user.username} on {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+        return f"Note by {self.user.get_full_name()} on {self.created_at.strftime('%Y-%m-%d %H:%M')}"
