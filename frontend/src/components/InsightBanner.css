@@ -1,0 +1,16 @@
+.insight-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0f9ff;
+    color: #0369a1;
+    padding: 10px;
+    border-radius: 12px;
+    margin: 12px 0;
+    font-size: 0.95rem;
+}
+
+.insight-banner.tip {
+    background: #ecfdf5;
+    color: #065f46;
+}
