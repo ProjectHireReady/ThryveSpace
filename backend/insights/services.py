@@ -1,5 +1,4 @@
 # insights/services.py
-# insights/services.py
 from dataclasses import dataclass
 from datetime import timedelta, date
 from typing import List, Dict, Optional
@@ -77,7 +76,7 @@ def fetch_weekly_latest_per_day(user, wr: WeekRange):
     SQLite‑compatible reduction to one row per day (latest note of that day).
     """
     # constrain by date range (end is exclusive)
-    qs = Note.objects.filter(
+    qs = Note.objects.select_related("mood").filter(
         user=user,
         created_at__date__gte=wr.start,
         created_at__date__lt=wr.end,
@@ -132,7 +131,10 @@ def build_response(user, wr: WeekRange) -> Dict:
             graph.append({"date": d.isoformat(), "mood_value": None, "mood_id": None})
 
     return {
-        "week": {"start": wr.start.isoformat(), "end": wr.end.isoformat()},
+        "week": {
+            "start": wr.start.isoformat(), 
+            "end": (wr.end - timedelta(days=1)).isoformat(),  
+        },
         "graph": graph,
         "timeline": timeline,
     }
