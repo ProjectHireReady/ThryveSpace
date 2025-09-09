@@ -1,25 +1,20 @@
 # insights/views.py
-from datetime import timedelta, datetime, time
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.conf import settings
 from django_rq import get_queue
 from rest_framework.views import APIView
 from rest_framework import permissions, status
-from django.utils import timezone
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 from notes.models import Note
 
 
-from .serializers import WeekSummarySerializer, InsightTipSerializer
+from .serializers import InsightTipSerializer
 from .rules import day_points_from_notes, render_tip
 from .utils import (
     increment_count,
     today_key_suffix,
     get_week_range,
-    build_week_summary,
     get_daily_limit,
 )
 from .jobs import generate_note_feedback, process_user_insights
@@ -28,6 +23,7 @@ from .services import get_history_payload
 
 
 # ---- Shared helpers ---------------------------------------------------------
+
 
 def _parse_week_offset(request) -> int:
     """
@@ -42,19 +38,8 @@ def _parse_week_offset(request) -> int:
         return 0
 
 
-def _get_week_range(week_offset: int):
-    """
-    Monday-anchored 7-day window in local TZ.
-    Returns (week_start_date, week_end_date).
-    """
-    today = timezone.localdate()
-    current_week_start = today - timedelta(days=today.weekday())  # Monday
-    target_week_start = current_week_start - timedelta(weeks=week_offset)
-    target_week_end = target_week_start + timedelta(days=6)
-    return target_week_start, target_week_end
-
-
 # ---- Views ------------------------------------------------------------------
+
 
 class InsightsHistoryView(APIView):
     """
@@ -69,11 +54,13 @@ class InsightsHistoryView(APIView):
     }
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         # Support both ?week_offset and ?week
-        raw = request.query_params.get("week_offset", request.query_params.get("week", "0"))
+        raw = request.query_params.get(
+            "week_offset", request.query_params.get("week", "0")
+        )
         try:
             week_offset = int(raw)
             if week_offset < 0:
@@ -97,7 +84,8 @@ class WeeklyTipView(APIView):
     GET /api/v1/insights/tip/?week_offset=0
     Returns a single rule-based tip: { "type": "tip", "message": "..." }
     """
-    permission_classes = [IsAuthenticated]
+
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         week_offset = _parse_week_offset(request)
