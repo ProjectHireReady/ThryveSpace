@@ -7,7 +7,8 @@ import EntriesPage from "./pages/EntriesPage";
 import PageTransition from "./components/PageTransition";
 import SignUpPage from "./pages/auth/SignUpPage";
 import LoginPage from "./pages/auth/LoginPage";
-// import InsightsPage from "./pages/InsightsPage";
+// import InsightsPage from "./pages/InsightsPage"; // 🔸 Commented out to avoid crash
+
 
 function App() {
   return (
@@ -47,7 +48,6 @@ function App() {
         />
 
         {/* Features Page route */}
-
         <Route
           path="/features"
           element={
@@ -61,7 +61,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
 
-        {/* Insights Page route
+
+        {/* Insights Page route (temporarily disabled) */}
+        {/*
         <Route
           path="/insights"
           element={
@@ -69,7 +71,9 @@ function App() {
               <InsightsPage />
             </PageTransition>
           }
-        /> */}
+        />
+        */}
+
       </Routes>
     </>
   );

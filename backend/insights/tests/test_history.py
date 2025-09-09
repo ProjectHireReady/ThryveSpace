@@ -1,58 +1,290 @@
-# insights/tests/test_history.py
+import pytest
+from datetime import datetime, time, timedelta
+
 from django.core.cache import cache
-from datetime import datetime, timedelta
-from django.utils import timezone
 from django.urls import reverse
-from rest_framework.test import APITestCase
+from django.utils import timezone
+from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 
 from notes.models import Note
-from moods.models import Mood
 
 User = get_user_model()
 
 
-class WeeklyInsightsTests(APITestCase):
-    def setUp(self):
-        cache.clear() 
-        self.user = User.objects.create_user(username="u1", password="pass1234")
-        self.token = Token.objects.create(user=self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+def _monday_of_current_week():
+    today = timezone.localdate()
+    return today - timedelta(days=today.weekday())  # Monday
 
-        # create moods for different categories and dates
-        monday = timezone.localdate() - timedelta(days=timezone.localdate().weekday())
-        # create moods and notes on Monday and Wednesday for this user
-        mood_pos = Mood.objects.create(name="happy", emoji="🙂", category="positive")
-        mood_neg = Mood.objects.create(name="sad", emoji="☹️", category="negative")
 
-        # Note on Monday
-        n1 = Note.objects.create(user=self.user, mood=mood_pos, note="Good day")
-        n1.created_at = datetime.combine(monday, timezone.now().time()).replace(
-            tzinfo=timezone.get_current_timezone()
-        )
+def _aware_dt(daydate, hh=10, mm=0, ss=0):
+    """Build a timezone-aware datetime on a specific local date/time."""
+    tz = timezone.get_current_timezone()
+    return tz.localize(datetime.combine(daydate, time(hh, mm, ss)))
 
-        n1.save()
 
-        # Note on Wednesday
-        wednesday = monday + timedelta(days=2)
-        n2 = Note.objects.create(user=self.user, mood=mood_neg, note="Bad day")
-        n2.created_at = datetime.combine(wednesday, timezone.now().time()).replace(
-            tzinfo=timezone.get_current_timezone()
-        )
+@pytest.fixture(autouse=True)
+def clear_cache():
+    cache.clear()
+    yield
+    cache.clear()
 
-        n2.save()
 
-    def test_weekly_insights_graph_and_timeline(self):
-        url = reverse("mood_history")
-        res = self.client.get(f"{url}?week_offset=0")
-        self.assertEqual(res.status_code, 200)
-        data = res.json()
-        self.assertIn("graph", data)
-        self.assertIn("timeline", data)
-        self.assertEqual(len(data["graph"]), 7)
-        # graph should contain mood_value for monday and wednesday and None for other days
-        values = [p["mood_value"] for p in data["graph"]]
-        self.assertTrue(any(v is not None for v in values))
-        # timeline should contain two notes
-        self.assertGreaterEqual(len(data["timeline"]), 2)
+@pytest.fixture
+def api_client():
+    return APIClient()
+
+
+@pytest.fixture
+def user_token_client(api_client):
+    """Create an email-based user, attach Token auth, and return (user, client)."""
+    user = User.objects.create_user(email="user1@example.com", password="pass1234")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+    return user, api_client
+
+
+# ---------------------------------------------------------------------------
+# Core behavior
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_history_returns_seven_days_and_latest_per_day(user_token_client):
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+
+    # Two notes on the SAME day; latest should win
+    early = _aware_dt(monday, 9, 0, 0)
+    late = _aware_dt(monday, 18, 30, 0)
+
+    n1 = Note.objects.create(
+        user=user,
+        note="early",
+        mood_value_snapshot=2,
+        created_at=early,  # will be overwritten below to ensure DB saves it
+    )
+    # Ensure created_at is persisted as given
+    Note.objects.filter(pk=n1.pk).update(created_at=early)
+
+    n2 = Note.objects.create(
+        user=user,
+        note="late",
+        mood_value_snapshot=4,
+        created_at=late,
+    )
+    Note.objects.filter(pk=n2.pk).update(created_at=late)
+
+    url = reverse("insights-history")
+    resp = client.get(f"{url}?week_offset=0")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert "graph" in data and len(data["graph"]) == 7
+    assert "timeline" in data
+
+    # Latest per day should be reflected in timeline (snippet starts with "late")
+    assert any(item["snippet"].startswith("late") for item in data["timeline"])
+
+    # The graph should have at least one non-null value for Monday
+    monday_iso = monday.isoformat()
+    monday_point = next(p for p in data["graph"] if p["date"] == monday_iso)
+    assert monday_point["mood_value"] == 4
+
+
+@pytest.mark.django_db
+def test_history_week_offset_bounds(user_token_client):
+    user, client = user_token_client
+    url = reverse("insights-history")
+
+    # Negative should 400
+    resp = client.get(f"{url}?week_offset=-1")
+    assert resp.status_code == 400
+
+    # Non-integer should 400
+    resp = client.get(f"{url}?week_offset=abc")
+    assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+def test_history_is_user_scoped(user_token_client):
+    user1, client = user_token_client
+    user2 = User.objects.create_user(email="user2@example.com", password="pass1234")
+
+    monday = _monday_of_current_week()
+    dt_user2 = _aware_dt(monday, 11, 0, 0)
+
+    # Create a note for a different user
+    n_other = Note.objects.create(
+        user=user2,
+        note="other user note",
+        mood_value_snapshot=5,
+        created_at=dt_user2,
+    )
+    Note.objects.filter(pk=n_other.pk).update(created_at=dt_user2)
+
+    url = reverse("insights-history")
+    resp = client.get(url)
+    assert resp.status_code == 200
+    data = resp.json()
+
+    # Ensure no timeline item shows the other user's text
+    assert all("other user note" != t.get("snippet") for t in data["timeline"])
+
+
+@pytest.mark.django_db
+def test_history_missing_days_show_nulls_in_graph(user_token_client):
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+
+    # Only one note on Wednesday
+    wednesday = monday + timedelta(days=2)
+    dt = _aware_dt(wednesday, 16, 0, 0)
+    n = Note.objects.create(
+        user=user,
+        note="mid-week",
+        mood_value_snapshot=3,
+        created_at=dt,
+    )
+    Note.objects.filter(pk=n.pk).update(created_at=dt)
+
+    url = reverse("insights-history")
+    resp = client.get(url)
+    data = resp.json()
+
+    # Graph has 7 days; several should be null
+    values = [p["mood_value"] for p in data["graph"]]
+    assert len(values) == 7
+    assert any(v is None for v in values)  # at least one empty day
+
+
+@pytest.mark.django_db
+def test_history_cache_basic_ttl_behavior(user_token_client):
+    """
+    First call populates cache (5 min TTL). A second call made immediately should
+    return the same data even if new notes are created in between. Clearing cache
+    should reflect new data.
+    """
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+
+    # Seed one note on Monday
+    dt1 = _aware_dt(monday, 9, 0, 0)
+    a = Note.objects.create(
+        user=user, note="A", mood_value_snapshot=2, created_at=dt1
+    )
+    Note.objects.filter(pk=a.pk).update(created_at=dt1)
+
+    url = reverse("insights-history")
+
+    # First call → caches
+    resp1 = client.get(url)
+    assert resp1.status_code == 200
+    data1 = resp1.json()
+    timeline_len_1 = len(data1["timeline"])
+
+    # Create a new note same week (should not appear until cache expires/clears)
+    dt2 = _aware_dt(monday + timedelta(days=1), 10, 0, 0)
+    b = Note.objects.create(
+        user=user, note="B", mood_value_snapshot=5, created_at=dt2
+    )
+    Note.objects.filter(pk=b.pk).update(created_at=dt2)
+
+    # Immediate second call → should be a cache hit; same timeline length
+    resp2 = client.get(url)
+    data2 = resp2.json()
+    assert len(data2["timeline"]) == timeline_len_1
+
+    # After clearing cache → new data should appear
+    cache.clear()
+    resp3 = client.get(url)
+    data3 = resp3.json()
+    assert len(data3["timeline"]) == timeline_len_1 + 1
+
+
+# ---------------------------------------------------------------------------
+# New assertions matching current API contract
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_history_week_fields_are_inclusive(user_token_client):
+    user, client = user_token_client
+    url = reverse("insights-history")
+
+    resp = client.get(f"{url}?week_offset=0")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert "week" in data and "start" in data["week"] and "end" in data["week"]
+
+    start = datetime.fromisoformat(data["week"]["start"]).date()
+    end = datetime.fromisoformat(data["week"]["end"]).date()
+    # Inclusive week: end = start + 6 days
+    assert end == start + timedelta(days=6)
+
+
+@pytest.mark.django_db
+def test_history_accepts_week_alias(user_token_client):
+    user, client = user_token_client
+    url = reverse("insights-history")
+
+    resp_default = client.get(url)              # week_offset defaults to 0
+    resp_alias = client.get(f"{url}?week=0")    # alias
+    assert resp_default.status_code == 200
+    assert resp_alias.status_code == 200
+    assert resp_default.json()["graph"] == resp_alias.json()["graph"]
+
+
+@pytest.mark.django_db
+def test_history_graph_includes_mood_id_field(user_token_client):
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+    dt = _aware_dt(monday, 9, 0, 0)
+
+    # note without mood relation is fine; mood_id can be null
+    Note.objects.create(user=user, note="x", mood_value_snapshot=3, created_at=dt)
+    Note.objects.filter(note="x").update(created_at=dt)
+
+    url = reverse("insights-history")
+    resp = client.get(url)
+    assert resp.status_code == 200
+    graph = resp.json()["graph"]
+    assert len(graph) == 7
+    # Every graph item has mood_id key (may be None)
+    assert all("mood_id" in p for p in graph)
+
+
+@pytest.mark.django_db
+def test_mood_value_snapshot_overrides_category(user_token_client):
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+
+    # Create note with snapshot=5; snapshot should win over any mood category
+    dt = _aware_dt(monday, 10, 0, 0)
+    Note.objects.create(user=user, note="snap", mood_value_snapshot=5, created_at=dt)
+    Note.objects.filter(note="snap").update(created_at=dt)
+
+    url = reverse("insights-history")
+    resp = client.get(url)
+    g = resp.json()["graph"]
+    point = next(p for p in g if p["date"] == monday.isoformat())
+    assert point["mood_value"] == 5
+
+
+@pytest.mark.django_db
+def test_timeline_snippet_truncates_to_120(user_token_client):
+    user, client = user_token_client
+    monday = _monday_of_current_week()
+    long_text = "A" * 200
+
+    dt = _aware_dt(monday, 11, 0, 0)
+    n = Note.objects.create(user=user, note=long_text, mood_value_snapshot=3, created_at=dt)
+    Note.objects.filter(pk=n.pk).update(created_at=dt)
+
+    url = reverse("insights-history")
+    resp = client.get(url)
+    timeline = resp.json()["timeline"]
+    item = next(t for t in timeline if t["date"] == monday.isoformat())
+    assert len(item["snippet"]) <= 120
+    if len(long_text) > 120:
+        assert item["snippet"].endswith("...")

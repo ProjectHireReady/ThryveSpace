@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "users",
     "moods",
-    "notes",
+    "notes.apps.NotesConfig",
     "insights",
     "kindness",
 ]
