@@ -11,9 +11,9 @@ User = get_user_model()
 class NoteUpdateDeleteTests(APITestCase):
     def setUp(self):
         # Create two users
-        self.user = User.objects.create_user(username="user1", password="pass1234")
+        self.user = User.objects.create_user(email="user1@example.com", password="pass1234")
         self.other_user = User.objects.create_user(
-            username="user2", password="pass1234"
+            email="user2@example.com", password="pass1234"
         )
 
         # Create a token for authentication
