@@ -19,9 +19,6 @@ def get_openai_client():
     return OpenAI(api_key=api_key)
 
 
-client = get_openai_client()
-
-
 def get_week_range(week_offset: int):
     """
     Monday-anchored 7-day window in local TZ.
@@ -82,7 +79,9 @@ def build_week_summary(user, week_offset: int = 0):
 
 def get_daily_limit():
     now = datetime.now()
-    midnight = datetime.combine(now.date(), time(23, 59, 59))  # Set to 11:59:59 PM
+    midnight = datetime.combine(
+        now.date(), time.max
+    )  # Set to the true end of day (23:59:59.999999)
 
     return int((midnight - now).total_seconds())
 
@@ -115,6 +114,8 @@ def mock_ai_response(prompt, meta=None):
 
 def real_ai_response(prompt, meta=None):
     """Integrate with a real AI service here."""
+    client = get_openai_client()
+
     try:
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -164,6 +165,8 @@ def analyze_week_summary(payload: dict):
         "Identify trends, highlight positive patterns, and suggest "
         "gentle improvements without sounding clinical."
     )
+
+    client = get_openai_client()
 
     resp = client.chat.completions.create(
         model="gpt-4o-mini",
