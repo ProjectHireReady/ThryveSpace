@@ -1,16 +1,25 @@
-import redis
 from notes.models import Note
 from notes.serializers import NoteInsightSerializer
 from datetime import date, timedelta, datetime, time
 from django.utils import timezone
 from openai import OpenAI
+import logging
 from django.conf import settings
 from django.core.cache import cache
 from .constants import CATEGORY_VALUE_MAP
 
 
-_client = None
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+logger = logging.getLogger(__name__)
+
+
+def get_openai_client():
+    api_key = getattr(settings, "OPENAI_API_KEY", None)
+    if not api_key:
+        raise RuntimeError("OpenAI API key is not set in settings.OPENAI_API_KEY")
+    return OpenAI(api_key=api_key)
+
+
+client = get_openai_client()
 
 
 def get_week_range(week_offset: int):
@@ -71,19 +80,9 @@ def build_week_summary(user, week_offset: int = 0):
     return payload
 
 
-def get_client():
-    global _client
-
-    if _client is None:
-        _client = redis.StrictRedis.from_url(settings.REDIS_URL, decode_responses=True)
-    return _client
-
-
 def get_daily_limit():
     now = datetime.now()
     midnight = datetime.combine(now.date(), time(23, 59, 59))  # Set to 11:59:59 PM
-    if now > midnight:  # If current time is past midnight, calculate for next midnight
-        midnight = datetime.combine((now + timedelta(days=1)).date(), time(23, 59, 59))
 
     return int((midnight - now).total_seconds())
 
@@ -137,7 +136,7 @@ def real_ai_response(prompt, meta=None):
             "content": resp.choices[0].message.content,
         }
     except Exception as e:
-        print("Error calling AI service:", e)
+        logger.warning("Error calling AI service: %s", e)
         return {"error": str(e)}
 
 

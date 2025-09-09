@@ -21,7 +21,7 @@ def generate_note_feedback(note_id, user=None, note_text=""):
     # Save the insight to the database
     if user:
         Insight.objects.create(user=user, type="note_feedback", content=content)
-    return response
+    return content
 
 
 def process_user_insights(user, week_offset=0):
