@@ -78,9 +78,9 @@ def build_week_summary(user, week_offset: int = 0):
 
 
 def get_daily_limit():
-    now = datetime.now()
+    now = timezone.now()
     midnight = datetime.combine(
-        now.date(), time.max
+        now.date(), time.max, tzinfo=now.tzinfo
     )  # Set to the true end of day (23:59:59.999999)
 
     return int((midnight - now).total_seconds())
