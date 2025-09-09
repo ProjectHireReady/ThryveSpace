@@ -17,7 +17,7 @@ class NoteAPITests(TestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_create_note_returns_lean_response(self):
-        data = {"note": "Hello test", "mood_name": "Grateful"}
+        data = {"note": "Hello test", "mood_id": "Grateful"}
         response = self.client.post("/api/v1/notes/", data)
         json = response.json()
 
