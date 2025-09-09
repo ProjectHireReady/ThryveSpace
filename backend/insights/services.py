@@ -1,7 +1,7 @@
 # insights/services.py
 from dataclasses import dataclass
 from datetime import timedelta, date
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 
 from django.core.cache import cache
 from django.db.models import Max, Subquery
@@ -24,29 +24,64 @@ CATEGORY_VALUE_MAP = {
 
 @dataclass
 class WeekRange:
-    start: date  # inclusive, e.g., Monday 00:00
-    end: date    # exclusive, start + 7 days
+    start: date  # inclusive (Monday 00:00 localdate)
+    end: date    # exclusive (start + 7 days)
+
+
+# -------------------------------
+# Centralized weekly helpers
+# -------------------------------
+
+def parse_week_offset(request, allow_negative: bool = False) -> int:
+    """
+    Parse ?week_offset=<int> or ?week=<int> as an alias.
+    - If allow_negative is False, values < 0 raise ValueError.
+    - Invalid inputs raise ValueError.
+    """
+    raw = request.query_params.get("week_offset", request.query_params.get("week", "0"))
+    try:
+        val = int(raw)
+    except (TypeError, ValueError):
+        raise ValueError("week_offset must be an integer")
+    if not allow_negative and val < 0:
+        raise ValueError("week_offset must be >= 0")
+    return val
 
 
 def get_week_range(week_offset: int) -> WeekRange:
     """
-    Computes Monday-based week ranges in the active time zone
-    (as defined by Django's TIME_ZONE setting).
-
-    week_offset=0 → current week
-    week_offset=1 → previous week, and so on.
+    Computes Monday-based week in active TZ.
+    week_offset=0 → current week; 1 → previous week; etc.
+    Supports negative offsets as 'future weeks' if you choose to allow them.
     """
-
     now = timezone.localtime(timezone.now())
-    # Monday = 0 ... Sunday = 6
-    this_monday = (now - timedelta(days=now.weekday())).date()
+    this_monday = (now - timedelta(days=now.weekday())).date()  # Monday
     start = this_monday - timedelta(days=7 * week_offset)
-    end = start + timedelta(days=7)
+    end = start + timedelta(days=7)  # exclusive
     return WeekRange(start=start, end=end)
 
 
+def get_week_points(user, week_offset: int) -> List[Tuple[str, Optional[int]]]:
+    """
+    Returns 7 points for the requested week as (ISO date, mood_value|None),
+    using the SAME reducer as history (latest note per day, snapshot-first).
+    """
+    payload = get_history_payload(user, week_offset)
+    return [(p["date"], p["mood_value"]) for p in payload["graph"]]
+
+
+# -------------------------------
+# Internals used by history/tip
+# -------------------------------
+
 def cache_key(user_id: int, wr: WeekRange) -> str:
+    # Kept for backward-compat with history endpoint
     return f"insights:history:{user_id}:{wr.start.isoformat()}"
+
+
+def cache_key_for(prefix: str, user_id: int, wr: WeekRange) -> str:
+    # Use this for tip/prediction: e.g., prefix="tip" or "prediction"
+    return f"insights:{prefix}:{user_id}:{wr.start.isoformat()}"
 
 
 def _mood_value_for(note: Note) -> Optional[int]:
@@ -79,21 +114,18 @@ def fetch_weekly_latest_per_day(user, wr: WeekRange):
     """
     SQLite‑compatible reduction to one row per day (latest note of that day).
     """
-    # constrain by date range (end is exclusive)
     qs = Note.objects.select_related("mood").filter(
         user=user,
         created_at__date__gte=wr.start,
-        created_at__date__lt=wr.end,
+        created_at__date__lt=wr.end,  # exclusive
     )
 
-    # 1) compute last timestamp per day
     per_day_latest = (
         qs.annotate(day=TruncDate("created_at"))
           .values("day")
           .annotate(last_created=Max("created_at"))
     )
 
-    # 2) pick the notes matching those last_created timestamps
     latest_notes = (
         qs.annotate(day=TruncDate("created_at"))
           .filter(created_at__in=Subquery(per_day_latest.values("last_created")))
@@ -104,13 +136,9 @@ def fetch_weekly_latest_per_day(user, wr: WeekRange):
 
 
 def build_response(user, wr: WeekRange) -> Dict:
-    # materialize notes
     notes = fetch_weekly_latest_per_day(user, wr)
-
-    # Map day -> note
     by_day = {n.created_at.date(): n for n in notes}
 
-    # Build graph for 7 days
     graph: List[Dict] = []
     timeline: List[Dict] = []
 
@@ -121,7 +149,6 @@ def build_response(user, wr: WeekRange) -> Dict:
             mv = _mood_value_for(note)
             mid = getattr(note.mood, "id", None)
             graph.append({"date": d.isoformat(), "mood_value": mv, "mood_id": mid})
-            # timeline entry (use your Note.note field; trim to 120 chars)
             snippet = (getattr(note, "note", "") or "").strip().replace("\n", " ")
             if len(snippet) > 120:
                 snippet = snippet[:117].rstrip() + "..."
@@ -134,10 +161,11 @@ def build_response(user, wr: WeekRange) -> Dict:
         else:
             graph.append({"date": d.isoformat(), "mood_value": None, "mood_id": None})
 
+    # Return inclusive week_end (end - 1 day) for display clarity
     return {
         "week": {
-            "start": wr.start.isoformat(), 
-            "end": (wr.end - timedelta(days=1)).isoformat(),  
+            "start": wr.start.isoformat(),
+            "end": (wr.end - timedelta(days=1)).isoformat(),
         },
         "graph": graph,
         "timeline": timeline,
