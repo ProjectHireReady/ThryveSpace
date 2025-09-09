@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     "django_rq",
     "users",
     "moods",
-    "notes",
+    "notes.apps.NotesConfig",
     "insights",
     "kindness",
 ]

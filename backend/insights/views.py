@@ -6,9 +6,13 @@ from django.conf import settings
 from django_rq import get_queue
 from rest_framework.views import APIView
 from rest_framework import permissions, status
+from django.utils import timezone
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from notes.models import Note
+
+
 from .serializers import WeekSummarySerializer, InsightTipSerializer
 from .rules import day_points_from_notes, render_tip
 from .utils import (
@@ -20,7 +24,10 @@ from .utils import (
 )
 from .jobs import generate_note_feedback, process_user_insights
 from .constants import CATEGORY_VALUE_MAP
+from .services import get_history_payload
 
+
+# ---- Shared helpers ---------------------------------------------------------
 
 def _parse_week_offset(request) -> int:
     """
@@ -35,26 +42,53 @@ def _parse_week_offset(request) -> int:
         return 0
 
 
-@method_decorator(cache_page(60 * 5), name="dispatch")  # cache for 5 minutes
-class WeeklyInsightView(APIView):
+def _get_week_range(week_offset: int):
     """
-    GET /api/v1/insights/history/?week_offset=0
+    Monday-anchored 7-day window in local TZ.
+    Returns (week_start_date, week_end_date).
+    """
+    today = timezone.localdate()
+    current_week_start = today - timedelta(days=today.weekday())  # Monday
+    target_week_start = current_week_start - timedelta(weeks=week_offset)
+    target_week_end = target_week_start + timedelta(days=6)
+    return target_week_start, target_week_end
 
-    Returns:
-      - graph: 7 points (Mon..Sun) where each point is the latest note's mood_value for that day (or null)
-      - timeline: list of notes in the week (newest first)
+
+# ---- Views ------------------------------------------------------------------
+
+class InsightsHistoryView(APIView):
+    """
+    GET /api/v1/insights/history?week_offset=N
+    (Also accepts ?week=N as an alias)
+
+    Returns a payload built by services.get_history_payload(user, week_offset):
+    {
+      "week": {"start": "YYYY-MM-DD", "end": "YYYY-MM-DD"},
+      "graph": [ { "date": "YYYY-MM-DD", "mood_value": 1..5|null, "mood_id": int|null }, ... 7 items ],
+      "timeline": [ { "date": "YYYY-MM-DD", "mood_value": 1..5, "mood_id": int|null, "snippet": "..." }, ... ]
+    }
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        week_offset = _parse_week_offset(request)
+        # Support both ?week_offset and ?week
+        raw = request.query_params.get("week_offset", request.query_params.get("week", "0"))
+        try:
+            week_offset = int(raw)
+            if week_offset < 0:
+                return Response(
+                    {"detail": "week_offset must be >= 0"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except ValueError:
+            return Response(
+                {"detail": "week_offset must be an integer"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        payload = build_week_summary(request.user, week_offset)
-
-        serializer = WeekSummarySerializer(data=payload)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
+        payload = get_history_payload(request.user, week_offset)
+        return Response(payload, status=status.HTTP_200_OK)
 
 
 @method_decorator(cache_page(60 * 5), name="dispatch")  # cache for 5 minutes
@@ -63,8 +97,7 @@ class WeeklyTipView(APIView):
     GET /api/v1/insights/tip/?week_offset=0
     Returns a single rule-based tip: { "type": "tip", "message": "..." }
     """
-
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         week_offset = _parse_week_offset(request)
