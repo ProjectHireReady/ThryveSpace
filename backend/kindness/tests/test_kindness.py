@@ -37,12 +37,39 @@ class KindnessEndpointTests(APITestCase):
 
     # ---------- Helpers ----------
 
-    def _get_or_create_mood(self, name: str = "Neutral"):
-        mood, _ = Mood.objects.get_or_create(name=name)
+    def _get_or_create_mood(
+        self,
+        name: str = "Neutral",
+        category: str = "neutral",
+        emoji: str = "😐",
+    ):
+        """
+        Create or retrieve a Mood that satisfies required fields on your model.
+        Ensures emoji and category are set even if the Mood existed already.
+        """
+        mood, _ = Mood.objects.get_or_create(
+            name=name,
+            defaults={"emoji": emoji, "category": category, "is_active": True},
+        )
+        changed = False
+        if not getattr(mood, "emoji", None):
+            mood.emoji = emoji
+            changed = True
+        if not getattr(mood, "category", None):
+            mood.category = category
+            changed = True
+        if changed:
+            mood.save(update_fields=["emoji", "category"])
         return mood
 
-    def _make_note(self, text: str = "test", mood_name: str = "Neutral"):
-        mood = self._get_or_create_mood(mood_name)
+    def _make_note(
+        self,
+        text: str = "test",
+        mood_name: str = "Neutral",
+        category: str = "neutral",
+        emoji: str = "😐",
+    ):
+        mood = self._get_or_create_mood(mood_name, category, emoji)
         return Note.objects.create(
             user=self.user,
             mood=mood,  # FK instance, not an int
@@ -58,15 +85,20 @@ class KindnessEndpointTests(APITestCase):
         self.assertEqual(resp.status_code, 401)
 
     def test_less_than_three_entries(self):
-        self._make_note(text="one", mood_name="Neutral")
-        self._make_note(text="two", mood_name="Neutral")
+        self._make_note(text="one", mood_name="Neutral", category="neutral", emoji="😐")
+        self._make_note(text="two", mood_name="Neutral", category="neutral", emoji="😐")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.data.get("no_message"))
 
     def test_success_then_cooldown_same_day(self):
         for txt in ("tired", "stressed", "grateful"):
-            self._make_note(text=txt, mood_name="Neutral")
+            self._make_note(
+                text=txt,
+                mood_name="Neutral",
+                category="neutral",
+                emoji="😐",
+            )
 
         resp1 = self.client.get(self.url)
         self.assertEqual(resp1.status_code, 200)
@@ -82,9 +114,8 @@ class KindnessEndpointTests(APITestCase):
             self.assertEqual(resp2.status_code, 200)
             self.assertTrue(resp2.data.get("no_message"))
         else:
-            # If your services are still stubbed or gated, both calls return no_message
+            # If services are still stubbed or gated, both calls return no_message
             self.assertTrue(resp1.data.get("no_message"))
             resp2 = self.client.get(self.url)
             self.assertEqual(resp2.status_code, 200)
             self.assertTrue(resp2.data.get("no_message"))
-
