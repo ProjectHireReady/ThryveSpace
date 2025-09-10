@@ -1,8 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Check, Trash } from "lucide-react";
 import { useEntries } from "../context/EntriesContext";
 import { formatGuestPayload } from "../utils/guestUtils";
+import {
+  shouldShowKindness,
+  markKindnessShown,
+  shouldShowLoginPrompt,
+  markLoginPromptShown,
+} from "../utils/localStorageUtils";
 import KindnessMessage from "./KindnessMessage";
 import LoginPrompt from "./LoginPrompt";
 import "./NewEntryForm.css";
@@ -10,6 +17,7 @@ import "./NewEntryForm.css";
 export default function NewEntryForm({ mood, onSubmit }) {
   const { addEntry } = useEntries();
   const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
 
   const [entry, setEntry] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -18,7 +26,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const [showKindness, setShowKindness] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Get today's date
+  // Date box helper
   const getToday = () => {
     const date = new Date();
     return {
@@ -30,12 +38,13 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const { day, month } = getToday();
 
   const handleSubmit = async () => {
-    if (!entry.trim() && !mood)
+    if (!entry.trim() && !mood) {
       return alert("Please pick a mood or write something!");
+    }
 
     const payload = isLoggedIn
-      ? { note: entry, mood_id: mood?.id || null } // Backend structure
-      : formatGuestPayload(entry, mood); // Guest fallback
+      ? { note: entry, mood_id: mood?.id || null }
+      : formatGuestPayload(entry, mood);
 
     try {
       setSubmitting(true);
@@ -43,20 +52,30 @@ export default function NewEntryForm({ mood, onSubmit }) {
 
       setEntry("");
 
-      // Step 1: Show Kindness message
-      setShowKindness(true);
+      if (shouldShowKindness()) {
+        setShowKindness(true);
+        markKindnessShown();
 
-      // Step 2: After 3 seconds, hide Kindness and show Login Prompt
-      setTimeout(() => {
-        setShowKindness(false);
+        setTimeout(() => {
+          setShowKindness(false);
+
+          if (shouldShowLoginPrompt()) {
+            setShowLoginPrompt(true);
+            markLoginPromptShown();
+          } else {
+            // If no login prompt, move to entries
+            onSubmit?.();
+            navigate("/entries");
+          }
+        }, 3000);
+      } else if (shouldShowLoginPrompt()) {
         setShowLoginPrompt(true);
-      }, 3000); // 3 seconds delay
-
-      setShowPopup(true);
-      setTimeout(() => {
-        setShowPopup(false);
+        markLoginPromptShown();
+      } else {
+        // No kindness, no login prompt -> go directly
         onSubmit?.();
-      }, 2000);
+        navigate("/entries");
+      }
     } catch (err) {
       console.error("Error saving entry:", err);
       alert("Could not save your note. Please try again.");
@@ -64,6 +83,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="new-entry-page">
@@ -81,7 +101,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
         </div>
 
         <div className="new-entry-card">
-          {/* Mood preview (if selected) */}
+          {/* Mood preview */}
           {mood && (
             <div className="new-entry-mood">
               <span className="new-entry-emoji">
@@ -90,7 +110,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
             </div>
           )}
 
-          {/* Entry textarea */}
+          {/* Entry box */}
           <textarea
             className="new-entry-input"
             value={entry}
@@ -129,23 +149,16 @@ export default function NewEntryForm({ mood, onSubmit }) {
         <LoginPrompt
           onComplete={() => {
             onSubmit?.();
-            window.location.href = "/entries";
+            navigate("/entries");
           }}
         />
       )}
 
-      {showPopup ? (
-        <div className="new-entry-popup">
-          Thanks for sharing. Keep taking care of yourself.
-        </div>
-      ) : (
-        // Default footer when nothing else is shown
-        <div className="new-entry-text">
-          <p className="new-entry-footer-text">
-            We listen gently once you have finished
-          </p>
-        </div>
-      )}
+      {!showLoginPrompt && !showKindness && (
+        <p className="new-entry-footer-text">
+          We listen gently once you have finished
+        </p>)}
+
     </div>
   );
 }
