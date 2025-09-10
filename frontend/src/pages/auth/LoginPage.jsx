@@ -1,18 +1,26 @@
+// pages/auth/LoginPage.jsx
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Link } from "react-router-dom";
+import { useEntries } from "../../context/EntriesContext";
+import { Link, useNavigate } from "react-router-dom";
 import authLogo from "../../assets/auth/auth2.svg";
 import "./Auth.css";
 
-// email regex
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export default function LoginPage() {
   const { login, loading: authLoading, error: authError } = useAuth();
+  const { fetchEntries } = useEntries(); // fetch user entries after login
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [localError, setLocalError] = useState(null);
+  const navigate = useNavigate();
 
+  // After login: load entries and navigate to moods page
+  const finishLogin = async () => {
+    await fetchEntries();
+    navigate("/mood");
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLocalError(null);
@@ -21,13 +29,10 @@ export default function LoginPage() {
       setLocalError("Email and password are required");
       return;
     }
-    if (!emailRegex.test(email)) {
-      setLocalError("Please enter a valid email");
-      return;
-    }
 
     try {
       await login({ email, password });
+      await finishLogin(); // normal flow
     } catch (err) {
       setLocalError(err?.message || authError || "Login failed");
     }
@@ -36,14 +41,17 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-container">
+        {/* Image section */}
         <div className="auth-image-wrapper">
           <img src={authLogo} alt="Login Illustration" className="auth-image" />
         </div>
 
+        {/* Login form */}
         <div className="auth-form-wrapper">
           <form className="auth-form login-form" onSubmit={handleSubmit}>
             <h2>Welcome Back!</h2>
 
+            {/* Show error messages */}
             {(localError || authError) && (
               <p className="error-msg">{localError || authError}</p>
             )}

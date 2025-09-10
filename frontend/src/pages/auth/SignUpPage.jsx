@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import signupImage from "../../assets/auth/auth2.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Auth.css";
 
 // email regex
@@ -16,10 +16,14 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState(null);
 
+  const navigate = useNavigate();
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLocalError(null);
 
+    // Basic client-side validations
     if (!firstName || !lastName) {
       setLocalError("First and last name are required");
       return;
@@ -28,8 +32,8 @@ export default function SignupPage() {
       setLocalError("Please enter a valid email");
       return;
     }
-    if (password.length < 6) {
-      setLocalError("Password must be at least 6 characters");
+    if (password.length < 8) {
+      setLocalError("Password must be at least 8 characters");
       return;
     }
     if (password !== confirmPassword) {
@@ -38,7 +42,14 @@ export default function SignupPage() {
     }
 
     try {
-      await signup({ firstName, lastName, email, password });
+      // Call signup from AuthContext
+      await signup({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        password,
+      });
+      navigate("/login"); // Redirect on success
     } catch (err) {
       setLocalError(err?.message || authError || "Signup failed");
     }
@@ -73,7 +84,7 @@ export default function SignupPage() {
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-               placeholder="e.g., Williams"
+              placeholder="e.g., Williams"
               required
             />
 
@@ -82,7 +93,7 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-               placeholder="you@example.com"
+              placeholder="you@example.com"
               required
             />
 
@@ -91,7 +102,7 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-               placeholder="At least 6 characters"
+              placeholder="At least 8 characters"
               required
             />
 
