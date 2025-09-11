@@ -1,13 +1,25 @@
 # insights/views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from django.core.cache import cache
 from django.conf import settings
+from django.core.cache import cache
+from django_rq import get_queue
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
+from rest_framework import permissions, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from notes.models import Note
 
 from .serializers import InsightTipSerializer
 from .rules import render_tip
+from .utils import (
+    increment_count,
+    today_key_suffix,
+    get_daily_limit,
+)
+from .jobs import generate_note_feedback, process_user_insights
 from .services import (
     parse_week_offset,
     get_week_range,
@@ -17,6 +29,9 @@ from .services import (
     WEEK_CACHE_TTL,
 )
 
+# ----------------------------------------------------------------------
+# History
+# ----------------------------------------------------------------------
 
 class InsightsHistoryView(APIView):
     """
@@ -34,21 +49,27 @@ class InsightsHistoryView(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            # Past/current only
             week_offset = parse_week_offset(request, allow_negative=False)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Shared week-payload cache under "history" key (intentional)
+        # Shared week-payload cache under the "history" key (intentional)
         payload = get_history_payload(request.user, week_offset)
         return Response(payload, status=status.HTTP_200_OK)
 
 
+# ----------------------------------------------------------------------
+# Tip (rule-based)
+# ----------------------------------------------------------------------
+
 class WeeklyTipView(APIView):
     """
     GET /api/v1/insights/tip?week_offset=N
-    Returns a single rule-based tip: { "type": "tip", "message": "..." }
-    Uses the same week window & reduction as /history via centralized helpers.
+
+    Returns a single rule-based tip:
+      { "type": "tip", "message": "..." }
+
+    Uses the same week window & reduction as /history (centralized helpers).
     """
     permission_classes = [IsAuthenticated]
 
@@ -58,7 +79,6 @@ class WeeklyTipView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         try:
-            # Past/current only for tips
             week_offset = parse_week_offset(request, allow_negative=False)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -67,15 +87,14 @@ class WeeklyTipView(APIView):
 
         # Tip-specific response cache (separate from history cache)
         tip_cache_key = cache_key_for("tip", request.user.id, wr)
-        if (cached := cache.get(tip_cache_key)) is not None:
+        cached = cache.get(tip_cache_key)
+        if cached is not None:
             return Response(cached, status=status.HTTP_200_OK)
 
-        # Reuse shared week payload via points (graph reducer already cached by history)
+        # Same reducer as history (already cached under history)
         points = get_week_points(request.user, week_offset)  # [(date_iso, mood_value|None), ...]
 
-        # Render deterministic tip from weekly points
         tip = render_tip(points, wr.start)
-
         ser = InsightTipSerializer(data=tip)
         ser.is_valid(raise_exception=True)
         data = ser.validated_data
@@ -84,42 +103,132 @@ class WeeklyTipView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class WeeklyPredictionView(APIView):
-    """
-    OPTIONAL: GET /api/v1/insights/prediction?week_offset=N
-    Allows future weeks (negative offsets), reuses same reduction as history.
-    Example response shape (adjust to your serializer/rules):
-      { "type": "prediction", "message": "...", "confidence": 0.72 }
-    """
-    permission_classes = [IsAuthenticated]
+# ----------------------------------------------------------------------
+# Guest encourage (Frank’s original)
+# ----------------------------------------------------------------------
 
-    def get(self, request, *args, **kwargs):
-        # Optional feature flag
-        if not getattr(settings, "INSIGHTS_PREDICTION_ENABLED", True):
-            return Response(status=status.HTTP_404_NOT_FOUND)
+class GuestEncourageView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        note = request.data.get("note", "").strip()
+        fingerprint = request.data.get("fingerprint", "").strip()
+
+        if not note or not fingerprint:
+            return Response(
+                {"error": "Note and fingerprint are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Rate limiting based on fingerprint and daily limit
+        key = f"guest:{fingerprint}:{today_key_suffix()}"
+        count = increment_count(key, ttl=get_daily_limit())  # 24 hours TTL
+
+        if count > settings.GUEST_RATE_LIMIT_MAX:
+            return Response(
+                {"error": "Rate limit exceeded. Please try again later."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        response = generate_note_feedback(note_id=None, user=None, note_text=note)
+
+        return Response(
+            {"message": response, "today_count": count}, status=status.HTTP_200_OK
+        )
+
+
+# ----------------------------------------------------------------------
+# AI feedback (Frank’s original)
+# ----------------------------------------------------------------------
+
+class AiFeedbackView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        """
+        Enqueue AI feedback job for a specific note
+        """
+        note_id = request.data.get("note_id")
+        if not note_id:
+            return Response(
+                {"error": "note_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
-            # Allow future weeks for predictions
-            week_offset = parse_week_offset(request, allow_negative=True)
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            note = Note.objects.get(id=note_id, user=request.user)
+        except Note.DoesNotExist:
+            return Response(
+                {"error": "Note not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
-        wr = get_week_range(week_offset)
+        key = f"ai_feedback:{request.user.id}:{today_key_suffix()}"
+        count = increment_count(key, ttl=get_daily_limit())  # 24 hours TTL
 
-        # Prediction-specific response cache
-        pred_cache_key = cache_key_for("prediction", request.user.id, wr)
-        if (cached := cache.get(pred_cache_key)) is not None:
-            return Response(cached, status=status.HTTP_200_OK)
+        if count > settings.MAX_DAILY_AI_LOGGED_IN:
+            return Response(
+                {"error": "AI daily limit exceeded. Please try again later."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
 
-        # Points will be all None for future weeks (no notes), which your predictor can handle
-        points = get_week_points(request.user, week_offset)
+        response = generate_note_feedback(
+            note_id=note.id, user=request.user, note_text=note.note
+        )
 
-        # TODO: plug in your prediction logic here
-        payload = {
-            "type": "prediction",
-            "message": "Prediction stub — plug in model/heuristics.",
-            "confidence": 0.0,
-        }
+        return Response(
+            {"message": response, "today_count": count}, status=status.HTTP_200_OK
+        )
 
-        cache.set(pred_cache_key, payload, timeout=WEEK_CACHE_TTL)
-        return Response(payload, status=status.HTTP_200_OK)
+
+# ----------------------------------------------------------------------
+# AI summary (Frank’s original)
+# ----------------------------------------------------------------------
+
+class AiSummaryView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        """
+        Enqueue AI analysis job
+        """
+        week_offset = int(request.data.get("week_offset", 0))
+        queue = get_queue("default")
+        job = queue.enqueue(process_user_insights, request.user, week_offset)
+        return Response(
+            {"job_id": job.id, "job_status": job.get_status()},
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+    def get(self, request):
+        """
+        Check job status
+        """
+        job_id = request.query_params.get("job_id", "").strip()
+        if not job_id:
+            return Response(
+                {"error": "job_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        queue = get_queue("default")
+        job = queue.fetch_job(job_id)
+        if not job:
+            return Response(
+                {"error": "Job not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if job.is_failed:
+            return Response(
+                {"error": "Job failed.", "details": str(job.exc_info)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        if job.is_finished:
+            return Response(
+                {"message": "Job completed.", "result": job.result},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response({"job_id": job.id, "job_status": job.get_status()}, status=200)
