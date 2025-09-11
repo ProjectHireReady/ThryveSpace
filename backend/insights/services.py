@@ -1,14 +1,16 @@
 # insights/services.py
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import timedelta, date
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 
 from django.core.cache import cache
 from django.db.models import Max, Subquery
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
-from notes.models import Note  
+from notes.models import Note  # <-- needed for typing + queryset
 
 WEEK_CACHE_TTL = 300  # 5 minutes
 
@@ -34,7 +36,7 @@ class WeekRange:
 
 def parse_week_offset(request, allow_negative: bool = False) -> int:
     """
-    Parse ?week_offset=<int> or ?week=<int> as an alias.
+    Parse ?week_offset=<int> (or ?week=<int>).
     - If allow_negative is False, values < 0 raise ValueError.
     - Invalid inputs raise ValueError.
     """
@@ -50,9 +52,8 @@ def parse_week_offset(request, allow_negative: bool = False) -> int:
 
 def get_week_range(week_offset: int) -> WeekRange:
     """
-    Computes Monday-based week in active TZ.
+    Monday-based week in active TZ.
     week_offset=0 → current week; 1 → previous week; etc.
-    Supports negative offsets as 'future weeks' if you choose to allow them.
     """
     now = timezone.localtime(timezone.now())
     this_monday = (now - timedelta(days=now.weekday())).date()  # Monday
@@ -74,14 +75,14 @@ def get_week_points(user, week_offset: int) -> List[Tuple[str, Optional[int]]]:
 # Internals used by history/tip
 # -------------------------------
 
-def cache_key(user_id: int, wr: WeekRange) -> str:
-    # Kept for backward-compat with history endpoint
-    return f"insights:history:{user_id}:{wr.start.isoformat()}"
+def cache_key(user_pk: Any, wr: WeekRange) -> str:
+    # Robust to int/UUID/string PKs
+    return f"insights:history:{str(user_pk)}:{wr.start.isoformat()}"
 
 
-def cache_key_for(prefix: str, user_id: int, wr: WeekRange) -> str:
+def cache_key_for(prefix: str, user_pk: Any, wr: WeekRange) -> str:
     # Use this for tip/prediction: e.g., prefix="tip" or "prediction"
-    return f"insights:{prefix}:{user_id}:{wr.start.isoformat()}"
+    return f"insights:{prefix}:{str(user_pk)}:{wr.start.isoformat()}"
 
 
 def _mood_value_for(note: Note) -> Optional[int]:
@@ -110,9 +111,11 @@ def _mood_value_for(note: Note) -> Optional[int]:
     return None
 
 
-def fetch_weekly_latest_per_day(user, wr: WeekRange):
+def fetch_weekly_latest_per_day(user, wr: WeekRange) -> List[Note]:
     """
-    SQLite‑compatible reduction to one row per day (latest note of that day).
+    SQLite-compatible reduction to one row per day (latest note of that day).
+    If multiple notes share the exact same timestamp that is the day's latest,
+    tie-break by highest PK.
     """
     qs = Note.objects.select_related("mood").filter(
         user=user,
@@ -126,13 +129,21 @@ def fetch_weekly_latest_per_day(user, wr: WeekRange):
           .annotate(last_created=Max("created_at"))
     )
 
+    # Join back on (day,last_created) and tie-break by pk desc
     latest_notes = (
         qs.annotate(day=TruncDate("created_at"))
           .filter(created_at__in=Subquery(per_day_latest.values("last_created")))
-          .order_by("day", "created_at")  # stable ordering
+          .order_by("day", "-created_at", "-pk")  # stable, prefer newest pk on ties
     )
 
-    return list(latest_notes)
+    # Reduce to one per day (since multiple rows may share same created_at)
+    by_day: Dict[date, Note] = {}
+    for n in latest_notes:
+        d = n.created_at.date()
+        if d not in by_day:
+            by_day[d] = n
+    # Keep chronological order by day
+    return [by_day[d] for d in sorted(by_day.keys())]
 
 
 def build_response(user, wr: WeekRange) -> Dict:
@@ -152,12 +163,14 @@ def build_response(user, wr: WeekRange) -> Dict:
             snippet = (getattr(note, "note", "") or "").strip().replace("\n", " ")
             if len(snippet) > 120:
                 snippet = snippet[:117].rstrip() + "..."
-            timeline.append({
-                "date": d.isoformat(),
-                "mood_value": mv,
-                "mood_id": mid,
-                "snippet": snippet,
-            })
+            timeline.append(
+                {
+                    "date": d.isoformat(),
+                    "mood_value": mv,
+                    "mood_id": mid,
+                    "snippet": snippet,
+                }
+            )
         else:
             graph.append({"date": d.isoformat(), "mood_value": None, "mood_id": None})
 
@@ -174,7 +187,7 @@ def build_response(user, wr: WeekRange) -> Dict:
 
 def get_history_payload(user, week_offset: int) -> Dict:
     wr = get_week_range(week_offset)
-    key = cache_key(user.id, wr)
+    key = cache_key(user.pk, wr)
 
     cached = cache.get(key)
     if cached is not None:
