@@ -6,7 +6,6 @@ from django.db.models import Max
 from .models import Mood, CATEGORY_CHOICES
 from .serializers import MoodsCategoriesSerializer
 
-
 class MoodsAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -21,8 +20,8 @@ class MoodsAPIView(APIView):
             # Data is unchanged. Return a 304 response.
             return Response(status=status.HTTP_304_NOT_MODIFIED)
 
-        # 3. If data is new or ETag doesn't match, fetch and serialize all moods.
-        all_moods = Mood.objects.all()
+        # 3. If data is new or ETag doesn't match, fetch and serialize all active moods.
+        all_moods = Mood.objects.filter(is_active=True)
         serializer = MoodsCategoriesSerializer(all_moods)
         
         # 4. Build and return the successful 200 response with ETag and Cache-Control headers.
