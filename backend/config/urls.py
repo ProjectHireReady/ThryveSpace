@@ -19,7 +19,6 @@ from django.contrib import admin
 from django.urls import path, include
 from notes.views import NoteMigrationAPIView
 from rest_framework.authtoken.views import obtain_auth_token
-from notes.views import NoteMigrationAPIView
 
 
 urlpatterns = [
