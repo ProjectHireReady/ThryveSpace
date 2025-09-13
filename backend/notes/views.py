@@ -100,56 +100,52 @@ class NoteMigrationAPIView(APIView):
         errors = []
 
         try:
+            # Step 1: Prepare notes for bulk creation, resolving mood_name to Mood instance
             for entry_data in validated_entries:
                 try:
-                    mood_id = entry_data.get("mood_id")
-                    mood = Mood.objects.get(id=mood_id)
+                    mood_obj = None
+                    mood_name = entry_data.get('mood_name')
+                    if mood_name:
+                        try:
+                            mood_obj = Mood.objects.get(name__iexact=mood_name)
+                        except Mood.DoesNotExist:
+                            errors.append(
+                                f"Mood '{mood_name}' not found for note '{entry_data.get('note')}'."
+                            )
 
                     notes_to_create.append(
                         Note(
-                            note=entry_data["note"],
-                            mood=mood,
+                            note=entry_data['note'],
+                            mood=mood_obj,
                             user=user,
-                            created_at=entry_data.get("created_at"),
-                            mood_value_snapshot=mood.category_value,
+                            created_at=entry_data.get('created_at'),
                         )
                     )
-                except Mood.DoesNotExist:
-                    errors.append(
-                        f"Mood with ID '{mood_id}' not found for note '{entry_data.get('note')}'."
-                    )
                 except Exception as e:
-                    errors.append(
-                        f"Error preparing entry '{entry_data.get('note')}': {str(e)}"
-                    )
+                    errors.append(f"Error preparing entry '{entry_data.get('note')}': {str(e)}")
 
             if errors:
+                # If there are any errors in the data, return them without saving anything
                 return Response(
-                    {
-                        "message": "Validation failed for some entries.",
-                        "success_count": 0,
-                        "errors": errors,
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
+                    {"message": "Validation failed for some entries.", "success_count": 0, "errors": errors},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
+            # Step 2: Use an atomic transaction for all-or-nothing save
             with transaction.atomic():
-                created_notes = Note.objects.bulk_create(notes_to_create)
-
-            # Serialize using lean serializer
-            serialized_notes = [NoteLeanSerializer(note).data for note in created_notes]
+                Note.objects.bulk_create(notes_to_create)
 
             return Response(
                 {
-                    "message": f"Migration complete. {len(serialized_notes)} entries saved.",
-                    "success_count": len(serialized_notes),
-                    "notes": serialized_notes,
+                    "message": f"Migration complete. {len(notes_to_create)} entries saved.",
+                    "success_count": len(notes_to_create),
                     "errors": [],
                 },
                 status=status.HTTP_201_CREATED,
             )
 
         except Exception as e:
+            # Catch any database-level exceptions and return a server error
             return Response(
                 {"error": f"An error occurred during migration: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
