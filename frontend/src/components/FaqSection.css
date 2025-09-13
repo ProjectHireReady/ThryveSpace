@@ -7,7 +7,7 @@ h2.faq-title {
   font-size: 2rem;
   font-weight: bold;
   text-align: center;
-  color: #374151;
+  /* color: #374151; */
   margin-bottom: 3.3rem;
 }
 .faq-list {
@@ -47,7 +47,7 @@ span.faq-question {
 
 .faq-icon {
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 600;
   color: #5a90c5;
 }
 

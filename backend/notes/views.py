@@ -3,12 +3,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
+from django.db import transaction
 from config.permissions import IsOwner
 from .models import Note
 from .serializers import (
     NoteSerializer,
     NoteCreateSerializer,
     NoteMigrationSerializer,
+    NoteLeanSerializer,  # Import lean serializer
 )
 from moods.models import Mood
 
@@ -40,7 +42,21 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
             except Mood.DoesNotExist:
                 raise ValidationError({"mood_name": f"Mood '{mood_name}' not found."})
 
-        serializer.save(user=user, mood=mood_obj)
+        mood_value_snapshot = mood_obj.category_value if mood_obj else None
+        serializer.save(user=user, mood=mood_obj, mood_value_snapshot=mood_value_snapshot)
+
+
+    def create(self, request, *args, **kwargs):
+        """
+        Override to return a lean response using NoteLeanSerializer.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        note = serializer.instance
+        read_data = NoteLeanSerializer(note, context={"request": request}).data
+        return Response(read_data, status=status.HTTP_201_CREATED)
 
 
 class NoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -55,6 +71,15 @@ class NoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         return Note.objects.filter(user=user)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Override to return a lean response using NoteLeanSerializer.
+        """
+        response = super().update(request, *args, **kwargs)
+        note = self.get_object()
+        data = NoteLeanSerializer(note, context={"request": request}).data
+        return Response(data, status=response.status_code)
 
 
 class NoteMigrationAPIView(APIView):
@@ -71,32 +96,61 @@ class NoteMigrationAPIView(APIView):
 
         user = request.user
         validated_entries = serializer.validated_data["entries"]
-
-        success_count = 0
+        notes_to_create = []
         errors = []
 
-        for entry_data in validated_entries:
-            try:
-                mood_name = entry_data.pop("mood_name", None)
-                mood_obj = None
-                if mood_name:
-                    mood_obj = Mood.objects.get(name__iexact=mood_name)
+        try:
+            for entry_data in validated_entries:
+                try:
+                    mood_id = entry_data.get("mood_id")
+                    mood = Mood.objects.get(id=mood_id)
 
-                Note.objects.create(user=user, mood=mood_obj, **entry_data)
-                success_count += 1
-            except Mood.DoesNotExist:
-                errors.append(
-                    f"Mood '{mood_name}' not found for entry '{entry_data.get('note')}'."
+                    notes_to_create.append(
+                        Note(
+                            note=entry_data["note"],
+                            mood=mood,
+                            user=user,
+                            created_at=entry_data.get("created_at"),
+                            mood_value_snapshot=mood.category_value,
+                        )
+                    )
+                except Mood.DoesNotExist:
+                    errors.append(
+                        f"Mood with ID '{mood_id}' not found for note '{entry_data.get('note')}'."
+                    )
+                except Exception as e:
+                    errors.append(
+                        f"Error preparing entry '{entry_data.get('note')}': {str(e)}"
+                    )
+
+            if errors:
+                return Response(
+                    {
+                        "message": "Validation failed for some entries.",
+                        "success_count": 0,
+                        "errors": errors,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-            except Exception as e:
-                errors.append(
-                    f"Error saving entry '{entry_data.get('note')}': {str(e)}"
-                )
 
-        response_data = {
-            "message": f"Migration complete. {success_count} entries saved.",
-            "success_count": success_count,
-            "errors": errors,
-        }
+            with transaction.atomic():
+                created_notes = Note.objects.bulk_create(notes_to_create)
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            # Serialize using lean serializer
+            serialized_notes = [NoteLeanSerializer(note).data for note in created_notes]
+
+            return Response(
+                {
+                    "message": f"Migration complete. {len(serialized_notes)} entries saved.",
+                    "success_count": len(serialized_notes),
+                    "notes": serialized_notes,
+                    "errors": [],
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred during migration: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

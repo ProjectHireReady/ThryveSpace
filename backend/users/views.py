@@ -6,7 +6,19 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from .models import CustomUser
-from .serializers import SignUpSerializer, CustomUserSerializer
+from .serializers import (
+    SignUpSerializer,
+    CustomUserSerializer,
+    EmailAuthTokenSerializer,
+)
+
+
+class UserMeView(generics.RetrieveUpdateAPIView):
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
 
 
 class LoginView(ObtainAuthToken):
@@ -15,6 +27,7 @@ class LoginView(ObtainAuthToken):
     """
 
     permission_classes = [AllowAny]
+    serializer_class = EmailAuthTokenSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(

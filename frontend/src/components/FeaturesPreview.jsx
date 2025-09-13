@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import "./FeaturesPreview.css";
 import {
   FiBarChart2,
@@ -11,19 +13,26 @@ function FeaturesPreview() {
     <section className="features-preview-alt">
       <div className="features-alt-container">
         <div className="features-alt-text">
-          <h2>Explore Features</h2>
+          <div className="text-header-accent">
+            <span className="accent-dot" /> {/* small glow or line */}
+            <h2>Explore Features</h2>
+          </div>
+
           <p className="features-subtext">
             A quick glance at how we support your journey
           </p>
-          <button className="features-button">
+
+          <Link to="/features" className="features-button">
             Discover More <FiArrowUpRight className="arrow" />
-          </button>
+          </Link>
         </div>
 
-        <div className="features-alt-items">
-          <div className="feature-row">
-            <FiBarChart2 className="feature-icon" size={28} />
-            <div>
+        <div className="timeline">
+          <div className="timeline-item">
+            <div className="timeline-icon">
+              <FiBarChart2 size={24} />
+            </div>
+            <div className="timeline-content">
               <h4>AI insights for deeper understanding</h4>
               <p>
                 Our AI helps you see mood patterns and offer gentle personalized
@@ -32,9 +41,11 @@ function FeaturesPreview() {
             </div>
           </div>
 
-          <div className="feature-row">
-            <FiSmile className="feature-icon" size={28} />
-            <div>
+          <div className="timeline-item">
+            <div className="timeline-icon">
+              <FiSmile size={24} />
+            </div>
+            <div className="timeline-content">
               <h4>Gentle guidance you can trust</h4>
               <p>
                 Subtle check-ins and reminders keep your emotional well-being
@@ -43,9 +54,11 @@ function FeaturesPreview() {
             </div>
           </div>
 
-          <div className="feature-row">
-            <FiUserCheck className="feature-icon" size={28} />
-            <div>
+          <div className="timeline-item">
+            <div className="timeline-icon">
+              <FiUserCheck size={24} />
+            </div>
+            <div className="timeline-content">
               <h4>Personalized experience</h4>
               <p>
                 Our features adapt to your behavior and preferences, giving you
