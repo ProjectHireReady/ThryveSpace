@@ -42,7 +42,9 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
             except Mood.DoesNotExist:
                 raise ValidationError({"mood_name": f"Mood '{mood_name}' not found."})
 
-        serializer.save(user=user, mood=mood_obj)
+        mood_value_snapshot = mood_obj.category_value if mood_obj else None
+        serializer.save(user=user, mood=mood_obj, mood_value_snapshot=mood_value_snapshot)
+
 
     def create(self, request, *args, **kwargs):
         """
@@ -109,6 +111,7 @@ class NoteMigrationAPIView(APIView):
                             mood=mood,
                             user=user,
                             created_at=entry_data.get("created_at"),
+                            mood_value_snapshot=mood.category_value,
                         )
                     )
                 except Mood.DoesNotExist:
