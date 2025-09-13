@@ -10,6 +10,7 @@ from .serializers import (
     NoteSerializer,
     NoteCreateSerializer,
     NoteMigrationSerializer,
+    NoteLeanSerializer,  # Import lean serializer
 )
 from moods.models import Mood
 
@@ -41,7 +42,21 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
             except Mood.DoesNotExist:
                 raise ValidationError({"mood_name": f"Mood '{mood_name}' not found."})
 
-        serializer.save(user=user, mood=mood_obj)
+        mood_value_snapshot = mood_obj.category_value if mood_obj else None
+        serializer.save(user=user, mood=mood_obj, mood_value_snapshot=mood_value_snapshot)
+
+
+    def create(self, request, *args, **kwargs):
+        """
+        Override to return a lean response using NoteLeanSerializer.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        note = serializer.instance
+        read_data = NoteLeanSerializer(note, context={"request": request}).data
+        return Response(read_data, status=status.HTTP_201_CREATED)
 
 
 class NoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -56,6 +71,15 @@ class NoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         return Note.objects.filter(user=user)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Override to return a lean response using NoteLeanSerializer.
+        """
+        response = super().update(request, *args, **kwargs)
+        note = self.get_object()
+        data = NoteLeanSerializer(note, context={"request": request}).data
+        return Response(data, status=response.status_code)
 
 
 class NoteMigrationAPIView(APIView):
@@ -122,3 +146,4 @@ class NoteMigrationAPIView(APIView):
                 {"error": f"An error occurred during migration: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+

@@ -21,12 +21,14 @@ from notes.views import NoteMigrationAPIView
 from rest_framework.authtoken.views import obtain_auth_token
 from notes.views import NoteMigrationAPIView
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/moods/", include("moods.urls")),
     path("api/v1/notes/", include("notes.urls")),
     path("api/v1/auth/", include("users.urls")),
     path("api/v1/insights/", include("insights.urls")),
-    path('messages/', include('kindness.urls')),
     path('api/v1/notes/migrate/', NoteMigrationAPIView.as_view(), name='notes-migrate'),
+    path("django-rq/", include("django_rq.urls")),
+    path("messages/", include("kindness.urls")),
 ]

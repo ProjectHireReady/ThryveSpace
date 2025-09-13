@@ -1,0 +1,51 @@
+.kindness-popup {
+  position: fixed;
+  bottom: 6%; /* slightly higher than bottom edge */
+  left: 50%;
+  transform: translateX(-50%); /* only horizontal centering */
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid #080809; /* Dark bluish border */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* slightly deeper shadow */
+  z-index: 1001;
+
+  opacity: 0;
+  transform: translate(-50%, 30px); /* start slightly below */
+  animation: slideUpFade 0.4s ease-out forwards;
+}
+
+/* Button row styling remains same */
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.login-btn {
+  background-color: #f06666;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.kindness-dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #5c3b3b;
+}
+
+/* Smooth slide-up + fade-in animation */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 30px); /* below start point */
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0); /* final position */
+  }
+}

@@ -13,7 +13,7 @@
   font-size: 2rem;
   font-weight: bold;
   text-align: center;
-  color: #374151;
+  /* color: #374151; */
   margin-bottom: 3rem;
 }
 
@@ -71,9 +71,10 @@
 
 .uplift-text {
   font-size: 1rem;
+  font-family: var(--font-alt);
   font-weight: 600;
   color: #6b7280;
-  line-height: 1.5;
+  line-height: 1.6;
   padding: 0 0.5rem;
   max-width: 90%;
 }

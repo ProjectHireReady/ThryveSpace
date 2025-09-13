@@ -7,7 +7,7 @@ h2.benefits-section {
   font-size: 2rem;
   font-weight: bold;
   text-align: center;
-  color: #374151;
+  /* color: #374151; */
   margin-bottom: 2rem;
 }
 
@@ -38,6 +38,7 @@ h3.benefit-title {
 
 p.benefit-desc {
   font-size: 16px;
+  line-height: 1.5;
   font-weight: 600;
   color: #6b7280;
   margin-top: 8px;
@@ -65,16 +66,22 @@ p.benefit-desc {
   align-items: center;
   justify-content: center;
   color: #5a90c5;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 16px;
 }
 
 /* Manual divider */
 .divider {
   width: 1px;
-  background-color: #adadaa;
+  background-color: #6b7280;
   height: auto;
   margin: 0 10px;
+  border-radius: 2px;
+  align-self: stretch;
+}
+
+.benefits-container .divider:last-child {
+  display: none;
 }
 
 /* Responsiveness */

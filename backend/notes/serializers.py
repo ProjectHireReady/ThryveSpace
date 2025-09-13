@@ -1,16 +1,16 @@
 from rest_framework import serializers
-from .models import Note, Mood
+from .models import Note
+from moods.models import Mood
 from moods.serializers import MoodSerializer
 from django.contrib.auth import get_user_model
-from moods.models import Mood
 
 User = get_user_model()
 
 
-# Implement truncation
 class NoteInsightSerializer(serializers.ModelSerializer):
     """
     Serializer for insight operations.
+    Includes note truncation logic.
     """
 
     mood = MoodSerializer(read_only=True)
@@ -34,7 +34,7 @@ class NoteInsightSerializer(serializers.ModelSerializer):
 class NoteSerializer(serializers.ModelSerializer):
     """
     Serializer for READ, UPDATE, DELETE operations.
-    It includes nested mood data for the response.
+    Includes nested mood object and user.
     """
 
     mood = MoodSerializer(read_only=True)
@@ -48,7 +48,7 @@ class NoteSerializer(serializers.ModelSerializer):
 class NoteCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for CREATE operations (POST requests).
-    It accepts 'mood_name' to link a mood.
+    Accepts 'mood_name' to link a mood by name.
     """
 
     mood_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
@@ -59,6 +59,7 @@ class NoteCreateSerializer(serializers.ModelSerializer):
 
 
 class MigratedNoteSerializer(serializers.Serializer):
+
     note = serializers.CharField(max_length=500, required=True)
     mood_id = serializers.UUIDField(required=True)
     created_at = serializers.DateTimeField(required=False, allow_null=True)
@@ -74,7 +75,7 @@ class MigratedNoteSerializer(serializers.Serializer):
 class NoteMigrationSerializer(serializers.Serializer):
     """
     Serializer for the bulk migration endpoint.
-    It validates a list of 'MigratedNoteSerializer' objects.
+    It validates a list of 'NoteCreateSerializer' objects.
     """
 
-    entries = MigratedNoteSerializer(many=True)
+    entries = NoteCreateSerializer(many=True)
