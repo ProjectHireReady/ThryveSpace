@@ -1,73 +1,81 @@
-import { useEffect, useState } from "react";
-import "./MoodSelector.css";
+import { useState, useEffect } from "react";
 import { getMoods } from "../api/moods";
-import { guestMoods } from "../data/guestMoods";
-import { useAuth } from "../context/AuthContext";
+import "./MoodSelector.css";
 
 export default function MoodSelector({ onMoodSelect }) {
-
-  const { user } = useAuth();
-  const isLoggedIn = !!user;
-
-
   const [moods, setMoods] = useState([]);
+  const [page, setPage] = useState(0);
+  const [animating, setAnimating] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [disabled, setDisabled] = useState(false);
+  const pageSize = 8; // 4 per row × 2 rows
 
   useEffect(() => {
-    const loadMoods = async () => {
-      if (isLoggedIn) {
-        try {
-          const res = await getMoods();
-          setMoods(res.data);
-        } catch (err) {
-          setError("Could not load moods.");
-        }
-      } else {
-        setMoods(guestMoods); // Local fallback
-      }
+    const fetchMoods = async () => {
+      setLoading(true);
+      const data = await getMoods();
+      setMoods(data);
       setLoading(false);
     };
+    fetchMoods();
+  }, []);
 
-    loadMoods();
-  }, [isLoggedIn]);
+  const totalPages = Math.ceil(moods.length / pageSize);
 
-  const handleSelect = (mood) => {
-    if (disabled) return;
-    setDisabled(true);
-    onMoodSelect(mood);
+  const changePage = (newPage) => {
+    setAnimating(true);
+    setTimeout(() => {
+      setPage(newPage);
+      setAnimating(false);
+    }, 300);
   };
+
+  const handleNext = () => {
+    if (page < totalPages - 1) changePage(page + 1);
+  };
+
+  const handlePrev = () => {
+    if (page > 0) changePage(page - 1);
+  };
+
+  const startIndex = page * pageSize;
+  const visibleMoods = moods.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="mood-selector">
-      <h1 className="mood-header">How are you feeling today?</h1>
-      <h2 className="subtext">
-        You can pick a mood or just write — whatever feels right today.
-      </h2>
+      <h2 className="mood-header">How are you feeling?</h2>
+      <p className="subtext">Pick a mood that best describes you</p>
 
-      {loading && <p className="mood-loading-message">Loading moods...</p>}
-      {error && <p className="mood-error-message">{error}</p>}
-
-      <div className={`mood-grid ${disabled ? "disabled" : ""}`}>
-        {!loading &&
-          moods.map((mood) => (
+      {loading ? (
+        <div className="loading-spinner">Loading moods...</div>
+      ) : (
+        <div className={`mood-grid ${animating ? "fade-out" : "fade-in"}`}>
+          {visibleMoods.map((mood) => (
             <div
               key={mood.id}
               className="mood-item"
-              onClick={() => handleSelect(mood)}
-              role="button"
-              tabIndex={disabled ? -1 : 0}
-              onKeyDown={(e) =>
-                (e.key === "Enter" || e.key === " ") && handleSelect(mood)
-              }
-              aria-label={`Select mood ${mood.name}`}
+              onClick={() => onMoodSelect(mood)} // pass full object!
             >
-              <img src={mood.imageUrl} alt={`Mood: ${mood.name}`} />
-              <p className="mood-label">{mood.name}</p>
+              <img src={mood.imageUrl} alt={mood.name} />
+              <p>{mood.name}</p>
             </div>
           ))}
-      </div>
+        </div>
+      )}
+
+      {!loading && (
+        <div className="button-container">
+          {page > 0 && (
+            <button className="scroll-button" onClick={handlePrev}>
+              ↑ Previous moods
+            </button>
+          )}
+          {page < totalPages - 1 && (
+            <button className="scroll-button" onClick={handleNext}>
+              ↓ Next moods
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
