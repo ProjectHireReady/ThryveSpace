@@ -91,9 +91,20 @@ p {
   border-bottom: 1px solid #5a90c5;
 }
 
-.button {
-  font-family: var(--font-heading);
+/* Reset default button styles globally */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 }
+
+/* .button {
+  font-family: var(--font-heading);
+} */
 
 footer p {
   color: white;
@@ -102,4 +113,37 @@ footer p {
 /* Utility: Nunito font */
 .nunito {
   font-family: var(--font-alt);
+}
+
+/* ===== DISABLE BROWSER DEFAULT VALIDATION ===== */
+
+/* Remove browser default validation styling */
+input:invalid {
+  box-shadow: none;
+  border-color: #ccc; /* Keep your original border */
+}
+
+/* Remove the default validation bubble/tooltip */
+input::-webkit-validation-bubble-message,
+input::-webkit-validation-bubble-arrow,
+input::-webkit-validation-bubble {
+  display: none !important;
+}
+
+/* Firefox - remove validation styling */
+input:-moz-ui-invalid {
+  box-shadow: none;
+  border-color: #ccc;
+}
+
+/* Remove outline on invalid inputs */
+input:invalid:focus {
+  outline: none;
+  border-color: #4b7aa8; /* Your focus color */
+  box-shadow: 0 0 0 2px rgba(90, 144, 197, 0.2);
+}
+button[type="button"] {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
 }
