@@ -1,7 +1,7 @@
 # backend/contact/views.py
 import logging
 from django.conf import settings
-from django.core.mail import EmailMessage, get_connection
+from django.core.mail import EmailMultiAlternatives, get_connection
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
@@ -31,24 +31,37 @@ class ContactView(APIView):
             f"{data['message']}\n"
         )
 
+        html_body = f"""
+        <h2>New Contact Form Submission</h2>
+        <p><strong>Name:</strong> {data['name']}</p>
+        <p><strong>Email:</strong> {data['email']}</p>
+        <p><strong>Message:</strong></p>
+        <p>{data['message'].replace('\n', '<br>')}</p>
+        """
+
         to_email = getattr(settings, "CONTACT_INBOX", "hello@thryvespace.com")
         from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "no-reply@thryvespace.com")
 
         try:
-            connection = get_connection()  # uses EMAIL_* settings
-            msg = EmailMessage(
+            connection = get_connection()  # Uses Django's EMAIL_* settings
+            msg = EmailMultiAlternatives(
                 subject=subject,
-                body=body,
+                body=body,  # Plain text version
                 from_email=from_email,
                 to=[to_email],
-                reply_to=[data["email"]],  # important
+                reply_to=[data["email"]],
                 connection=connection,
             )
+            msg.attach_alternative(html_body, "text/html")
             msg.send(fail_silently=False)
-            return Response({"ok": True, "message": "Thanks for reaching out! We’ve received your message."})
+
+            return Response({
+                "ok": True,
+                "message": "Thanks for reaching out! We’ve received your message."
+            })
         except Exception as e:
-            logger.exception("Contact form send failed: %s", e)
+            logger.exception("❌ Contact form send failed: %s", e)
             return Response(
                 {"ok": False, "message": "Failed to send message. Please try again later."},
-                status=status.HTTP_502_BAD_GATEWAY,
+                status=status.HTTP_502_BAD_GATEWAY
             )
