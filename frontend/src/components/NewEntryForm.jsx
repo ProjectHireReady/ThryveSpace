@@ -36,8 +36,9 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const { day, month } = getToday();
 
   const handleSubmit = async () => {
-    if (!title.trim() && !entry.trim() && !mood) {
-      return alert("Please add a title, note, or pick a mood!");
+    // Require at least note or mood
+    if (!entry.trim() && !mood) {
+      return alert("Please pick a mood or write something!");
     }
 
     const payload = isLoggedIn
@@ -77,6 +78,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="new-entry-page">
