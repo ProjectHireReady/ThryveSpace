@@ -54,15 +54,8 @@ export default function LoginPage() {
 
     const result = loginSchema.safeParse({ email, password });
 
-    // if (!result?.success && result?.error?.errors) {
-    //   const formatted = {};
-    //   result.error.errors.forEach((err) => {
-    //     formatted[err.path[0]] = err.message;
-    //   });
-    //   setErrors(formatted);
-    //   return;
-    // }
-     if (!result.success) {
+
+    if (!result.success) {
       const formatted = {};
       result.error?.issues?.forEach(err => {
         formatted[err.path[0]] = err.message;
@@ -76,11 +69,11 @@ export default function LoginPage() {
       await login({ email, password });
       await finishLogin(); // normal flow
     } catch (err) {
-       setErrors(prev => ({ 
-        ...prev, 
-        form: err?.message || authError || "Login failed" 
+      setErrors(prev => ({
+        ...prev,
+        form: err?.message || authError || "Login failed"
       }));
-      //setErrors({ form: err?.message || authError || "Login failed" });
+
     }
   };
 
@@ -114,7 +107,7 @@ export default function LoginPage() {
               // onChange={(e) => setEmail(e.target.value)}
               onChange={handleEmailChange}
               placeholder="you@example.com"
-               className={errors.email ? 'error' : ''}
+              className={errors.email ? 'error' : ''}
               aria-invalid={errors.email ? 'true' : 'false'}
               aria-describedby={errors.email ? "login-email-error" : undefined}
             />
@@ -146,7 +139,7 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-             {errors.password && (
+            {errors.password && (
               <p id="login-password-error" className="inline-error">
                 {errors.password}
               </p>
