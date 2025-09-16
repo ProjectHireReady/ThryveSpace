@@ -71,5 +71,5 @@ class ContactView(APIView):
             logger.exception("❌ Contact form send failed: %s", e)
             return Response(
                 {"ok": False, "message": "Failed to send message. Please try again later."},
-                status=status.HTTP_502_BAD_GATEWAY
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
