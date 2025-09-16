@@ -172,3 +172,9 @@ EMAIL_USE_SSL = config("SMTP_USE_SSL", default=False, cast=bool)
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@thryvespace.com")
 SERVER_EMAIL = config("SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 CONTACT_INBOX = config("CONTACT_INBOX", default="hello@thryvespace.com")
+
+# -----------------------------
+# Proxy-aware IP Handling (django-ipware)
+# -----------------------------
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
