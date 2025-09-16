@@ -1,7 +1,9 @@
 # backend/contact/views.py
+
 import logging
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
+from django.utils.html import escape  # ✅ Protect against XSS
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
@@ -22,7 +24,13 @@ class ContactView(APIView):
             return Response({"ok": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         data = serializer.validated_data
-        subject = f"[ThryveSpace] Contact form: {data['name']}"
+
+        # ✅ Escape all user input for HTML safety
+        escaped_name = escape(data["name"])
+        escaped_email = escape(data["email"])
+        escaped_message = escape(data["message"]).replace("\n", "<br>")
+
+        subject = f"[ThryveSpace] Contact form: {escaped_name}"
         body = (
             "New contact form submission\n\n"
             f"Name: {data['name']}\n"
@@ -33,10 +41,10 @@ class ContactView(APIView):
 
         html_body = f"""
         <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> {data['name']}</p>
-        <p><strong>Email:</strong> {data['email']}</p>
+        <p><strong>Name:</strong> {escaped_name}</p>
+        <p><strong>Email:</strong> {escaped_email}</p>
         <p><strong>Message:</strong></p>
-        <p>{data['message'].replace('\n', '<br>')}</p>
+        <p>{escaped_message}</p>
         """
 
         to_email = getattr(settings, "CONTACT_INBOX", "hello@thryvespace.com")
@@ -46,7 +54,7 @@ class ContactView(APIView):
             connection = get_connection()  # Uses Django's EMAIL_* settings
             msg = EmailMultiAlternatives(
                 subject=subject,
-                body=body,  # Plain text version
+                body=body,  # Plain text version (can be raw)
                 from_email=from_email,
                 to=[to_email],
                 reply_to=[data["email"]],
