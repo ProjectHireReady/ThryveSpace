@@ -6,6 +6,7 @@ import {
   signupUser,
   logoutUser /*, getCurrentUser */,
 } from "../services/authService";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -13,6 +14,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // null = guest
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Helper: save user & token after login/signup
   const handleAuthSuccess = (data) => {
@@ -20,33 +25,71 @@ export const AuthProvider = ({ children }) => {
     if (data.user) setUser(data.user);
   };
 
+  // Helper: redirect after successful auth
+  const redirectAfterLogin = () => {
+    // Get the intended destination from location state, or default to dashboard
+    const from = location.state?.from?.pathname || "/mood";
+    navigate(from, { replace: true });
+  };
+
+  // Helper: redirect after logout
+  const redirectAfterLogout = () => {
+    navigate("/", { replace: true });
+  };
+
   // Restore user after reload
   useEffect(() => {
     const restoreUser = async () => {
       setLoading(true);
       try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setUser(null);
+          setIsInitialized(true);
+          return;
+        }
+
         const data = await getCurrentUser(); // expects { user: {...}, token: ... } or just user
-        setUser(data.user);
-      } catch {
+        if (data?.user) {
+          setUser(data.user);
+        } else {
+          // Invalid token, clean up
+          localStorage.removeItem("token");
+          setUser(null);
+        }
+      } catch (err) {
+        console.error("Failed to restore user:", err);
         localStorage.removeItem("token");
         setUser(null);
       } finally {
         setLoading(false);
+        setIsInitialized(true);
       }
     };
-    restoreUser();
-  }, []);
+    if (!isInitialized) {
+      restoreUser();
+    }
+  }, [isInitialized]);
 
   // Login
-  const login = async (payload) => {
+
+
+  const login = async (payload, options = {}) => {
     setLoading(true);
     setError(null);
     try {
       const data = await loginUser(payload);
       handleAuthSuccess(data);
+
+      // Only redirect if not disabled (useful for components that handle their own navigation)
+      if (!options.skipRedirect) {
+        redirectAfterLogin();
+      }
+
       return data;
     } catch (err) {
-      setError(err.message || "Login failed");
+      const errorMessage = err.message || "Login failed";
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -54,15 +97,23 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Signup
-  const signup = async (payload) => {
+
+  const signup = async (payload, options = {}) => {
     setLoading(true);
     setError(null);
     try {
       const data = await signupUser(payload);
       handleAuthSuccess(data);
+
+      // Only redirect if not disabled
+      if (!options.skipRedirect) {
+        redirectAfterLogin();
+      }
+
       return data;
     } catch (err) {
-      setError(err.message || "Signup failed");
+      const errorMessage = err.message || "Signup failed";
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -70,19 +121,57 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout
-  const logout = async () => {
+
+  const logout = async (options = {}) => {
     setLoading(true);
     setError(null);
     try {
       await logoutUser(); // optional backend call
-    } catch {
-      // ignore backend errors
+    } catch (err) {
+      console.warn("Logout request failed:", err);
+      // Don't throw - we still want to clear local state
     } finally {
       localStorage.removeItem("token");
       setUser(null);
       setLoading(false);
+
+      // Only redirect if not disabled
+      if (!options.skipRedirect) {
+        redirectAfterLogout();
+      }
     }
   };
+
+  // Clear error manually
+  const clearError = () => {
+    setError(null);
+  };
+
+  // Check if user is authenticated
+  const isAuthenticated = !!user;
+
+  // Check if user has specific role (if your app uses roles)
+  const hasRole = (role) => {
+    return user?.roles?.includes(role) || false;
+  };
+
+  // Get user display name
+  const getUserDisplayName = () => {
+    if (!user) return null;
+    return user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.email;
+  };
+
+
+
+  // Don't render children until auth state is initialized
+  if (!isInitialized) {
+    return (
+      <div className="auth-loading">
+        <div className="loading-spinner">Loading...</div>
+      </div>
+    );
+  }
+
 
   return (
     <AuthContext.Provider
@@ -90,9 +179,17 @@ export const AuthProvider = ({ children }) => {
         user, // use !!user to check if logged in
         loading,
         error,
+        isInitialized,
+        isAuthenticated,
         login,
         signup,
         logout,
+        clearError,
+
+        // Helpers
+        hasRole,
+        getUserDisplayName,
+
       }}
     >
       {children}
@@ -101,4 +198,11 @@ export const AuthProvider = ({ children }) => {
 };
 
 // Custom hook to use auth
-export const useAuth = () => useContext(AuthContext);
+//export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

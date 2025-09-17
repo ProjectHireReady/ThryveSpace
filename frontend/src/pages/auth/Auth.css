@@ -1,4 +1,4 @@
-/*  Full-page auth container */
+ Full-page auth container
 .auth-page {
   display: flex;
   height: 100vh; 
@@ -84,11 +84,44 @@
   font-weight: 600;
 }
 
+/* Input field error state */
+.auth-form input.error,
+.auth-form input[aria-invalid="true"] {
+  border-color: #ff4d4f;
+  background-color: #ffebec; /* Light red background */
+  box-shadow: inset 0 2px 4px rgba(255, 77, 79, 0.1);
+}
+
+.auth-form input.error:focus,
+.auth-form input[aria-invalid="true"]:focus {
+  border-color: #ff4d4f;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+  outline: none;
+}
+
 /* Form labels and inputs */
 .auth-form label {
   margin-bottom: 4px;
   font-weight: 500;
   font-size: 0.95rem;
+}
+/* Success state styling (bonus) */
+.auth-form input.success,
+.auth-form input[aria-invalid="false"] {
+  border-color: #52c41a;
+  background-color: #f0f9f0;
+}
+
+/* Label styling when field has error */
+.auth-form label.error {
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+/* Password wrapper error state */
+.password-input-wrapper.error input {
+  border-color: #ff4d4f;
+  background-color: #ffebec;
 }
 
 .auth-form input {
@@ -104,6 +137,14 @@
 
 .auth-form input:focus {
   border-color: #4b7aa8;
+  box-shadow: 0 0 0 2px rgba(90, 144, 197, 0.2);
+  outline: none;
+}
+
+/* Improved focus states */
+.auth-form input:focus:not(.error) {
+  border-color: #4b7aa8;
+  background-color: #f0f7ff; /* Light blue on focus */
   box-shadow: 0 0 0 2px rgba(90, 144, 197, 0.2);
   outline: none;
 }
@@ -136,12 +177,28 @@
 }
 
 /* Error message */
+/* Form-level error styling (enhanced) */
 .error-msg {
   color: #ff4d4f;
-  margin-bottom: 12px;
+  background-color: #ffebec;
+  border: 1px solid #ffcdd2;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
   text-align: center;
   font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
+
+.error-msg::before {
+  content: "❌";
+  font-size: 1rem;
+}
+
 
 /* Toggle text below form */
 .toggle-text {
@@ -163,6 +220,81 @@
 .toggle-text a:hover {
   text-decoration: underline;
 }
+
+/* Inline field error styling */
+/* Enhanced inline error messages */
+.inline-error {
+  color: #ff4d4f;
+  font-size: 0.8rem;
+  margin: -8px 0 10px 2px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+/* Add error icon to inline errors */
+.inline-error::before {
+  content: "⚠";
+  font-size: 0.9rem;
+  color: #ff4d4f;
+}
+/* Wrapper around password input */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+   margin-bottom: 1rem;
+}
+
+/* Give extra padding so text doesn't overlap icon */
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+  box-sizing: border-box;
+}
+/* ensure password inputs have right padding for the icon */
+.password-field {
+  position: relative;
+  padding-right: 44px; /* space for icon button */
+  margin-top: 12px;
+}
+
+
+.toggle-password-btn {
+  all: unset; /* ✅ removes browser default button styles */
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  /* width: auto;
+  height: auto; */
+  cursor: pointer;
+  line-height: 0;
+}
+
+.toggle-password-btn svg {
+  width: 20px;
+  height: 20px;
+  color: black;
+  pointer-events: none;
+}
+* Remove focus outline on click */
+.toggle-password-btn:focus {
+  outline: none;
+}
+
+.toggle-password-btn:hover svg {
+   color: #1e3a8a;
+}
+
+
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
@@ -189,5 +321,75 @@
 
   .auth-form h2 {
     font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .password-input-wrapper input {
+    font-size: 1rem;
+    padding: 12px 36px 12px 12px;
+  }
+
+  .toggle-password-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .error-msg {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+  
+  .inline-error {
+    font-size: 0.75rem;
+  }
+}
+/* Auth loading states */
+.auth-loading,
+.route-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #5a90c5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-content p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+    border: 3px solid #5a90c5;
   }
 }
