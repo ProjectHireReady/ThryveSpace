@@ -8,12 +8,12 @@ import { useAuth } from "../context/AuthContext";
 function MoodItem({ mood, disabled, selected, onSelect }) {
   return (
     <div
-      className={`mood-item ${selected ? "selected" : ""} ${disabled ? "locked" : ""}`}
-      onClick={() => !disabled && onSelect(mood)}
+      className={`mood-item ${selected ? "selected" : ""}`}
+      onClick={() => onSelect(mood)}
       role="button"
       tabIndex={disabled ? -1 : 0}
       onKeyDown={(e) =>
-        !disabled && (e.key === "Enter" || e.key === " ") && onSelect(mood)
+        (e.key === "Enter" || e.key === " ") && onSelect(mood)
       }
       aria-label={`Select mood ${mood.name}`}
     >
@@ -44,19 +44,17 @@ export default function MoodSelector({ onMoodSelect }) {
   const { user } = useAuth();
   const isLoggedIn = !!user;
 
-  // State
+  // guests get moods instantly, logged-in users fetch from API
   const [moods, setMoods] = useState(isLoggedIn ? [] : guestMoods);
   const [loading, setLoading] = useState(isLoggedIn);
   const [error, setError] = useState(null);
+  const [disabled, setDisabled] = useState(false);
 
   const [page, setPage] = useState(0);
   const [animating, setAnimating] = useState(false);
-  const [disabled, setDisabled] = useState(false);
   const [selectedMood, setSelectedMood] = useState(null);
+  const pageSize = 4;
 
-  const pageSize = 4; // Smaller than before, 2x2
-
-  // Fetch moods only for logged-in users
   useEffect(() => {
     if (!isLoggedIn) return;
 
@@ -79,10 +77,9 @@ export default function MoodSelector({ onMoodSelect }) {
 
   const totalPages = Math.ceil(moods.length / pageSize);
 
-  // Page change handler
   const changePage = useCallback((newPage) => {
     setAnimating(true);
-    setDisabled(false); // unlock
+    setDisabled(false);
     setSelectedMood(null);
 
     setTimeout(() => {
@@ -101,13 +98,12 @@ export default function MoodSelector({ onMoodSelect }) {
     [page, changePage]
   );
 
-  // Mood click handler
   const handleSelect = useCallback(
     (mood) => {
       if (disabled) return;
-      setDisabled(true); // lock
+      setDisabled(true);
       setSelectedMood(mood.id);
-      onMoodSelect(mood); // bubble up
+      onMoodSelect(mood);
     },
     [disabled, onMoodSelect]
   );
@@ -123,7 +119,10 @@ export default function MoodSelector({ onMoodSelect }) {
       </h2>
 
       {loading ? (
-        <div className="loading-spinner">Loading moods...</div>
+        <div className="spinner-container">
+          <div className="spinner"></div>
+          <p>Loading moods...</p>
+        </div>
       ) : error ? (
         <p className="mood-error-message">{error}</p>
       ) : moods.length === 0 ? (
