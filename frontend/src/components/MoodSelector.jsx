@@ -1,80 +1,159 @@
-import { useState, useEffect } from "react";
-import { getMoods } from "../api/moods";
+// MoodSelector.jsx
+import { useEffect, useState, useCallback } from "react";
 import "./MoodSelector.css";
+import { getMoods } from "../api/moods";
+import { guestMoods } from "../data/guestMoods";
+import { useAuth } from "../context/AuthContext";
+
+function MoodItem({ mood, disabled, selected, onSelect }) {
+  return (
+    <div
+      className={`mood-item ${selected ? "selected" : ""} ${disabled ? "locked" : ""}`}
+      onClick={() => !disabled && onSelect(mood)}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      onKeyDown={(e) =>
+        !disabled && (e.key === "Enter" || e.key === " ") && onSelect(mood)
+      }
+      aria-label={`Select mood ${mood.name}`}
+    >
+      <img src={mood.imageUrl} alt={`Mood: ${mood.name}`} />
+      <p className="mood-label">{mood.name}</p>
+    </div>
+  );
+}
+
+function PaginationButtons({ page, totalPages, onPrev, onNext }) {
+  return (
+    <div className="button-container">
+      {page > 0 && (
+        <button className="scroll-button" onClick={onPrev}>
+          ↑ Previous
+        </button>
+      )}
+      {page < totalPages - 1 && (
+        <button className="scroll-button" onClick={onNext}>
+          ↓ Next
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function MoodSelector({ onMoodSelect }) {
-  const [moods, setMoods] = useState([]);
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+
+  // State
+  const [moods, setMoods] = useState(isLoggedIn ? [] : guestMoods);
+  const [loading, setLoading] = useState(isLoggedIn);
+  const [error, setError] = useState(null);
+
   const [page, setPage] = useState(0);
   const [animating, setAnimating] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const pageSize = 8; // 4 per row × 2 rows
+  const [disabled, setDisabled] = useState(false);
+  const [selectedMood, setSelectedMood] = useState(null);
 
+  const pageSize = 4; // Smaller than before, 2x2
+
+  // Fetch moods only for logged-in users
   useEffect(() => {
-    const fetchMoods = async () => {
+    if (!isLoggedIn) return;
+
+    const loadMoods = async () => {
       setLoading(true);
-      const data = await getMoods();
-      setMoods(data);
-      setLoading(false);
+      setError(null);
+      try {
+        const res = await getMoods();
+        setMoods(res.data || []);
+      } catch (err) {
+        console.error("Error fetching moods:", err);
+        setError("Could not load moods. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchMoods();
-  }, []);
+
+    loadMoods();
+  }, [isLoggedIn]);
 
   const totalPages = Math.ceil(moods.length / pageSize);
 
-  const changePage = (newPage) => {
+  // Page change handler
+  const changePage = useCallback((newPage) => {
     setAnimating(true);
+    setDisabled(false); // unlock
+    setSelectedMood(null);
+
     setTimeout(() => {
       setPage(newPage);
       setAnimating(false);
     }, 300);
-  };
+  }, []);
 
-  const handleNext = () => {
-    if (page < totalPages - 1) changePage(page + 1);
-  };
+  const handleNext = useCallback(
+    () => page < totalPages - 1 && changePage(page + 1),
+    [page, totalPages, changePage]
+  );
 
-  const handlePrev = () => {
-    if (page > 0) changePage(page - 1);
-  };
+  const handlePrev = useCallback(
+    () => page > 0 && changePage(page - 1),
+    [page, changePage]
+  );
+
+  // Mood click handler
+  const handleSelect = useCallback(
+    (mood) => {
+      if (disabled) return;
+      setDisabled(true); // lock
+      setSelectedMood(mood.id);
+      onMoodSelect(mood); // bubble up
+    },
+    [disabled, onMoodSelect]
+  );
 
   const startIndex = page * pageSize;
   const visibleMoods = moods.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="mood-selector">
-      <h2 className="mood-header">How are you feeling?</h2>
-      <p className="subtext">Pick a mood that best describes you</p>
+      <h1 className="mood-header">How are you feeling today?</h1>
+      <h2 className="subtext">
+        You can pick a mood or just write — whatever feels right today.
+      </h2>
 
       {loading ? (
         <div className="loading-spinner">Loading moods...</div>
+      ) : error ? (
+        <p className="mood-error-message">{error}</p>
+      ) : moods.length === 0 ? (
+        <p className="mood-empty-message">No moods available.</p>
       ) : (
-        <div className={`mood-grid ${animating ? "fade-out" : "fade-in"}`}>
-          {visibleMoods.map((mood) => (
-            <div
-              key={mood.id}
-              className="mood-item"
-              onClick={() => onMoodSelect(mood)} // pass full object!
-            >
-              <img src={mood.imageUrl} alt={mood.name} />
-              <p>{mood.name}</p>
-            </div>
-          ))}
-        </div>
-      )}
+        <>
+          <div
+            className={`mood-grid ${animating ? "fade-out" : "fade-in"} ${disabled ? "disabled" : ""
+              }`}
+          >
+            {visibleMoods.map((mood) => (
+              <MoodItem
+                key={mood.id}
+                mood={mood}
+                disabled={disabled}
+                selected={selectedMood === mood.id}
+                onSelect={handleSelect}
+              />
+            ))}
+          </div>
 
-      {!loading && (
-        <div className="button-container">
-          {page > 0 && (
-            <button className="scroll-button" onClick={handlePrev}>
-              ↑ Previous moods
-            </button>
+          {totalPages > 1 && (
+            <PaginationButtons
+              page={page}
+              totalPages={totalPages}
+              onPrev={handlePrev}
+              onNext={handleNext}
+            />
           )}
-          {page < totalPages - 1 && (
-            <button className="scroll-button" onClick={handleNext}>
-              ↓ Next moods
-            </button>
-          )}
-        </div>
+        </>
       )}
     </div>
   );

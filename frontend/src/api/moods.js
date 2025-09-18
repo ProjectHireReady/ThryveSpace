@@ -1,7 +1,7 @@
 import axios from "../lib/axiosInstance";
 
 // Hardcoded fallback moods (20)
-const fallbackMoods = [
+export const fallbackMoods = [
   { id: 1, name: "Warm", imageUrl: "https://res.cloudinary.com/dirn4gqky/image/upload/v1757589715/Warm_ospuu6.svg" },
   { id: 2, name: "Annoyed", imageUrl: "https://res.cloudinary.com/dirn4gqky/image/upload/v1757615436/Annoyed_hmbpkc.svg" },
   { id: 3, name: "Sad", imageUrl: "https://res.cloudinary.com/dirn4gqky/image/upload/v1757615267/Sad_vlwdhy.svg" },

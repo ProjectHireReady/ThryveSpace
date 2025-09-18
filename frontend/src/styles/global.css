@@ -6,12 +6,12 @@
   --font-logo: "Lobster Two", cursive;
   --font-body: "Poppins", sans-serif;
   --font-heading: "Poppins", sans-serif;
-   --font-alt: "Nunito", sans-serif; /* For navbar, cards, etc. */
+  --font-alt: "Nunito", sans-serif;
+  /* For navbar, cards, etc. */
 
   /* Text colors */
   --color-h1: #2c2c2c;
-  /* --color-h2: #111827; */
-  --color-h2: #1e3a8a;
+  --color-h2: #111827;
   --color-h3: #333333;
   --color-h4: #333333;
   --color-text: #6b7280;
@@ -44,9 +44,11 @@ h6 {
 h1 {
   color: var(--color-h1);
 }
+
 h2 {
   color: var(--color-h2);
 }
+
 h3,
 h4,
 h5,
@@ -79,7 +81,8 @@ p {
 .section-border {
   padding-bottom: 4rem;
   margin-bottom: 3rem;
-  position: relative; /* for pseudo-element */
+  position: relative;
+  /* for pseudo-element */
 }
 
 .section-border::after {
@@ -87,7 +90,8 @@ p {
   position: absolute;
   bottom: 0;
   left: 5%;
-  width: 90%; /* 100% - 5% left - 5% right */
+  width: 90%;
+  /* 100% - 5% left - 5% right */
   border-bottom: 1px solid #5a90c5;
 }
 

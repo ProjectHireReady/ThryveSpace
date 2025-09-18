@@ -1,22 +1,23 @@
+// MoodJournalPage.jsx
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import MoodSelector from "../components/MoodSelector";
 import JournalModal from "../components/JournalModal";
 import NewEntryForm from "../components/NewEntryForm";
 
-// This page handles the journaling flow: selecting a mood, writing a note, and navigating to entries
+// Handles journaling flow: select mood → write note → go to entries
 export default function MoodJournalPage() {
-  const [selectedMood, setSelectedMood] = useState(null); // Stores the selected mood object
+  const [selectedMood, setSelectedMood] = useState(null); // Stores mood object
   const [isModalOpen, setIsModalOpen] = useState(false); // Controls modal visibility
-  const navigate = useNavigate(); // Used to redirect user after submitting
+  const navigate = useNavigate();
 
   // When a mood is selected from MoodSelector
   const handleMoodSelect = (mood) => {
-    setSelectedMood(mood); // Store the full mood object
-    setIsModalOpen(true); // Open modal
+    setSelectedMood(mood);
+    setIsModalOpen(true);
   };
 
-  // Called after journal entry is submitted or modal is closed
+  // Called when modal closes or entry is submitted
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedMood(null);
@@ -25,14 +26,17 @@ export default function MoodJournalPage() {
 
   return (
     <>
+      {/* Lock scroll only in this wrapper */}
       <div className="mood-fullscreen-container">
         <MoodSelector onMoodSelect={handleMoodSelect} />
       </div>
 
+      {/* Journal modal after mood is chosen */}
       <JournalModal isOpen={isModalOpen} onClose={handleCloseModal}>
         <NewEntryForm
           mood={selectedMood}
           onSubmit={() => {
+            // No redirect here — just close modal
             setIsModalOpen(false);
             setSelectedMood(null);
           }}
