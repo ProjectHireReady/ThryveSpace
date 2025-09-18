@@ -1,3 +1,5 @@
+# notes/views.py
+
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -10,7 +12,7 @@ from .serializers import (
     NoteSerializer,
     NoteCreateSerializer,
     NoteMigrationSerializer,
-    NoteLeanSerializer,  # Import lean serializer
+    NoteLeanSerializer,
 )
 from moods.models import Mood
 
@@ -32,19 +34,7 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
         return NoteSerializer
 
     def perform_create(self, serializer):
-        user = self.request.user
-        mood_name = self.request.data.get("mood_name")
-
-        mood_obj = None
-        if mood_name:
-            try:
-                mood_obj = Mood.objects.get(name__iexact=mood_name)
-            except Mood.DoesNotExist:
-                raise ValidationError({"mood_name": f"Mood '{mood_name}' not found."})
-
-        mood_value_snapshot = mood_obj.category_value if mood_obj else None
-        serializer.save(user=user, mood=mood_obj, mood_value_snapshot=mood_value_snapshot)
-
+        serializer.save()
 
     def create(self, request, *args, **kwargs):
         """
@@ -104,14 +94,12 @@ class NoteMigrationAPIView(APIView):
             for entry_data in validated_entries:
                 try:
                     mood_obj = None
+                    mood_value_snapshot = None
                     mood_name = entry_data.get('mood_name')
                     if mood_name:
-                        try:
-                            mood_obj = Mood.objects.get(name__iexact=mood_name)
-                        except Mood.DoesNotExist:
-                            errors.append(
-                                f"Mood '{mood_name}' not found for note '{entry_data.get('note')}'."
-                            )
+                        mood_obj = Mood.objects.get(name__iexact=mood_name)
+                        # Get the integer value from the mood object
+                        mood_value_snapshot = mood_obj.category
 
                     notes_to_create.append(
                         Note(
@@ -119,33 +107,38 @@ class NoteMigrationAPIView(APIView):
                             mood=mood_obj,
                             user=user,
                             created_at=entry_data.get('created_at'),
+                            mood_value_snapshot=mood_value_snapshot,
                         )
+                    )
+                except Mood.DoesNotExist:
+                    errors.append(f"Mood '{mood_name}' not found for note '{entry_data.get('note')}'."
                     )
                 except Exception as e:
                     errors.append(f"Error preparing entry '{entry_data.get('note')}': {str(e)}")
 
             if errors:
-                # If there are any errors in the data, return them without saving anything
                 return Response(
                     {"message": "Validation failed for some entries.", "success_count": 0, "errors": errors},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Step 2: Use an atomic transaction for all-or-nothing save
             with transaction.atomic():
                 Note.objects.bulk_create(notes_to_create)
+                created_notes = Note.objects.filter(user=user).order_by('-created_at')[:len(notes_to_create)]
+            
+            notes_data = NoteLeanSerializer(created_notes, many=True).data
 
             return Response(
                 {
                     "message": f"Migration complete. {len(notes_to_create)} entries saved.",
                     "success_count": len(notes_to_create),
                     "errors": [],
+                    "notes": notes_data,
                 },
                 status=status.HTTP_201_CREATED,
             )
 
         except Exception as e:
-            # Catch any database-level exceptions and return a server error
             return Response(
                 {"error": f"An error occurred during migration: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
