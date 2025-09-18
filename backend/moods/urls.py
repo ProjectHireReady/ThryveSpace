@@ -1,7 +1,6 @@
-# backend/moods/urls.py
 from django.urls import path
-from .views import MoodListView
+from .views import MoodsAPIView
 
 urlpatterns = [
-    path("", MoodListView.as_view(), name="moods_list"),
+    path("", MoodsAPIView.as_view(), name="moods_api"),
 ]

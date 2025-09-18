@@ -10,7 +10,7 @@ User = get_user_model()
 class NoteInsightSerializer(serializers.ModelSerializer):
     """
     Serializer for insight operations.
-    Includes note truncation logic.
+    Includes note truncation logic for insights display.
     """
 
     mood = MoodSerializer(read_only=True)
@@ -60,19 +60,23 @@ class NoteCreateSerializer(serializers.ModelSerializer):
 
 class MigratedNoteSerializer(serializers.Serializer):
     """
-    Serializer for a single migrated note.
-    Used within NoteMigrationSerializer.
+    Serializer for a single note entry during bulk migration.
+    Now accepts mood_name instead of mood_id for guest entries.
     """
 
     note = serializers.CharField(max_length=500, required=True)
-    mood_id = serializers.UUIDField(required=True)
+    mood_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     created_at = serializers.DateTimeField(required=False, allow_null=True)
 
-    def validate_mood_id(self, value):
+    def validate_mood_name(self, value):
+        if value in [None, ""]:
+            return None
         try:
-            Mood.objects.get(id=value)
+            # Case-insensitive lookup
+            mood_obj = Mood.objects.get(name__iexact=value)
+            return mood_obj.name  # or mood_obj.id if you need the id elsewhere
         except Mood.DoesNotExist:
-            raise serializers.ValidationError(f"Mood with ID {value} does not exist.")
+            raise serializers.ValidationError(f"Mood '{value}' does not exist.")
         return value
 
 
@@ -80,15 +84,15 @@ class NoteMigrationSerializer(serializers.Serializer):
     """
     Serializer for the bulk migration endpoint.
     Validates a list of MigratedNoteSerializer entries.
+    Intended for bulk guest note migration on signup.
     """
-
     entries = MigratedNoteSerializer(many=True)
 
 
 class NoteLeanSerializer(serializers.ModelSerializer):
     """
-    Serializer for returning lean notes (excluding user).
-    Used in POST, PATCH, and migration responses.
+    Lean serializer for notes (excludes user).
+    Used in POST, PATCH, and migration responses for efficiency.
     """
 
     mood = MoodSerializer(read_only=True)

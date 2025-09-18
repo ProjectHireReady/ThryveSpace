@@ -8,71 +8,92 @@ import PageTransition from "./components/PageTransition";
 import SignUpPage from "./pages/auth/SignUpPage";
 import LoginPage from "./pages/auth/LoginPage";
 // import InsightsPage from "./pages/InsightsPage"; // 🔸 Commented out to avoid crash
+import ProtectedRoute, { GuestRoute } from "./components/ProtectedRoute";
+
 
 function App() {
+  
   return (
-    <>
+    <div className="app">
       {/* Show navigation bar on all pages */}
       <NavBar />
 
       {/* Define routes for the app */}
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <PageTransition>
-              <Home />
-            </PageTransition>
-          }
-        />
+      <main className="main-content">
+        <Routes>
+          {/* Public routes */}
+          <Route
+            path="/"
+            element={
+              <PageTransition>
+                <Home />
+              </PageTransition>
+            }
+          />
+          
+          <Route
+            path="/features"
+            element={
+              <PageTransition>
+                <FeaturesPage />
+              </PageTransition>
+            }
+          />
 
-        {/* Mood Page route */}
-        <Route
-          path="/mood"
-          element={
-            <PageTransition>
-              <MoodJournalPage />
-            </PageTransition>
-          }
-        />
+           {/* Public routes - accessible to everyone */}
+          <Route 
+            path="/mood" 
+            element={
+              <PageTransition>
+                <MoodJournalPage />
+              </PageTransition>
+            } 
+          />
+          
+          <Route 
+            path="/entries" 
+            element={
+              <PageTransition>
+                <EntriesPage />
+              </PageTransition>
+            } 
+          />
 
-        {/* Entries Page route */}
-        <Route
-          path="/entries"
-          element={
-            <PageTransition>
-              <EntriesPage />
-            </PageTransition>
-          }
-        />
+             Insights with guest view
+          <Route 
+            path="/insights" 
+            element={
+              <PageTransition>
+                <InsightsPage />
+              </PageTransition>
+            } 
+          />
 
-        {/* Features Page route */}
-        <Route
-          path="/features"
-          element={
-            <PageTransition>
-              <FeaturesPage />
-            </PageTransition>
-          }
-        />
-
-        {/* Login & Signup Page route */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
-
-        {/* Insights Page route (temporarily disabled) */}
-        {/*
-        <Route
-          path="/insights"
-          element={
-            <PageTransition>
-              <InsightsPage />
-            </PageTransition>
-          }
-        />
-        */}
-      </Routes>
-    </>
+          {/* Guest-only routes (redirect if logged in) */}
+          <Route 
+            path="/login" 
+            element={
+              <GuestRoute>
+                <LoginPage />
+              </GuestRoute>
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <GuestRoute>
+                <SignUpPage />
+              </GuestRoute>
+            } 
+          />
+          
+  
+          {/* Special routes */}
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 
