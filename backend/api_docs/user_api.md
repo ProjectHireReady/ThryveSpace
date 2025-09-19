@@ -10,11 +10,7 @@
 ### Update the authenticated user’s profile details.
 - Only first_name and last_name can be updated.
 
-```✅ Request Body (JSON)
-{
-  "last_name": "Doe"
-}
-#### ✅ Request Body (JSON)
+```json
 {
   "last_name": "Doe"
 }
