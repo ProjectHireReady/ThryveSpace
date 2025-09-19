@@ -99,7 +99,8 @@ class NoteMigrationAPIView(APIView):
                     if mood_name:
                         mood_obj = Mood.objects.get(name__iexact=mood_name)
                         # Get the integer value from the mood object
-                        mood_value_snapshot = mood_obj.category
+                        if mood_obj is not None:
+                            mood_value_snapshot = mood_obj.category
 
                     notes_to_create.append(
                         Note(
