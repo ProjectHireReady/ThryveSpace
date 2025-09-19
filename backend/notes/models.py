@@ -25,6 +25,9 @@ class Note(models.Model):
 
     # Free‑text content of the note
     note = models.TextField(blank=True)
+    
+    # Add the new title field here
+    title = models.CharField(max_length=120, blank=True, null=True)
 
     # Snapshot of mood value (1..5) at creation/update time — used by insights history
     mood_value_snapshot = models.IntegerField(null=True, blank=True)
