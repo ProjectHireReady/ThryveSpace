@@ -49,7 +49,7 @@ class NoteSerializer(serializers.ModelSerializer):
 
 class NoteCreateSerializer(serializers.ModelSerializer):
     """
-    Serializers for CREATE operations (POST requests).
+    Serializer for CREATE operations (POST requests).
     Accepts 'mood_name' to link a mood by name.
     """
 
