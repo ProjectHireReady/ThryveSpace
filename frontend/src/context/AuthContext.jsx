@@ -4,7 +4,8 @@ import { createContext, useContext, useState, useEffect } from "react";
 import {
   loginUser,
   signupUser,
-  logoutUser /*, getCurrentUser */,
+  logoutUser,
+  getCurrentUser,
 } from "../services/authService";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -177,6 +178,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user, // use !!user to check if logged in
+        setUser,
         loading,
         error,
         isInitialized,

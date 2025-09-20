@@ -1,16 +1,15 @@
 import axiosInstance from "../lib/axiosInstance";
+import { getUser } from "../api/user";  // reuse user.js for fetching profile
 
 // Minimal parseError to show DRF's exact message
 const parseError = (error, fallback = "An error occurred") => {
   const errData = error.response?.data;
   if (!errData) return { message: fallback };
 
-  // DRF error keys
   if (errData.non_field_errors) return { message: errData.non_field_errors[0] };
   if (errData.detail) return { message: errData.detail };
   if (errData.message) return { message: errData.message };
 
-  // Show field name + message for the first error only
   const firstKey = Object.keys(errData)[0];
   if (firstKey && Array.isArray(errData[firstKey])) {
     return { message: `${firstKey}: ${errData[firstKey][0]}` };
@@ -21,7 +20,7 @@ const parseError = (error, fallback = "An error occurred") => {
 
 // Signup a new user
 export const signupUser = async (payload) => {
-  console.log("SIGNUP PAYLOAD ===>", payload); 
+  console.log("SIGNUP PAYLOAD ===>", payload);
   try {
     const { data } = await axiosInstance.post("/auth/signup/", payload);
     return data;
@@ -54,8 +53,8 @@ export const logoutUser = async () => {
 // Get the currently authenticated user
 export const getCurrentUser = async () => {
   try {
-    const { data } = await axiosInstance.get("/auth/me/");
-    return data;
+    // Just delegate to user.js
+    return await getUser();
   } catch (error) {
     throw parseError(error, "Failed to fetch current user");
   }
