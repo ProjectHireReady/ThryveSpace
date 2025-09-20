@@ -43,7 +43,7 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
         note = serializer.instance
 
         key = f"user_note_count:{self.request.user.id}"
-        note_count = increment_count(key)  # 24 hours TTL
+        note_count = increment_count(key)  # TTL (24 hours) is configured in increment_count
         read_data = NoteLeanSerializer(note, context={"request": request}).data
 
         # Indicate that a milestone message should be shown
