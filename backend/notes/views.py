@@ -47,9 +47,8 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
         read_data = NoteLeanSerializer(note, context={"request": request}).data
 
         # Indicate that a milestone message should be shown
-        MILESTONE_MESSAGE_FLAG = True
         if note_count in settings.MILESTONE_TRIGGERS:
-            read_data["is_milestone"] = MILESTONE_MESSAGE_FLAG
+            read_data["is_milestone"] = True
 
         return Response(read_data, status=status.HTTP_201_CREATED)
 
