@@ -18,6 +18,7 @@ export const clearGuestId = () => {
 // Creates a new guest entry, adding ID and timestamps for consistency
 export const createGuestEntry = (payload) => ({
   id: uuidv4(),
+  title: payload.title || null,
   note: payload.note,
   name: payload.name || "",
   imageUrl: payload.imageUrl || "",
@@ -26,7 +27,8 @@ export const createGuestEntry = (payload) => ({
 });
 
 // Formats note and mood into a consistent shape
-export const formatGuestPayload = (note, mood) => ({
+export const formatGuestPayload = (note, mood, title) => ({
+  title: title || null,
   note,
   name: mood?.name || "",
   imageUrl: mood?.image_url || mood?.imageUrl || "",

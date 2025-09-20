@@ -19,14 +19,13 @@ export default function NewEntryForm({ mood, onSubmit }) {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
+  const [title, setTitle] = useState("");
   const [entry, setEntry] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-
   const [showKindness, setShowKindness] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Date box helper
   const getToday = () => {
     const date = new Date();
     return {
@@ -34,36 +33,33 @@ export default function NewEntryForm({ mood, onSubmit }) {
       month: date.toLocaleString("default", { month: "short" }).toUpperCase(),
     };
   };
-
   const { day, month } = getToday();
 
   const handleSubmit = async () => {
+    // Require at least note or mood
     if (!entry.trim() && !mood) {
       return alert("Please pick a mood or write something!");
     }
 
     const payload = isLoggedIn
-      ? { note: entry, mood_id: mood?.id || null }
-      : formatGuestPayload(entry, mood);
+      ? { title: title || null, note: entry, mood_id: mood?.id || null }
+      : formatGuestPayload(entry, mood, title);
 
     try {
       setSubmitting(true);
       await addEntry(payload);
-
+      setTitle("");
       setEntry("");
 
       if (shouldShowKindness()) {
         setShowKindness(true);
         markKindnessShown();
-
         setTimeout(() => {
           setShowKindness(false);
-
           if (shouldShowLoginPrompt()) {
             setShowLoginPrompt(true);
             markLoginPromptShown();
           } else {
-            // If no login prompt, move to entries
             onSubmit?.();
             navigate("/entries");
           }
@@ -72,7 +68,6 @@ export default function NewEntryForm({ mood, onSubmit }) {
         setShowLoginPrompt(true);
         markLoginPromptShown();
       } else {
-        // No kindness, no login prompt -> go directly
         onSubmit?.();
         navigate("/entries");
       }
@@ -88,13 +83,9 @@ export default function NewEntryForm({ mood, onSubmit }) {
   return (
     <div className="new-entry-page">
       <h1 className="new-entry-heading">Want to reflect more?</h1>
-
-      <div className="new-entry-text">
-        <p className="new-entry-subtext">Say how you feel in words.</p>
-      </div>
+      <p className="new-entry-subtext">Say how you feel in words.</p>
 
       <div className="new-entry-container">
-        {/* Date box */}
         <div className="new-entry-date">
           <div className="new-entry-day">{day}</div>
           <div className="new-entry-month">{month}</div>
@@ -104,13 +95,32 @@ export default function NewEntryForm({ mood, onSubmit }) {
           {/* Mood preview */}
           {mood && (
             <div className="new-entry-mood">
-              <span className="new-entry-emoji">
-                <img src={mood.imageUrl} alt={mood.name} />
+              {!imageLoaded && <div className="loading-spinner">Loading...</div>}
+              <span
+                className="new-entry-emoji"
+                style={{ display: imageLoaded ? "inline-block" : "none" }}
+              >
+                <img
+                  src={mood.imageUrl || "/fallback-emoji.png"}
+                  alt={mood.name}
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageLoaded(true)}
+                />
               </span>
             </div>
           )}
 
-          {/* Entry box */}
+          {/* Title input */}
+          <input
+            type="text"
+            className="new-entry-title-input"
+            value={title}
+            maxLength={20}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Add a short title (max 20 chars)"
+          />
+
+          {/* Note input */}
           <textarea
             className="new-entry-input"
             value={entry}
@@ -130,7 +140,10 @@ export default function NewEntryForm({ mood, onSubmit }) {
             </button>
 
             <button
-              onClick={() => setEntry("")}
+              onClick={() => {
+                setTitle("");
+                setEntry("");
+              }}
               className="new-entry-delete"
               aria-label="Clear Entry"
               disabled={submitting}
@@ -141,10 +154,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
         </div>
       </div>
 
-      {/* Kindness message */}
       {showKindness && <KindnessMessage />}
-
-      {/* Login prompt */}
       {showLoginPrompt && (
         <LoginPrompt
           onComplete={() => {
@@ -157,8 +167,8 @@ export default function NewEntryForm({ mood, onSubmit }) {
       {!showLoginPrompt && !showKindness && (
         <p className="new-entry-footer-text">
           We listen gently once you have finished
-        </p>)}
-
+        </p>
+      )}
     </div>
   );
 }
