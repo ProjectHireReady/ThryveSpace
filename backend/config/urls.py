@@ -29,6 +29,6 @@ urlpatterns = [
     path("api/v1/insights/", include("insights.urls")),
     path('api/v1/notes/migrate/', NoteMigrationAPIView.as_view(), name='notes-migrate'),
     path("django-rq/", include("django_rq.urls")),
-    path("messages/", include("kindness.urls")),
+    path("api/v1/messages/", include("kindness.urls")),
     path("api/v1/contact/", include("contact.urls")),
 ]
