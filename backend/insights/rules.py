@@ -15,8 +15,8 @@ LOW_MOODS = {"very negative", "negative"}
 
 @dataclass
 class MoodPoint:
-    day: date          # calendar day (local)
-    category: str      # one of the 5 categories above
+    day: date  # calendar day (local)
+    category: str  # one of the 5 categories above
 
 
 def day_points_from_notes(notes) -> List[MoodPoint]:
@@ -28,7 +28,9 @@ def day_points_from_notes(notes) -> List[MoodPoint]:
     by_day: Dict[date, List[str]] = {}
     for note in notes:
         d = note.created_at.date()
-        cat = (note.mood.category if getattr(note, "mood", None) else "neutral") or "neutral"
+        cat = (
+            note.mood.category if getattr(note, "mood", None) else "neutral"
+        ) or "neutral"
         cat = cat.strip().lower()
         by_day.setdefault(d, []).append(cat)
 
@@ -40,17 +42,20 @@ def day_points_from_notes(notes) -> List[MoodPoint]:
     return points
 
 
-def detect_low_streak(points: List[MoodPoint]) -> Optional[int]:
+def detect_low_streak(points: List[Dict]) -> Optional[int]:
     """
     Returns length of longest SAME-category low-mood streak (if >=3), else None.
     """
     best_len = 0
     i = 0
     while i < len(points):
-        if points[i].category in LOW_MOODS:
+        if points[i]["category"] in LOW_MOODS:
             j = i + 1
-            while j < len(points) and points[j].category == points[i].category \
-                  and (points[j].day - points[j-1].day).days == 1:
+            while (
+                j < len(points)
+                and points[j]["category"] == points[i]["category"]
+                and (points[j]["day"] - points[j - 1]["day"]).days == 1
+            ):
                 j += 1
             best_len = max(best_len, j - i)
             if best_len >= 3:
@@ -61,14 +66,14 @@ def detect_low_streak(points: List[MoodPoint]) -> Optional[int]:
     return None
 
 
-def compute_trend(points: List[MoodPoint]) -> float:
+def compute_trend(points: List[Dict]) -> float:
     """
     Simple trend: average score (last half) - average score (first half).
     Positive => improving, negative => declining.
     """
     if len(points) < 4:
         return 0.0
-    scores = [MOOD_TO_SCORE.get(p.category, 0) for p in points]
+    scores = [MOOD_TO_SCORE.get(p["category"], 0) for p in points]
     mid = len(scores) // 2
     first = scores[:mid]
     second = scores[mid:]
@@ -77,8 +82,8 @@ def compute_trend(points: List[MoodPoint]) -> float:
     return (sum(second) / len(second)) - (sum(first) / len(first))
 
 
-def missing_days_in_window(points: List[MoodPoint], week_start: date) -> int:
-    present = {p.day for p in points}
+def missing_days_in_window(points: List[Dict], week_start: date) -> int:
+    present = {p["day"] for p in points}
     window = {week_start + timedelta(days=i) for i in range(7)}
     return len(window - present)
 
@@ -95,28 +100,28 @@ def render_tip(points: List[MoodPoint], week_start: date) -> Dict[str, str]:
     if streak and streak >= 3:
         return {
             "type": "tip",
-            "message": f"Noticed {streak} days in a row of low mood. Try a gentle reset today: water, a short stretch, or an early night."
+            "message": f"Noticed {streak} days in a row of low mood. Try a gentle reset today: water, a short stretch, or an early night.",
         }
 
     delta = compute_trend(points)
     if delta <= -0.6:
         return {
             "type": "tip",
-            "message": "Your mood dipped this week. Consider one small tweak—10 minutes of movement, hydration, or a short check-in with a friend."
+            "message": "Your mood dipped this week. Consider one small tweak—10 minutes of movement, hydration, or a short check-in with a friend.",
         }
     if delta >= 0.6:
         return {
             "type": "tip",
-            "message": "Nice upward trend! Double down on what helped—note one thing that lifted your mood so you can reuse it."
+            "message": "Nice upward trend! Double down on what helped—note one thing that lifted your mood so you can reuse it.",
         }
 
     if missing_days_in_window(points, week_start) >= 3:
         return {
             "type": "tip",
-            "message": "You skipped a few days. No pressure—do a 10-second mood check-in today to rebuild the habit."
+            "message": "You skipped a few days. No pressure—do a 10-second mood check-in today to rebuild the habit.",
         }
 
     return {
         "type": "tip",
-        "message": "Keep checking in. Pick one small thing that felt good this week and try it again tomorrow."
+        "message": "Keep checking in. Pick one small thing that felt good this week and try it again tomorrow.",
     }

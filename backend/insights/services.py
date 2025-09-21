@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import timedelta, date
-from typing import List, Dict, Optional, Tuple, Any
+from typing import List, Dict, Optional, Any
 
 from django.core.cache import cache
 from django.db.models import Max, Subquery
@@ -27,12 +27,13 @@ CATEGORY_VALUE_MAP = {
 @dataclass
 class WeekRange:
     start: date  # inclusive (Monday 00:00 localdate)
-    end: date    # exclusive (start + 7 days)
+    end: date  # exclusive (start + 7 days)
 
 
 # -------------------------------
 # Centralized weekly helpers
 # -------------------------------
+
 
 def parse_week_offset(request, allow_negative: bool = False) -> int:
     """
@@ -62,18 +63,19 @@ def get_week_range(week_offset: int) -> WeekRange:
     return WeekRange(start=start, end=end)
 
 
-def get_week_points(user, week_offset: int) -> List[Tuple[str, Optional[int]]]:
+def get_week_points(user, week_offset: int) -> List[Dict[str, Optional[Any]]]:
     """
     Returns 7 points for the requested week as (ISO date, mood_value|None),
     using the SAME reducer as history (latest note per day, snapshot-first).
     """
     payload = get_history_payload(user, week_offset)
-    return [(p["date"], p["mood_value"]) for p in payload["graph"]]
+    return [{"day": p["date"], "category": p["mood_value"]} for p in payload["graph"]]
 
 
 # -------------------------------
 # Internals used by history/tip
 # -------------------------------
+
 
 def cache_key(user_pk: Any, wr: WeekRange) -> str:
     # Robust to int/UUID/string PKs
@@ -106,7 +108,7 @@ def _mood_value_for(note: Note) -> Optional[int]:
 
     cat = getattr(mood, "category", None)
     if isinstance(cat, str):
-        return CATEGORY_VALUE_MAP.get(cat)
+        return cat  # Removing conversion to mood value here
 
     return None
 
@@ -125,15 +127,15 @@ def fetch_weekly_latest_per_day(user, wr: WeekRange) -> List[Note]:
 
     per_day_latest = (
         qs.annotate(day=TruncDate("created_at"))
-          .values("day")
-          .annotate(last_created=Max("created_at"))
+        .values("day")
+        .annotate(last_created=Max("created_at"))
     )
 
     # Join back on (day,last_created) and tie-break by pk desc
     latest_notes = (
         qs.annotate(day=TruncDate("created_at"))
-          .filter(created_at__in=Subquery(per_day_latest.values("last_created")))
-          .order_by("day", "-created_at", "-pk")  # stable, prefer newest pk on ties
+        .filter(created_at__in=Subquery(per_day_latest.values("last_created")))
+        .order_by("day", "-created_at", "-pk")  # stable, prefer newest pk on ties
     )
 
     # Reduce to one per day (since multiple rows may share same created_at)

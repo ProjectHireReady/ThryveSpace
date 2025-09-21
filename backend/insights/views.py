@@ -33,6 +33,7 @@ from .services import (
 # History
 # ----------------------------------------------------------------------
 
+
 class InsightsHistoryView(APIView):
     """
     GET /api/v1/insights/history?week_offset=N
@@ -45,6 +46,7 @@ class InsightsHistoryView(APIView):
       "timeline": [ { "date": "YYYY-MM-DD", "mood_value": 1..5, "mood_id": int|null, "snippet": "..." }, ... ]
     }
     """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -62,6 +64,7 @@ class InsightsHistoryView(APIView):
 # Tip (rule-based)
 # ----------------------------------------------------------------------
 
+
 class WeeklyTipView(APIView):
     """
     GET /api/v1/insights/tip?week_offset=N
@@ -71,6 +74,7 @@ class WeeklyTipView(APIView):
 
     Uses the same week window & reduction as /history (centralized helpers).
     """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -92,8 +96,9 @@ class WeeklyTipView(APIView):
             return Response(cached, status=status.HTTP_200_OK)
 
         # Same reducer as history (already cached under history)
-        points = get_week_points(request.user, week_offset)  # [(date_iso, mood_value|None), ...]
-
+        points = get_week_points(
+            request.user, week_offset
+        )  # [(date_iso, mood_value|None), ...]
         tip = render_tip(points, wr.start)
         ser = InsightTipSerializer(data=tip)
         ser.is_valid(raise_exception=True)
@@ -106,6 +111,7 @@ class WeeklyTipView(APIView):
 # ----------------------------------------------------------------------
 # Guest encourage (Frank’s original)
 # ----------------------------------------------------------------------
+
 
 class GuestEncourageView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -140,6 +146,7 @@ class GuestEncourageView(APIView):
 # ----------------------------------------------------------------------
 # AI feedback (Frank’s original)
 # ----------------------------------------------------------------------
+
 
 class AiFeedbackView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -184,6 +191,7 @@ class AiFeedbackView(APIView):
 # ----------------------------------------------------------------------
 # AI summary (Frank’s original)
 # ----------------------------------------------------------------------
+
 
 class AiSummaryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
