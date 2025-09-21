@@ -123,7 +123,7 @@ class NoteLeanSerializer(serializers.ModelSerializer):
     """
 
     mood = MoodSerializer(read_only=True)
-    is_milestone = serializers.BooleanField(default=False, read_only=True)
+    is_milestone = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Note
