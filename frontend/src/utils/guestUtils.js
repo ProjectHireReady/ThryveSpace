@@ -25,8 +25,9 @@ export const createGuestEntry = (payload) => ({
 });
 
 // Format guest entry for backend
-export const formatGuestPayload = (note, mood) => ({
-  note,
+export const formatGuestPayload = (note, mood, title) => ({
+  title: title || "",
+  note: note || "",
   name: mood?.name || "",
   icon: mood?.icon || "",
 });

@@ -1,29 +1,43 @@
 // src/components/NewEntryForm.jsx
 import { useState } from "react";
 import { Check, Trash } from "lucide-react";
-import { useEntrySubmit } from "../hooks/useEntrySubmit";
-import { useFormattedDate } from "../hooks/useFormattedDate";
+import useEntrySubmit from "../hooks/useEntrySubmit";
+import useFormattedDate from "../hooks/useFormattedDate";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useEntries } from "../context/EntriesContext";
 import KindnessMessage from "./KindnessMessage";
 import LoginPrompt from "./LoginPrompt";
 import "./NewEntryForm.css";
 
 export default function NewEntryForm({ mood, onSubmit }) {
-  const [entry, setEntry] = useState("");
-  const [showKindness, setShowKindness] = useState(false);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [kindnessMessage, setKindnessMessage] = useState(null);
-
+  // Context + hooks
   const { day, month } = useFormattedDate();
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+  const { addEntry, entries } = useEntries();
 
-  const { submitting, handleSubmit, isLoggedIn } = useEntrySubmit(
+  const {
     entry,
     setEntry,
+    title,
+    setTitle,
+    submitting,
+    handleSubmit,
+    showKindness,
+    showLoginPrompt,
+    kindnessMessage,
+  } = useEntrySubmit({
     mood,
     onSubmit,
-    setKindnessMessage,
-    setShowKindness,
-    setShowLoginPrompt
-  );
+    isLoggedIn,
+    addEntry,
+    entries,
+    navigate,
+  });
+
+  // for image lazy loading
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
     <div className="new-entry-page">
@@ -42,12 +56,31 @@ export default function NewEntryForm({ mood, onSubmit }) {
         <div className="new-entry-card">
           {mood && (
             <div className="new-entry-mood">
-              <span className="new-entry-emoji">
-                <img src={mood.icon} alt={mood.name} />
+              {!imageLoaded && <div className="loading-spinner">Loading...</div>}
+              <span
+                className="new-entry-emoji"
+                style={{ display: imageLoaded ? "inline-block" : "none" }}
+              >
+                <img
+                  src={mood.imageUrl || mood.icon || "/fallback-emoji.png"}
+                  alt={mood.name}
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageLoaded(true)}
+                />
               </span>
             </div>
           )}
 
+          {/* Title input */}
+          <input
+            type="text"
+            className="new-entry-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Give your reflection a title..."
+          />
+
+          {/* Note input */}
           <textarea
             className="new-entry-input"
             value={entry}
@@ -61,13 +94,16 @@ export default function NewEntryForm({ mood, onSubmit }) {
               onClick={handleSubmit}
               className="new-entry-submit"
               aria-label="Submit Entry"
-              disabled={submitting || (!entry.trim() && !mood)}
+              disabled={submitting || (!entry.trim() && !mood && !title.trim())}
             >
               <Check size={20} />
             </button>
 
             <button
-              onClick={() => setEntry("")}
+              onClick={() => {
+                setEntry("");
+                setTitle("");
+              }}
               className="new-entry-delete"
               aria-label="Clear Entry"
               disabled={submitting}
