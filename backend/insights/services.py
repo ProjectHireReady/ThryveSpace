@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from notes.models import Note  # <-- needed for typing + queryset
 
-WEEK_CACHE_TTL = 300  # 5 minutes
+WEEK_CACHE_TTL = 604800  # 1 week
 
 # Map Mood.category (string) -> 1..5
 CATEGORY_VALUE_MAP = {
