@@ -34,6 +34,23 @@ class CustomUserSerializer(serializers.ModelSerializer):
         fields = ["id", "email", "first_name", "last_name"]
         read_only_fields = ["id", "email"]
 
+    def validate_first_name(self, value):
+        return value.strip() if value else value
+
+    def validate_last_name(self, value):
+        return value.strip() if value else value
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        if request and request.method in ["PUT", "PATCH"]:
+            # Prevent email updates via this serializer
+            if "email" in request.data:
+                raise serializers.ValidationError({"email": "Email cannot be updated."})
+            if "id" in request.data:
+                raise serializers.ValidationError({"id": "ID cannot be updated."})
+
+        return super().validate(attrs)
+
 
 class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)

@@ -6,12 +6,12 @@
   --font-logo: "Lobster Two", cursive;
   --font-body: "Poppins", sans-serif;
   --font-heading: "Poppins", sans-serif;
-   --font-alt: "Nunito", sans-serif; /* For navbar, cards, etc. */
+  --font-alt: "Nunito", sans-serif;
+  /* For navbar, cards, etc. */
 
   /* Text colors */
   --color-h1: #2c2c2c;
-  /* --color-h2: #111827; */
-  --color-h2: #1e3a8a;
+  --color-h2: #111827;
   --color-h3: #333333;
   --color-h4: #333333;
   --color-text: #6b7280;
@@ -44,9 +44,11 @@ h6 {
 h1 {
   color: var(--color-h1);
 }
+
 h2 {
   color: var(--color-h2);
 }
+
 h3,
 h4,
 h5,
@@ -79,7 +81,8 @@ p {
 .section-border {
   padding-bottom: 4rem;
   margin-bottom: 3rem;
-  position: relative; /* for pseudo-element */
+  position: relative;
+  /* for pseudo-element */
 }
 
 .section-border::after {
@@ -87,13 +90,25 @@ p {
   position: absolute;
   bottom: 0;
   left: 5%;
-  width: 90%; /* 100% - 5% left - 5% right */
+  width: 90%;
+  /* 100% - 5% left - 5% right */
   border-bottom: 1px solid #5a90c5;
 }
 
-.button {
-  font-family: var(--font-heading);
+/* Reset default button styles globally */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 }
+
+/* .button {
+  font-family: var(--font-heading);
+} */
 
 footer p {
   color: white;
@@ -102,4 +117,38 @@ footer p {
 /* Utility: Nunito font */
 .nunito {
   font-family: var(--font-alt);
+}
+
+/* ===== DISABLE BROWSER DEFAULT VALIDATION ===== */
+
+/* Remove browser default validation styling */
+input:invalid {
+  box-shadow: none;
+  border-color: #ccc; /* Keep your original border */
+}
+
+/* Remove the default validation bubble/tooltip */
+input::-webkit-validation-bubble-message,
+input::-webkit-validation-bubble-arrow,
+input::-webkit-validation-bubble {
+  display: none !important;
+}
+
+/* Firefox - remove validation styling */
+input:-moz-ui-invalid {
+  box-shadow: none;
+  border-color: #ccc;
+}
+
+/* Remove outline on invalid inputs */
+input:invalid:focus {
+  outline: none;
+  border-color: #4b7aa8; /* Your focus color */
+  box-shadow: 0 0 0 2px rgba(90, 144, 197, 0.2);
+}
+
+button[type="button"] {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
 }

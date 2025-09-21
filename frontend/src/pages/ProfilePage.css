@@ -1,0 +1,315 @@
+.profile-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    background-color: #fafafa;
+    min-height: 100vh;
+    font-family: var(--font-body);
+}
+
+/* Profile card */
+.profile-page .profile-card {
+    background-color: #f1f1f1;
+    border-radius: 16px;
+    padding: 40px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    margin-bottom: 40px;
+    max-width: 500px;
+    width: 100%;
+    min-height: 280px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: .6px solid #bdbdbd;
+}
+
+.profile-page .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f0f0f0;
+    margin-bottom: 14px;
+}
+
+.profile-page .profile-fallback-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #5a90c5;
+    /* bluish background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 auto 14px auto;
+}
+
+.profile-page .profile-name {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #222;
+    margin-top: 12px;
+    text-align: center;
+    white-space: normal;
+    overflow: visible;
+}
+
+.profile-page .profile-names {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #222;
+    margin-top: 12px;
+    text-align: center;
+}
+
+.profile-page .profile-first-name,
+.profile-page .profile-last-name {
+    white-space: nowrap;
+}
+
+.profile-page .profile-bio {
+    font-size: 0.95rem;
+    color: #666;
+    margin-top: 8px;
+}
+
+/* Error */
+.profile-page .profile-error {
+    color: #d9534f;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+/* Rows */
+.profile-page .profile-rows {
+    width: 100%;
+    max-width: 500px;
+}
+
+.profile-page .profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 12px;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 16px;
+}
+
+.profile-page .profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-page .profile-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.profile-page .profile-value {
+    font-size: 0.95rem;
+    color: #777;
+}
+
+.profile-page .edit-btn {
+    background: #f1f1f1;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border: .6px solid #bdbdbd;
+}
+
+.profile-page .edit-btn:hover {
+    background: #e0e0e0;
+}
+
+/* Looks like a link */
+.profile-page .profile-link {
+    color: #5a90c5;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.profile-page .profile-link:hover {
+    color: #4b7aad;
+}
+
+/* Save button */
+.profile-page .profile-save-btn {
+    width: 100%;
+    max-width: 500px;
+    padding: 14px;
+    margin-top: 30px;
+    background-color: #5a90c5;
+    /* bluish save button */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+}
+
+.profile-page .profile-save-btn:hover:not(:disabled) {
+    background-color: #4b7aad;
+}
+
+.profile-page .profile-save-btn:disabled {
+    background-color: #bbb;
+    cursor: not-allowed;
+}
+
+/* Loader */
+.profile-page .profile-loader {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.1rem;
+    color: #666;
+}
+
+/* Modal overlay */
+.profile-page .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+/* White card */
+.profile-page .modal-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+/* Header */
+.profile-page .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.profile-page .modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+    color: #222;
+}
+
+/* Close button */
+.profile-page .modal-close {
+    position: relative;
+    top: -1px;
+    right: -2px;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #222;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.profile-page .modal-close:hover {
+    background: #f5f5f5;
+    color: #000;
+}
+
+/* Input */
+.profile-page .modal-input-wrapper {
+    margin-bottom: 28px;
+}
+
+.profile-page .modal-input {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f1f1f1;
+    font-size: 1rem;
+    outline: none;
+    color: #333;
+}
+
+.profile-page .modal-input::placeholder {
+    color: #888;
+    font-size: 0.95rem;
+}
+
+/* Actions */
+.profile-page .modal-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-page .btn-primary {
+    background-color: #5a90c5;
+    /* bluish save button */
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.25s;
+    flex: 1;
+    margin-right: 12px;
+}
+
+.profile-page .btn-primary:hover {
+    background-color: #4b7aad;
+}
+
+.profile-page .btn-secondary {
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    padding: 12px 20px;
+    transition: color 0.25s;
+}
+
+.profile-page .btn-secondary:hover {
+    color: #000;
+}

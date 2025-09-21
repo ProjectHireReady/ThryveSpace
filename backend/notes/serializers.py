@@ -1,3 +1,5 @@
+# notes/serializers.py
+
 from rest_framework import serializers
 from .models import Note
 from moods.models import Mood
@@ -41,7 +43,7 @@ class NoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ["id", "user", "mood", "note", "created_at", "updated_at"]
+        fields = ["id", "user", "mood", "note", "title", "created_at", "updated_at"]
         read_only_fields = ["id", "user", "mood", "created_at", "updated_at"]
 
 
@@ -55,7 +57,31 @@ class NoteCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ["note", "mood_name"]
+        fields = ["note", "title", "mood_name"]
+
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        
+        mood_name = validated_data.pop("mood_name", None)
+        
+        mood_obj = None
+        mood_value_snapshot = None
+        if mood_name:
+            try:
+                mood_obj = Mood.objects.get(name__iexact=mood_name)
+                # Corrected: Get the integer value from the Mood object's category
+                mood_value_snapshot = mood_obj.category
+            except Mood.DoesNotExist:
+                raise serializers.ValidationError({"mood_name": "Mood not found."})
+
+        note = Note.objects.create(
+            user=user,
+            mood=mood_obj,
+            mood_value_snapshot=mood_value_snapshot,
+            **validated_data
+        )
+        return note
 
 
 class MigratedNoteSerializer(serializers.Serializer):
@@ -72,9 +98,8 @@ class MigratedNoteSerializer(serializers.Serializer):
         if value in [None, ""]:
             return None
         try:
-            # Case-insensitive lookup
             mood_obj = Mood.objects.get(name__iexact=value)
-            return mood_obj.name  # or mood_obj.id if you need the id elsewhere
+            return mood_obj.name
         except Mood.DoesNotExist:
             raise serializers.ValidationError(f"Mood '{value}' does not exist.")
         return value
@@ -99,4 +124,4 @@ class NoteLeanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ["id", "mood", "note", "created_at", "updated_at"]
+        fields = ["id", "mood", "note", "title", "created_at", "updated_at"]

@@ -216,3 +216,25 @@ h1.new-entry-heading {
     opacity: 1;
   }
 }
+
+/* Title input */
+.new-entry-title-input {
+  width: 100%;
+  font-size: 1rem;
+  border: none;
+  border-bottom: 2px solid #e2e8f0;
+  background: transparent;
+  padding: 0.6rem 0.25rem;
+  margin-bottom: 0.8rem;
+  outline: none;
+  transition: border-color 0.25s;
+}
+
+.new-entry-title-input:focus {
+  border-color: #5a90c5;
+}
+
+.new-entry-title-input::placeholder {
+  color: #94a3b8;
+}
+

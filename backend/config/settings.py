@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 OPENAI_API_KEY = config("OPENAI_API_KEY", default="")
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []  # set in env for non-local
 
 # Application definition
 INSTALLED_APPS = [
@@ -34,11 +34,13 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "django_rq",
+    # project apps
     "users",
     "moods",
     "notes.apps.NotesConfig",
     "insights",
     "kindness",
+    "contact", 
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
@@ -83,6 +85,7 @@ DATABASES = {
     }
 }
 
+# DRF
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
@@ -90,13 +93,22 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    # Throttling (adds contact scope without removing others)
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.AnonRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        # contact scope
+        "user": config("DRF_THROTTLE_USER", default="1000/day"),
+        "anon": config("DRF_THROTTLE_ANON", default="100/day"),
+        "contact": config("DRF_THROTTLE_CONTACT", default="5/hour"),  # 5/hr per user/IP
+    },
 }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -145,3 +157,24 @@ RQ_QUEUES = {
 # -----------------------------
 KINDNESS_MIN_NOTES = config("KINDNESS_MIN_NOTES", default=3, cast=int)
 KINDNESS_RECENT_NOTES_LIMIT = config("KINDNESS_RECENT_NOTES_LIMIT", default=7, cast=int)
+
+# -----------------------------
+# Email / SMTP (Brevo)
+# -----------------------------
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = config("SMTP_HOST", default="smtp-relay.brevo.com")
+EMAIL_PORT = config("SMTP_PORT", default=587, cast=int)
+EMAIL_HOST_USER = config("SMTP_USER", default="")
+EMAIL_HOST_PASSWORD = config("SMTP_PASSWORD", default="")
+EMAIL_USE_TLS = config("SMTP_USE_TLS", default=True, cast=bool)
+EMAIL_USE_SSL = config("SMTP_USE_SSL", default=False, cast=bool)
+
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@thryvespace.com")
+SERVER_EMAIL = config("SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
+CONTACT_INBOX = config("CONTACT_INBOX", default="hello@thryvespace.com")
+
+# -----------------------------
+# Proxy-aware IP Handling (django-ipware)
+# -----------------------------
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

@@ -94,7 +94,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
               onClick={handleSubmit}
               className="new-entry-submit"
               aria-label="Submit Entry"
-              disabled={submitting || (!entry.trim() && !mood && !title.trim())}
+              disabled={submitting || (!entry.trim() && !mood)}
             >
               <Check size={20} />
             </button>
