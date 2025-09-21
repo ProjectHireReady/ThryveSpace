@@ -50,15 +50,18 @@ class KindnessEndpointTests(APITestCase):
             defaults={"emoji": emoji, "category": category, "is_active": True},
         )
         if not created:
-            changed = False
+            fields_to_update = []
+
             if not getattr(mood, "emoji", None):
                 mood.emoji = emoji
-                changed = True
+                fields_to_update.append("emoji")
+
             if not getattr(mood, "category", None):
                 mood.category = category
-                changed = True
-            if changed:
-                mood.save(update_fields=["emoji", "category"])
+                fields_to_update.append("category")  # <-- fix here
+
+            if fields_to_update:
+                mood.save(update_fields=fields_to_update)
         return mood
 
     def _make_note(self, text="test", mood_name="Neutral", category="neutral", emoji="😐"):
@@ -104,4 +107,3 @@ class KindnessEndpointTests(APITestCase):
             resp2 = self.client.get(self.url)
             self.assertEqual(resp2.status_code, 200)
             self.assertTrue(resp2.data.get("no_message"))
-
