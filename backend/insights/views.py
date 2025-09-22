@@ -182,7 +182,11 @@ class AiFeedbackView(APIView):
         )
 
         return Response(
-            {"message": response, "today_count": count}, status=status.HTTP_200_OK
+            {"message": response, 
+            "today_count": count,
+            "prompt_version": AI_PROMPT_VERSION
+            }, 
+            status=status.HTTP_200_OK
         )
 
 
@@ -232,7 +236,10 @@ class AiSummaryView(APIView):
 
         if job.is_finished:
             return Response(
-                {"message": "Job completed.", "result": job.result},
+                {"message": "Job completed.", 
+                "result": job.result,
+                "prompt_version": AI_PROMPT_VERSION
+                },
                 status=status.HTTP_200_OK,
             )
 
