@@ -1,10 +1,13 @@
 import { X } from "lucide-react";
 import "./KindnessMessage.css";
 
-export default function KindnessMessage({ onDismiss }) {
+export default function KindnessMessage({
+  message = "You’re doing great ❤️",
+  onDismiss,
+}) {
   return (
     <div className="fade kindness-popup">
-      <p>You’re doing great ❤️</p>
+      <p>{message}</p>
       <button
         onClick={onDismiss}
         className="kindness-dismiss"
