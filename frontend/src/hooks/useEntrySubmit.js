@@ -1,4 +1,3 @@
-// src/hooks/useEntrySubmit.js
 import { useState } from "react";
 import { formatGuestPayload } from "../utils/guestUtils";
 import { handleGuestKindness } from "../utils/guestKindness";
@@ -30,10 +29,10 @@ export default function useEntrySubmit({
     // Build payload (different for guest vs logged-in)
     const payload = isLoggedIn
       ? {
-          title: title.trim() || null,
-          note: entry.trim(),
-          mood_id: mood?.id || null,
-        }
+        title: title.trim() || null,
+        note: entry.trim(),
+        mood_id: mood?.id || null,
+      }
       : formatGuestPayload(entry, mood, title);
 
     try {
@@ -68,12 +67,15 @@ export default function useEntrySubmit({
         // Navigate after short delay (to let kindness show)
         setTimeout(() => navigate("/entries"), 2000);
       } else {
-        // Guest flow
-        handleGuestKindness(
+        // Guest flow (with AI kindness)
+        await handleGuestKindness(
           navigate,
           onSubmit,
           setShowKindness,
-          setShowLoginPrompt
+          setShowLoginPrompt,
+          setKindnessMessage,
+          entry,
+          mood
         );
       }
     } catch (err) {
