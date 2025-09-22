@@ -12,7 +12,7 @@ User = get_user_model()
 
 class AiMessagesTests(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="ai_user", password="testpass123")
+        self.user = User.objects.create_user(email="aiuser@example.com", password="testpass123")
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
 
