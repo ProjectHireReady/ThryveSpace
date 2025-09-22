@@ -149,7 +149,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Check if user is authenticated
-  const isAuthenticated = !!user;
+  const isLoggedIn = !!user;
 
   // Check if user has specific role (if your app uses roles)
   const hasRole = (role) => {
@@ -182,7 +182,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         isInitialized,
-        isAuthenticated,
+        isLoggedIn,
         login,
         signup,
         logout,
