@@ -1,0 +1,154 @@
+.about-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+/* Hero Section */
+.about-hero {
+  text-align: center;
+  margin: 30px 0 80px;
+}
+
+.about-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--color-h1);
+}
+
+.about-subtitle {
+  font-size: 1.1rem;
+  max-width: 640px;
+  margin: 0 auto 40px;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.about-psychologist {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  margin: 2.5rem auto 3.5rem;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* Section Blocks */
+.about-block {
+  margin-bottom: 6rem;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+/* hr line */
+.about-block:not(:last-child)::after {
+  content: "";
+  display: block;
+  height: 0.094rem; 
+  background-color: #4a90e2;
+  width: 100%;  
+  margin: 3rem 0 0;
+}
+
+/* Header: Icon and Heading */
+.about-header {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  margin-bottom: 3rem;
+}
+
+.about-icon {
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.about-heading {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--color-h2);
+}
+
+/* Content: Circle left, text right */
+.about-content {
+  display: grid;
+  grid-template-columns: auto 1fr; 
+  column-gap: 6rem;                
+  max-width: 720px;                
+  margin: 0 auto;                  
+  align-items: start;
+}
+
+.about-content > div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-subheading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: var(--color-h3);
+}
+
+.about-content p,
+.about-content ul {
+  max-width: 560px;
+  color: var(--color-text);
+  line-height: 1.7;
+}
+
+.about-content ul {
+  font-size: 1rem;
+  line-height: 1.6;
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.about-content ul li {
+  margin-bottom: 0.5rem; 
+}
+
+.about-content ul li:last-child {
+  margin-bottom: 0;
+}
+
+/* Number Circles */
+.about-circle-outer {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #5a90c5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.about-circle-inner {
+  width: 65px;
+  height: 65px;
+  border: 1px solid #5a90c5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a90c5;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .about-content {
+    column-gap: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-content {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+}
