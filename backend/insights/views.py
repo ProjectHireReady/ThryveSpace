@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from notes.models import Note
+from backend.constants import AI_PROMPT_VERSION
 
 from .serializers import InsightTipSerializer
 from .rules import render_tip
@@ -133,7 +134,11 @@ class GuestEncourageView(APIView):
         response = generate_note_feedback(note_id=None, user=None, note_text=note)
 
         return Response(
-            {"message": response, "today_count": count}, status=status.HTTP_200_OK
+            {"message": response, 
+            "today_count": count,
+            "prompt_version": AI_PROMPT_VERSION
+            }, 
+            status=status.HTTP_200_OK
         )
 
 
