@@ -62,7 +62,9 @@ export default function MoodSelector({ onMoodSelect }) {
       setError(null);
       try {
         const res = await getMoods();
-        setMoods(res.data || []);
+        console.log("The moods are:", res.data);
+        // ✅ FIX: use the moods array inside the object
+        setMoods(res.data.moods || []);
       } catch (err) {
         console.error("Error fetching moods:", err);
         setError("Could not load moods. Please try again.");
@@ -129,9 +131,8 @@ export default function MoodSelector({ onMoodSelect }) {
       ) : (
         <>
           <div
-            className={`mood-grid ${animating ? "fade-out" : "fade-in"} ${
-              disabled ? "disabled" : ""
-            }`}
+            className={`mood-grid ${animating ? "fade-out" : "fade-in"} ${disabled ? "disabled" : ""
+              }`}
           >
             {visibleMoods.map((mood) => (
               <MoodItem
