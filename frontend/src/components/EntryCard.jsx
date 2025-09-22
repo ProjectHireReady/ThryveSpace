@@ -17,9 +17,12 @@ export default function EntryCard({ entry }) {
   const [editedNote, setEditedNote] = useState(entry.note);
   const noteWrapperRef = useRef(null);
 
-  const date = new Date(entry.created_at);
-  const day = date.getDate();
-  const month = date.toLocaleString("en-US", { month: "short" }).toUpperCase();
+  const date = entry.created_at ? new Date(entry.created_at) : null;
+  const day = date && !isNaN(date.getTime()) ? date.getDate() : "—";
+  const month =
+    date && !isNaN(date.getTime())
+      ? date.toLocaleString("en-US", { month: "short" }).toUpperCase()
+      : "—";
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -47,18 +50,6 @@ export default function EntryCard({ entry }) {
   };
   const handleDelete = () => removeEntry(entry.id);
 
-  // Determine header text (title or snippet)
-  const maxLength = 20;
-  const title = entry.title?.trim();
-  const note = entry.note?.trim();
-  let headerText = "No content available";
-
-  if (title) {
-    headerText = title.length > maxLength ? title.substring(0, maxLength) + "..." : title;
-  } else if (note) {
-    headerText = note.length > maxLength ? note.substring(0, maxLength) + "..." : note;
-  }
-
   return (
     <div
       className={`entry-card-wrapper accordion-item
@@ -75,15 +66,14 @@ export default function EntryCard({ entry }) {
         </div>
         <div className="mood-line">
           <span className="emoji">
-            {entry.imageUrl ? (
+            {entry.icon ? (
               <img
-                src={entry.imageUrl}
+                src={entry.icon}
                 alt={entry.name || "Mood"}
                 className="mood-img"
               />
             ) : null}
           </span>
-          <span className="entry-header-text">{headerText}</span>
         </div>
         <div className="expand-icon">
           {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -100,12 +90,21 @@ export default function EntryCard({ entry }) {
               rows={4}
             />
           ) : (
-            <div
-              ref={noteWrapperRef}
-              className={`note-wrapper ${isExpanded ? "expanded" : "collapsed"}`}
-            >
-              <p className="note">{note || "No content available"}</p>
-            </div>
+            <>
+              <div
+                ref={noteWrapperRef}
+                className={`note-wrapper ${
+                  isExpanded ? "expanded" : "collapsed"
+                }`}
+              >
+                <p className="note">{entry.note}</p>
+              </div>
+              {!isExpanded && entry.note.length > 100 && (
+                <span className="read-more" onClick={() => setIsExpanded(true)}>
+                  ... Read more <ChevronDown size={16} />
+                </span>
+              )}
+            </>
           )}
 
           <div className="entry-footer">
