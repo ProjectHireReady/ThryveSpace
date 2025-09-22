@@ -1,4 +1,5 @@
 // MoodSelector.jsx
+import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { useEffect, useState, useCallback } from "react";
 import "./MoodSelector.css";
 import { getMoods } from "../api/moods";
@@ -12,9 +13,7 @@ function MoodItem({ mood, disabled, selected, onSelect }) {
       onClick={() => onSelect(mood)}
       role="button"
       tabIndex={disabled ? -1 : 0}
-      onKeyDown={(e) =>
-        (e.key === "Enter" || e.key === " ") && onSelect(mood)
-      }
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(mood)}
       aria-label={`Select mood ${mood.name}`}
     >
       <img src={mood.imageUrl} alt={`Mood: ${mood.name}`} />
@@ -28,12 +27,12 @@ function PaginationButtons({ page, totalPages, onPrev, onNext }) {
     <div className="button-container">
       {page > 0 && (
         <button className="scroll-button" onClick={onPrev}>
-          ↑ Previous
+          <FaArrowUp /> Prev
         </button>
       )}
       {page < totalPages - 1 && (
         <button className="scroll-button" onClick={onNext}>
-          ↓ Next
+          Next <FaArrowDown />
         </button>
       )}
     </div>
@@ -130,8 +129,9 @@ export default function MoodSelector({ onMoodSelect }) {
       ) : (
         <>
           <div
-            className={`mood-grid ${animating ? "fade-out" : "fade-in"} ${disabled ? "disabled" : ""
-              }`}
+            className={`mood-grid ${animating ? "fade-out" : "fade-in"} ${
+              disabled ? "disabled" : ""
+            }`}
           >
             {visibleMoods.map((mood) => (
               <MoodItem
