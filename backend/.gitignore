@@ -20,3 +20,8 @@ __pycache__/
 
 #development database
 db.sqlite3
+
+# Local files
+.vscode/
+.coverage
+dump.rdb
