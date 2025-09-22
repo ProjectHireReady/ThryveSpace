@@ -30,7 +30,7 @@ class KindnessMessageView(APIView):
                 "meta": {
                     "source": "rule_based", 
                     "last_sent_at": timezone.now().isoformat()
-                    },
-                    "prompt_version": AI_PROMPT_VERSION
+                },
+                "prompt_version": AI_PROMPT_VERSION
             }
         )
