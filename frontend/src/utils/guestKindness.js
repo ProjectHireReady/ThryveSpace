@@ -4,12 +4,17 @@ import {
   shouldShowLoginPrompt,
   markLoginPromptShown,
 } from "./localStorageUtils";
+import { requestGuestAI } from "../services/guestAiService";
+import { getOrCreateGuestId } from "./guestUtils";
 
-export const handleGuestKindness = (
+export const handleGuestKindness = async (
   navigate,
   onSubmit,
   setShowKindness,
-  setShowLoginPrompt
+  setShowLoginPrompt,
+  setKindnessMessage,
+  entry,
+  mood
 ) => {
   if (!shouldShowKindness()) {
     // Kindness already shown before, still handle navigation
@@ -17,14 +22,30 @@ export const handleGuestKindness = (
       setShowLoginPrompt(true);
       markLoginPromptShown();
     } else {
-      // Fallback: go directly to entries
       onSubmit?.();
       navigate("/entries");
     }
     return;
   }
 
-  // Kindness path (first time)
+  // Attempt AI kindness fetch
+  let message = null;
+  try {
+    const guest_id = getOrCreateGuestId();
+    const note_snippet = entry.slice(0, 300); // trim to max length
+    const mood_name = mood?.name || null;
+
+    const result = await requestGuestAI({ guest_id, mood_name, note_snippet });
+
+    if (result.message) {
+      message = result.message;
+    }
+  } catch (err) {
+    console.error("Guest kindness AI failed:", err);
+  }
+
+  // Show kindness (AI or fallback static)
+  setKindnessMessage(message || "You’re doing great ❤️");
   setShowKindness(true);
   markKindnessShown();
 
