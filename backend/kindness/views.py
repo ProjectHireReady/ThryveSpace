@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from django.utils import timezone
 from .services import get_kindness_message
+from backend.constants import AI_PROMPT_VERSION
 
 try:
     # Use real service if present
@@ -26,6 +27,10 @@ class KindnessMessageView(APIView):
         return Response(
             {
                 "message": msg,
-                "meta": {"source": "rule_based", "last_sent_at": timezone.now().isoformat()},
+                "meta": {
+                    "source": "rule_based", 
+                    "last_sent_at": timezone.now().isoformat()
+                    },
+                    "prompt_version": AI_PROMPT_VERSION
             }
         )
