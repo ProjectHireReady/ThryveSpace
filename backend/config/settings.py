@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "notes.apps.NotesConfig",
     "insights",
     "kindness",
-    "contact", 
+    "contact",
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
@@ -108,7 +108,9 @@ REST_FRAMEWORK = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -130,6 +132,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 USE_MOCK_AI = True
 MAX_DAILY_AI_LOGGED_IN = 3
 GUEST_RATE_LIMIT_MAX = 2
+MILESTONE_TRIGGERS = [3, 6, 9]
 REDIS_URL = config("REDIS_URL", default="redis://localhost:6379/0")
 
 # Redis cache configuration
@@ -161,7 +164,9 @@ KINDNESS_RECENT_NOTES_LIMIT = config("KINDNESS_RECENT_NOTES_LIMIT", default=7, c
 # -----------------------------
 # Email / SMTP (Brevo)
 # -----------------------------
-EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
 EMAIL_HOST = config("SMTP_HOST", default="smtp-relay.brevo.com")
 EMAIL_PORT = config("SMTP_PORT", default=587, cast=int)
 EMAIL_HOST_USER = config("SMTP_USER", default="")
