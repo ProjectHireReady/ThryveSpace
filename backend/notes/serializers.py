@@ -5,6 +5,7 @@ from .models import Note
 from moods.models import Mood
 from moods.serializers import MoodSerializer
 from django.contrib.auth import get_user_model
+from .signals import _map_category_to_value
 
 User = get_user_model()
 
@@ -59,19 +60,19 @@ class NoteCreateSerializer(serializers.ModelSerializer):
         model = Note
         fields = ["note", "title", "mood_name"]
 
-
     def create(self, validated_data):
-        user = self.context['request'].user
-        
+        user = self.context["request"].user
+
         mood_name = validated_data.pop("mood_name", None)
-        
+
         mood_obj = None
         mood_value_snapshot = None
         if mood_name:
             try:
                 mood_obj = Mood.objects.get(name__iexact=mood_name)
                 # Corrected: Get the integer value from the Mood object's category
-                mood_value_snapshot = mood_obj.category
+
+                mood_value_snapshot = _map_category_to_value(mood_obj.category)
             except Mood.DoesNotExist:
                 raise serializers.ValidationError({"mood_name": "Mood not found."})
 
@@ -79,7 +80,7 @@ class NoteCreateSerializer(serializers.ModelSerializer):
             user=user,
             mood=mood_obj,
             mood_value_snapshot=mood_value_snapshot,
-            **validated_data
+            **validated_data,
         )
         return note
 
@@ -111,6 +112,7 @@ class NoteMigrationSerializer(serializers.Serializer):
     Validates a list of MigratedNoteSerializer entries.
     Intended for bulk guest note migration on signup.
     """
+
     entries = MigratedNoteSerializer(many=True)
 
 
@@ -121,7 +123,16 @@ class NoteLeanSerializer(serializers.ModelSerializer):
     """
 
     mood = MoodSerializer(read_only=True)
+    is_milestone = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Note
-        fields = ["id", "mood", "note", "title", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "mood",
+            "note",
+            "title",
+            "is_milestone",
+            "created_at",
+            "updated_at",
+        ]

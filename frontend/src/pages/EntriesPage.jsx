@@ -1,5 +1,11 @@
 import { useState, useMemo } from "react";
-import { PlusCircle, LoaderCircle, AlertCircle, Search, FileDown } from "lucide-react";
+import {
+  PlusCircle,
+  LoaderCircle,
+  AlertCircle,
+  Search,
+  FileDown,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useEntries } from "../context/EntriesContext";
 import { downloadGuestEntriesPDF } from "../utils/exportPDF";
@@ -17,9 +23,7 @@ function EntriesPage() {
   const [showModal, setShowModal] = useState(false); // Journal modal toggle
   const [selectedMood, setSelectedMood] = useState(null); // For mood selection
 
-  // Auth info (needed for export button)
-  const { user } = useAuth();
-  const isLoggedIn = !!user;
+  const { isAuthenticated: isLoggedIn } = useAuth();
 
   // Open modal when "Add Entry" is clicked
   const handleAddEntry = () => setShowModal(true);

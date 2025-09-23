@@ -40,8 +40,8 @@ function PaginationButtons({ page, totalPages, onPrev, onNext }) {
 }
 
 export default function MoodSelector({ onMoodSelect }) {
-  const { user } = useAuth();
-  const isLoggedIn = !!user;
+  const { isAuthenticated: isLoggedIn } = useAuth();
+
 
   // guests get moods instantly, logged-in users fetch from API
   const [moods, setMoods] = useState(isLoggedIn ? [] : guestMoods);
@@ -62,8 +62,6 @@ export default function MoodSelector({ onMoodSelect }) {
       setError(null);
       try {
         const res = await getMoods();
-        console.log("The moods are:", res.data);
-        // ✅ FIX: use the moods array inside the object
         setMoods(res.data.moods || []);
       } catch (err) {
         console.error("Error fetching moods:", err);
