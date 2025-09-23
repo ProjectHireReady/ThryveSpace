@@ -8,14 +8,7 @@ export default function ProtectedRoute({ children, requiredRole = null }) {
 
   // Show loading while checking auth state
   if (loading) {
-    return (
-      <div className="route-loading">
-        <div className="loading-content">
-          <div className="loading-spinner"></div>
-          <p>Checking authentication...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Redirect to login if not authenticated
@@ -49,14 +42,7 @@ export function GuestRoute({ children }) {
 
   // Show loading while checking auth state
   if (loading) {
-    return (
-      <div className="route-loading">
-        <div className="loading-content">
-          <div className="loading-spinner"></div>
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Redirect to dashboard if already authenticated

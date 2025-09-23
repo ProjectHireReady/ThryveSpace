@@ -31,11 +31,11 @@ export const handleGuestKindness = async (
   // Attempt AI kindness fetch
   let message = null;
   try {
-    const guestId = getOrCreateGuestId();
+    const guest_id = getOrCreateGuestId();
     const note_snippet = entry.slice(0, 300); // trim to max length
     const mood_name = mood?.name || null;
 
-    const result = await requestGuestAI({ guest_id: guestId, mood_name, note_snippet });
+    const result = await requestGuestAI({ guest_id, mood_name, note_snippet });
 
     if (result.message) {
       message = result.message;
