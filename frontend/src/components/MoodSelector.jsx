@@ -129,9 +129,8 @@ export default function MoodSelector({ onMoodSelect }) {
       ) : (
         <>
           <div
-            className={`mood-grid ${animating ? "fade-out" : "fade-in"} ${
-              disabled ? "disabled" : ""
-            }`}
+            className={`mood-grid ${animating ? "fade-out" : "fade-in"} ${disabled ? "disabled" : ""
+              }`}
           >
             {visibleMoods.map((mood) => (
               <MoodItem

@@ -115,7 +115,9 @@ export default function NewEntryForm({ mood, onSubmit }) {
       </div>
 
       {/* Guest messages */}
-      {!isLoggedIn && showKindness && <KindnessMessage />}
+      {!isLoggedIn && showKindness && (
+        <KindnessMessage message={kindnessMessage} />
+      )}
       {!isLoggedIn && showLoginPrompt && (
         <LoginPrompt
           onComplete={() => {
