@@ -1,20 +1,24 @@
-export async function requestGuestAI({ guest_id, mood_name, note_snippet }) {
-    try {
-        const trimmedSnippet = (note_snippet || "").slice(0, 300);
+import axios from "../lib/axiosInstance";
 
-        const response = await fetch("/guest/encourage", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ guest_id, mood_name, note_snippet: trimmedSnippet }),
-        });
+export async function requestGuestAI({ guest_id = guestId, mood_name, note_snippet }) {
+  try {
+    const trimmedSnippet = (note_snippet || "").slice(0, 300);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+    const response = await axios.post(
+      "/guest/encourage",
+      {
+        guest_id,
+        mood_name,
+        note_snippet: trimmedSnippet,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
-        return await response.json();
-    } catch (err) {
-        console.error("Guest kindness AI failed:", err);
-        return { detail: "error" }; // fallback
-    }
+    return response.data; // axios auto-parses JSON
+  } catch (err) {
+    console.error("Guest kindness AI failed:", err);
+    return { detail: "error" }; // fallback
+  }
 }
