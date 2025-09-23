@@ -51,7 +51,6 @@ function App() {
             }
           />
 
-          {/* Public routes - accessible to everyone */}
           <Route
             path="/mood"
             element={
@@ -70,7 +69,8 @@ function App() {
             }
           />
 
-          {/* Insights with guest view
+          {/* Insights page temporarily disabled */}
+          {/*
           <Route
             path="/insights"
             element={
@@ -78,10 +78,10 @@ function App() {
                 <InsightsPage />
               </PageTransition>
             }
-          /> */}
+          />
+          */}
 
-          {/* Protected routes - require authentication *}
-          {/* Profile (Protected) */}
+          {/* Protected routes - require authentication */}
           <Route
             path="/profile"
             element={
@@ -121,3 +121,4 @@ function App() {
 }
 
 export default App;
+
