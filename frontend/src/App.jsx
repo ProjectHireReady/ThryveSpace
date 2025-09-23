@@ -7,109 +7,82 @@ import EntriesPage from "./pages/EntriesPage";
 import PageTransition from "./components/PageTransition";
 import SignUpPage from "./pages/auth/SignUpPage";
 import LoginPage from "./pages/auth/LoginPage";
-// import InsightsPage from "./pages/InsightsPage"; // 🔸 Commented out to avoid crash
-import ProtectedRoute, { GuestRoute } from "./components/ProtectedRoute";
-import UnauthorizedPage from "./pages/UnauthorizedPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import ProfilePage from "./pages/ProfilePage";
-
+import InsightsPage from "./pages/InsightsPage";
+import About from "./components/About";
 
 function App() {
-
   return (
-    <div className="app">
+    <>
       {/* Show navigation bar on all pages */}
       <NavBar />
 
       {/* Define routes for the app */}
-      <main className="main-content">
-        <Routes>
-          {/* Public routes */}
-          <Route
-            path="/"
-            element={
-              <PageTransition>
-                <Home />
-              </PageTransition>
-            }
-          />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <PageTransition>
+              <Home />
+            </PageTransition>
+          }
+        />
 
-          <Route
-            path="/features"
-            element={
-              <PageTransition>
-                <FeaturesPage />
-              </PageTransition>
-            }
-          />
+        {/* Mood Page route */}
+        <Route
+          path="/mood"
+          element={
+            <PageTransition>
+              <MoodJournalPage />
+            </PageTransition>
+          }
+        />
 
-          {/* Public routes - accessible to everyone */}
-          <Route
-            path="/mood"
-            element={
-              <PageTransition>
-                <MoodJournalPage />
-              </PageTransition>
-            }
-          />
+        {/* Entries Page route */}
+        <Route
+          path="/entries"
+          element={
+            <PageTransition>
+              <EntriesPage />
+            </PageTransition>
+          }
+        />
 
-          <Route
-            path="/entries"
-            element={
-              <PageTransition>
-                <EntriesPage />
-              </PageTransition>
-            }
-          />
+        {/* Features Page route */}
+        <Route
+          path="/features"
+          element={
+            <PageTransition>
+              <FeaturesPage />
+            </PageTransition>
+          }
+        />
 
-          {/* Insights with guest view
-          <Route
-            path="/insights"
-            element={
-              <PageTransition>
-                <InsightsPage />
-              </PageTransition>
-            }
-          /> */}
+        {/* Features Page route */}
+        <Route
+          path="/about"
+          element={
+            <PageTransition>
+              <About />
+            </PageTransition>
+          }
+        />
 
-          {/* Protected routes - require authentication *}
-          {/* Profile (Protected) */}
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <PageTransition>
-                  <ProfilePage />
-                </PageTransition>
-              </ProtectedRoute>
-            }
-          />
+        {/* Login & Signup Page route */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
 
-          {/* Guest-only routes (redirect if logged in) */}
-          <Route
-            path="/login"
-            element={
-              <GuestRoute>
-                <LoginPage />
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <GuestRoute>
-                <SignUpPage />
-              </GuestRoute>
-            }
-          />
+        {/* Insights Page route (temporarily disabled) */}
 
-
-          {/* Special routes */}
-          <Route path="/unauthorized" element={<UnauthorizedPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </main>
-    </div>
+        <Route
+          path="/insights"
+          element={
+            <PageTransition>
+              <InsightsPage />
+            </PageTransition>
+          }
+        />
+      </Routes>
+    </>
   );
 }
 

@@ -1,8 +1,15 @@
 import { useState, useMemo } from "react";
-import { PlusCircle, LoaderCircle, AlertCircle, Search, FileDown } from "lucide-react";
+import {
+  PlusCircle,
+  LoaderCircle,
+  AlertCircle,
+  Search,
+  FileDown,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useEntries } from "../context/EntriesContext";
 import { downloadGuestEntriesPDF } from "../utils/exportPDF";
+// import { downloadGuestEntriesPDF, preloadImages } from "../utils/exportPDF";
 import EntryCard from "../components/EntryCard";
 import JournalModal from "../components/JournalModal";
 import NewEntryForm from "../components/NewEntryForm";
@@ -24,8 +31,15 @@ function EntriesPage() {
   // Open modal when "Add Entry" is clicked
   const handleAddEntry = () => setShowModal(true);
 
+  // const handleDownloadPDF = () => {
+  //   if (entries.length === 0) return alert("No entries to export.");
+  //   downloadGuestEntriesPDF(entries);
+  // };
+
   const handleDownloadPDF = () => {
-    if (entries.length === 0) return alert("No entries to export.");
+    if (!entries || entries.length === 0) {
+      return alert("No entries to export.");
+    }
     downloadGuestEntriesPDF(entries);
   };
 
