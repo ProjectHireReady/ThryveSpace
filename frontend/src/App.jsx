@@ -8,14 +8,13 @@ import PageTransition from "./components/PageTransition";
 import SignUpPage from "./pages/auth/SignUpPage";
 import LoginPage from "./pages/auth/LoginPage";
 // import InsightsPage from "./pages/InsightsPage"; // 🔸 Commented out to avoid crash
+import About from "./components/About";
 import ProtectedRoute, { GuestRoute } from "./components/ProtectedRoute";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProfilePage from "./pages/ProfilePage";
 
-
 function App() {
-
   return (
     <div className="app">
       {/* Show navigation bar on all pages */}
@@ -39,6 +38,15 @@ function App() {
             element={
               <PageTransition>
                 <FeaturesPage />
+              </PageTransition>
+            }
+          />
+
+          <Route
+            path="/about"
+            element={
+              <PageTransition>
+                <About />
               </PageTransition>
             }
           />
@@ -102,7 +110,6 @@ function App() {
               </GuestRoute>
             }
           />
-
 
           {/* Special routes */}
           <Route path="/unauthorized" element={<UnauthorizedPage />} />

@@ -30,17 +30,18 @@
 .nav-content {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  justify-content: space-between; 
+  width: 100%;
+  position: relative;
 }
 
-/* Dashboard navigation pills */
+/* Center the dashboard nav */
 .dashboard-nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 0.5rem;
-  background-color: #f8fafc;
-  padding: 4px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
 }
 
 .dashboard-pill {
@@ -52,7 +53,7 @@
   text-decoration: none;
   color: #64748b;
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -76,6 +77,7 @@
 /* Profile section */
 .profile-section {
   position: relative;
+  margin-left: auto; 
 }
 
 .profile-button {
@@ -220,7 +222,7 @@
   outline-offset: 2px;
 }
 
-* Mobile menu button */
+/* Mobile menu button */
 .mobile-menu-button {
   display: none;
   background: none;

@@ -7,9 +7,7 @@ export const fetchKindnessMessage = async (snippet = "") => {
       const { data } = await axiosInstance.post(API_ENDPOINTS.kindnessAI, { snippet });
       return data.message || null;
     } else {
-      const { data } = await axiosInstance.get(API_ENDPOINTS.kindnessRule, {
-        baseURL: "http://localhost:8000", // point directly to Django root
-      });
+      const { data } = await axiosInstance.get(API_ENDPOINTS.kindnessRule);
       return data.no_message ? null : data.message || null;
     }
   } catch (err) {
