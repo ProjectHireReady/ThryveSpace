@@ -1,6 +1,6 @@
 import axios from "../lib/axiosInstance";
 
-export async function requestGuestAI({ guest_id = guestId, mood_name, note_snippet }) {
+export async function requestGuestAI({ guest_id, mood_name, note_snippet }) {
   try {
     const trimmedSnippet = (note_snippet || "").slice(0, 300);
 
