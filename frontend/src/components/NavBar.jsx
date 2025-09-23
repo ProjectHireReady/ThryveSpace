@@ -1,11 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Sun, BookOpen, BarChart3, User, Settings, LogOut, Menu, X } from "lucide-react";
+import {
+  Sun,
+  BookOpen,
+  BarChart3,
+  User,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
   mainNavLinks,
   authNavLinks,
   dashboardNavLinks,
+  guestDashboardLinks, 
 } from "../data/navLinks";
 import "./NavBar.css";
 
@@ -25,7 +35,7 @@ function NavBar() {
     location.pathname.startsWith("/entries") ||
     location.pathname.startsWith("/insights");
 
-     // Close mobile menu when route changes
+  // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsProfileDropdownOpen(false);
@@ -41,18 +51,29 @@ function NavBar() {
 
     if (isProfileDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isProfileDropdownOpen]);
 
-  let navLinks = mainNavLinks;
+  let navLinks;
   if (isAuthPage) {
-    navLinks = authNavLinks; // just show logo
+    navLinks = authNavLinks;
   } else if (isDashboardPage && user) {
     navLinks = dashboardNavLinks;
+  } else if (isDashboardPage && !user) {
+    navLinks = guestDashboardLinks; // Guests see limited dashboard
+  } else {
+    navLinks = mainNavLinks;
   }
+  // let navLinks = mainNavLinks;
+  // if (isAuthPage) {
+  //   navLinks = authNavLinks; // just show logo
+  // } else if (isDashboardPage && user) {
+  //   navLinks = dashboardNavLinks;
+  // }
 
-   const handleLogout = async () => {
+  const handleLogout = async () => {
     setIsProfileDropdownOpen(false);
     setIsMobileMenuOpen(false);
     await logout();
@@ -67,15 +88,14 @@ function NavBar() {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
 
-   // Dashboard navigation items with icons
+  // Dashboard navigation items with icons
   const dashboardItems = [
     { to: "/mood", label: "Mood", icon: Sun },
     { to: "/entries", label: "Entries", icon: BookOpen },
-    { to: "/insights", label: "Insights", icon: BarChart3 }
+    { to: "/insights", label: "Insights", icon: BarChart3 },
   ];
 
-
-return (
+  return (
     <nav className="navbar" aria-label="Main Navigation">
       {/* Logo */}
       <Link to="/" className="logo">
@@ -94,9 +114,9 @@ return (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`dashboard-pill ${isActive ? 'active' : ''}`}
+                  className={`dashboard-pill ${isActive ? "active" : ""}`}
                 >
-                  <Icon size={18} />
+                  <Icon size={20} />
                   <span>{item.label}</span>
                 </Link>
               );
@@ -113,22 +133,22 @@ return (
             >
               <User size={20} />
               <span className="profile-name">
-                {user.firstName || 'Profile'}
+                {user.firstName || "Profile"}
               </span>
             </button>
 
             {isProfileDropdownOpen && (
               <div className="profile-dropdown">
                 <Link to="/profile" className="dropdown-item">
-                  <User size={16} />
+                  <User size={18} />
                   Profile
                 </Link>
                 <Link to="/settings" className="dropdown-item">
-                  <Settings size={16} />
+                  <Settings size={18} />
                   Settings
                 </Link>
                 <button onClick={handleLogout} className="dropdown-item logout">
-                  <LogOut size={16} />
+                  <LogOut size={18} />
                   Logout
                 </button>
               </div>
@@ -178,7 +198,7 @@ return (
                   <Link
                     key={item.to}
                     to={item.to}
-                    className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+                    className={`mobile-nav-item ${isActive ? "active" : ""}`}
                   >
                     {item.label}
                   </Link>
@@ -205,9 +225,9 @@ return (
                       {link.label}
                     </Link>
                   ) : (
-                    <a 
-                      href={link.to} 
-                      target="_blank" 
+                    <a
+                      href={link.to}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="mobile-nav-item"
                     >

@@ -1,9 +1,9 @@
 .site-footer {
-  background: linear-gradient(145deg, #3A5E87, #2b4b6b);
+  background-color: #3A5E87; /* Deep blue */
   color: white;
-  padding: 1rem 1.5rem;
+  padding: 1.5rem 2rem;
   text-align: center;
-  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .footer-container {
@@ -14,14 +14,6 @@
 .footer-text {
   margin: 0.5rem 0;
   font-size: 1rem;
-  opacity: 0.9;
-}
-
-.footer-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 1rem 0;
-  border: none;
 }
 
 .footer-links {
@@ -30,39 +22,16 @@
   justify-content: center;
   gap: 1.5rem;
   margin-top: 0.75rem;
-  padding: 0;
+  /* margin-bottom : 0.75rem; */
 }
 
 .footer-links a {
   color: white;
   text-decoration: none;
   font-weight: 500;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.footer-links a::after {
-  content: '';
-  position: absolute;
-  width: 0%;
-  height: 2px;
-  left: 0;
-  bottom: -2px;
-  background: white;
-  transition: width 0.3s ease;
-}
-
-.footer-links a:hover::after {
-  width: 100%;
+  transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
-  color: #F2A38B;
-}
-
-@media (max-width: 500px) {
-  .footer-links {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
+  color: #000000; /* deep black on hover */
 }

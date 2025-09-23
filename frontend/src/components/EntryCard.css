@@ -78,8 +78,8 @@
 /* Mood styling */
 .entry-card-wrapper .emoji,
 .entry-card-wrapper .mood-img {
-  width: 26px;
-  height: 26px;
+  width: 36px;
+  height: 36px;
   object-fit: cover;
   border-radius: 50%;
 }
@@ -214,5 +214,45 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Header preview text */
+.entry-card-wrapper .entry-header-text {
+  font-size: 0.9rem;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-grow: 1;
+  margin-left: 0.5rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 500px) {
+  .entry-card-wrapper {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .entry-card-wrapper .accordion-header {
+    gap: 0.5rem;
+  }
+
+  .entry-card-wrapper .date-box {
+    width: 2.5rem;
+  }
+
+  .entry-card-wrapper .emoji,
+  .entry-card-wrapper .mood-img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .entry-card-wrapper .entry-header-text {
+    font-size: 0.85rem;
+  }
+
+  .entry-card-wrapper .note-wrapper .note {
+    font-size: 0.88rem;
   }
 }

@@ -17,6 +17,7 @@ export const clearGuestId = () => localStorage.removeItem("guestId");
 // Create a new guest entry
 export const createGuestEntry = (payload) => ({
   id: uuidv4(),
+  title: payload.title,
   note: payload.note,
   name: payload.name || "",
   icon: payload.icon || "",

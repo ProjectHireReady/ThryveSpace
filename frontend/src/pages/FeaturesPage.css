@@ -84,10 +84,9 @@ html {
 }
 
 .feature-content h3 {
-  font-size: 1.25rem; 
+  font-size: 1.15rem;
+  margin-bottom: 16px;
   font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--color-h3);
 }
 
 .feature-content h4 {
@@ -117,17 +116,20 @@ html {
   height: 32px;
 }
 
+
+
 .emoji.happy {
-  color: #60a5fa;
+  color: #60a5fa; 
 }
 
 .emoji.neutral {
-  color: #a5b4fc;
+  color: #a5b4fc; 
 }
 
 .emoji.sad {
-  color: #c4b5fd;
+  color: #c4b5fd; 
 }
+
 
 /* Feature Image */
 .feature-image {
