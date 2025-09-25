@@ -48,10 +48,10 @@ export default function ProfilePage() {
     setSaving(true);
     setError(null);
     try {
+      // removed email from updates
       const updates = {
         first_name: formData.firstName,
         last_name: formData.lastName,
-        email: formData.email,
       };
       const updated = await updateUser(updates);
       setUser(updated);
@@ -82,10 +82,10 @@ export default function ProfilePage() {
       };
       setFormData(newFormData);
 
+      // removed email from updates
       const updates = {
         first_name: newFormData.firstName,
         last_name: newFormData.lastName,
-        email: newFormData.email,
       };
 
       if (editingField === "password" && editValue.trim() !== "********") {

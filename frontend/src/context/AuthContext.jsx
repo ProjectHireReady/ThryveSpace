@@ -157,7 +157,11 @@ export const AuthProvider = ({ children }) => {
 
   // Don't render children until auth state is initialized
   if (!isInitialized) {
-    return null;
+    return (
+      <div className="auth-loading">
+        <div className="loading-spinner">Loading...</div>
+      </div>
+    );
   }
 
   return (
