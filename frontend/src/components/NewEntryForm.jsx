@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Check, Trash } from "lucide-react";
 import useEntrySubmit from "../hooks/useEntrySubmit";
 import useFormattedDate from "../hooks/useFormattedDate";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEntries } from "../context/EntriesContext";
 import KindnessMessage from "./KindnessMessage";
@@ -11,10 +10,8 @@ import LoginPrompt from "./LoginPrompt";
 import "./NewEntryForm.css";
 
 export default function NewEntryForm({ mood, onSubmit }) {
-  // Context + hooks
   const { day, month } = useFormattedDate();
-  const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
+  const { isAuthenticated: isLoggedIn } = useAuth();
   const { addEntry, entries } = useEntries();
 
   const {
@@ -27,16 +24,15 @@ export default function NewEntryForm({ mood, onSubmit }) {
     showKindness,
     showLoginPrompt,
     kindnessMessage,
+    onLoginComplete,
   } = useEntrySubmit({
     mood,
     onSubmit,
     isLoggedIn,
     addEntry,
     entries,
-    navigate,
   });
 
-  // for image lazy loading
   const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
@@ -115,19 +111,18 @@ export default function NewEntryForm({ mood, onSubmit }) {
       </div>
 
       {/* Guest messages */}
-      {!isLoggedIn && showKindness && <KindnessMessage />}
+      {!isLoggedIn && showKindness && (
+        <KindnessMessage message={kindnessMessage} />
+      )}
       {!isLoggedIn && showLoginPrompt && (
-        <LoginPrompt
-          onComplete={() => {
-            onSubmit?.();
-          }}
-        />
+        <LoginPrompt onComplete={onSubmit} />
       )}
 
       {/* Logged-in messages */}
       {isLoggedIn && kindnessMessage && (
-        <KindnessMessage message={kindnessMessage} />
+        <KindnessMessage message={kindnessMessage}/>
       )}
+
 
       {/* Default footer */}
       {!showKindness && !showLoginPrompt && !kindnessMessage && (
