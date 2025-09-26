@@ -15,7 +15,7 @@ export async function getUser() {
 // Update logged-in user
 export async function updateUser(updates) {
   try {
-    const res = await axios.put("/auth/me/", updates);
+    const res = await axios.patch("/auth/me/", updates);
     return res.data;
   } catch (err) {
     console.error("Failed to update user:", err.response?.data || err.message);
