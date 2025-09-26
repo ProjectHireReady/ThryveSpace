@@ -1,13 +1,19 @@
 import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "./KindnessMessage.css";
 
 export default function LoginPrompt({ onComplete }) {
+  const navigate = useNavigate();
+
   const handleDismiss = () => {
-    onComplete?.(); // tell parent it’s done
+    // User skips login and go to entries
+    onComplete?.();
+    navigate("/entries");
   };
 
   const handleSignIn = () => {
-    window.location.href = "/signin";
+    // Use navigate instead of full reload
+    navigate("/login");
   };
 
   return (
