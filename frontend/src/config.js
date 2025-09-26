@@ -6,7 +6,7 @@ export const MIN_ENTRIES_BEFORE_KINDNESS = Number(import.meta.env.VITE_MIN_ENTRI
 
 // Note endpoints
 export const API_ENDPOINTS = {
-  kindnessAI: import.meta.env.VITE_KINDNESS_AI_ENDPOINT || "/api/ai-kindness",
+  kindnessAI: import.meta.env.VITE_KINDNESS_AI_ENDPOINT || "/insights/ai-feedback/",
   kindnessRule: import.meta.env.VITE_KINDNESS_RULE_ENDPOINT || "/messages/kindness/",
 };
 
