@@ -20,7 +20,7 @@ export const createGuestEntry = (payload) => ({
   title: payload.title,
   note: payload.note,
   name: payload.name || "",
-  icon: payload.icon || "",
+  imageUrl: payload.imageUrl || "",
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 });
@@ -30,7 +30,7 @@ export const formatGuestPayload = (note, mood, title) => ({
   title: title || "",
   note: note || "",
   name: mood?.name || "",
-  icon: mood?.icon || "",
+  imageUrl: mood?.imageUrl || "",
 });
 
 // Check if any guest entries exist
