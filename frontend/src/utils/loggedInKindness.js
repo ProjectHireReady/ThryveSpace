@@ -12,7 +12,7 @@ export const handleLoggedInKindness = async ({
   totalEntries,
   setKindnessMessage,
   navigate,
-  forceAi = false, // mock test flag
+  // forceAi = false, // mock test flag
 }) => {
   console.log("=== handleLoggedInKindness called ===");
   console.log("Raw entry:", entry);
@@ -21,7 +21,8 @@ export const handleLoggedInKindness = async ({
   console.log("Total entries:", totalEntries);
 
   const noteId = response?.id;
-  const aiFlag = forceAi || response?.message || false; // To test backend flag
+  const aiFlag = response?.message || false;
+  // const aiFlag = forceAi || response?.message || false; // To test backend flag
 
   const aiPayload = {
     snippet: entry.slice(0, 400),

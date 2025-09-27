@@ -57,7 +57,7 @@ export default function useEntrySubmit({
           totalEntries: entries.length + 1,
           setKindnessMessage,
           navigate,
-          forceAi: true, // To test
+          // forceAi: true, // To test
         });
       } else {
         console.log("Handling guest kindness...");
