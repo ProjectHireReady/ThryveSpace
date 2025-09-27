@@ -78,7 +78,9 @@ export const EntriesProvider = ({ children }) => {
   const addEntry = async (payload) => {
     if (isLoggedIn) {
       const res = await postNote(payload);
+      console.log("FULL response from backend in addEntry:", res.data); // or response.data
       setEntries((prev) => [res.data, ...prev]);
+      return res.data;
     } else {
       const newEntry = createGuestEntry(payload);
       setEntries((prev) => {

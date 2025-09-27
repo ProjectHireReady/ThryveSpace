@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 👈 import here
+import { useNavigate } from "react-router-dom";
 import { formatGuestPayload } from "../utils/guestUtils";
 import { handleGuestKindness } from "../utils/guestKindness";
 import { handleLoggedInKindness } from "../utils/loggedInKindness";
 
-// Custom hook that manages entry state and submission logic
 export default function useEntrySubmit({
   mood,
   onSubmit,
@@ -25,7 +24,10 @@ export default function useEntrySubmit({
   const [kindnessMessage, setKindnessMessage] = useState(null);
 
   const handleSubmit = async () => {
-    if (!entry.trim() && !mood) return;
+    if (!entry.trim() && !mood) {
+      console.log("Nothing to submit: entry and mood empty");
+      return;
+    }
 
     const payload = isLoggedIn
       ? {
@@ -35,34 +37,30 @@ export default function useEntrySubmit({
         }
       : formatGuestPayload(entry, mood, title);
 
+    console.log("Submitting payload:", payload);
+
     try {
       setSubmitting(true);
 
-      const response = await addEntry(payload);
+      const response = await addEntry(payload); // saves note and returns backend response
+      console.log("FULL response from addEntry:", response);
+
       setEntry("");
       setTitle("");
 
       if (isLoggedIn) {
-        const totalEntries = entries.length + 1;
-        const aiFlag = response?.message || false;
-
-        const aiPayload = {
-          snippet: entry.slice(0, 400),
-          mood_name: mood?.name || null,
-        };
-
-        await handleLoggedInKindness(
-          aiPayload,
-          totalEntries,
+        // pass raw stuff to helper
+        await handleLoggedInKindness({
+          entry,
+          mood,
+          response,
+          totalEntries: entries.length + 1,
           setKindnessMessage,
-          aiFlag
-        );
-        
-        setTimeout(() => {
-          navigate("/entries")
-        }, 3000);
-
+          navigate,
+          forceAi: true, // To test
+        });
       } else {
+        console.log("Handling guest kindness...");
         await handleGuestKindness(
           navigate,
           onSubmit,
@@ -94,5 +92,6 @@ export default function useEntrySubmit({
     showKindness,
     showLoginPrompt,
     kindnessMessage,
+    onLoginComplete: onSubmit,
   };
 }

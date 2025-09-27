@@ -13,6 +13,6 @@ export const API_ENDPOINTS = {
 // Insights endpoints
 export const USE_AI_INSIGHTS = import.meta.env.VITE_USE_AI_INSIGHTS === "true";
 export const API_ENDPOINTS_INSIGHTS = {
-  aiMessages: import.meta.env.VITE_INSIGHTS_AI_ENDPOINT || "/insights/ai-messages",
+  aiMessages: import.meta.env.VITE_INSIGHTS_AI_ENDPOINT || "/insights/ai-messages/",
   ruleTip: import.meta.env.VITE_INSIGHTS_RULE_ENDPOINT || "/insights/tip/",
 };
