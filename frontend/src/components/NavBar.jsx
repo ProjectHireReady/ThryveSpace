@@ -15,7 +15,7 @@ import {
   mainNavLinks,
   authNavLinks,
   dashboardNavLinks,
-  guestDashboardLinks, 
+  guestDashboardLinks,
 } from "../data/navLinks";
 import "./NavBar.css";
 
@@ -204,16 +204,22 @@ function NavBar() {
                   </Link>
                 );
               })}
+
               <div className="mobile-divider"></div>
-              <Link to="/profile" className="mobile-nav-item">
-                Profile
-              </Link>
-              <Link to="/settings" className="mobile-nav-item">
-                Settings
-              </Link>
-              <button onClick={handleLogout} className="mobile-nav-item logout">
-                Logout
-              </button>
+
+              {/* Profile + nested logout */}
+              <div className="mobile-nav-group">
+                <Link to="/profile" className="mobile-nav-item">
+                  Profile
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="mobile-nav-item logout"
+                >
+                  <LogOut size={18} />
+                  Logout
+                </button>
+              </div>
             </div>
           ) : (
             // Mobile guest menu
