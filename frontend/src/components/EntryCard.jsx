@@ -2,7 +2,6 @@ import "./EntryCard.css";
 import {
   PencilLine,
   Trash2,
-  // MessageSquare,
   ChevronDown,
   ChevronUp,
   Check,
@@ -48,6 +47,18 @@ export default function EntryCard({ entry }) {
   };
   const handleDelete = () => removeEntry(entry.id);
 
+  // Determine header text (title or snippet)
+  const maxLength = 20;
+  const title = entry.title?.trim();
+  const note = entry.note?.trim();
+  let headerText = "No content available";
+
+  if (title) {
+    headerText = title.length > maxLength ? title.substring(0, maxLength) + "..." : title;
+  } else if (note) {
+    headerText = note.length > maxLength ? note.substring(0, maxLength) + "..." : note;
+  }
+
   return (
     <div
       className={`entry-card-wrapper accordion-item
@@ -72,6 +83,7 @@ export default function EntryCard({ entry }) {
               />
             ) : null}
           </span>
+          <span className="entry-header-text">{headerText}</span>
         </div>
         <div className="expand-icon">
           {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -88,21 +100,12 @@ export default function EntryCard({ entry }) {
               rows={4}
             />
           ) : (
-            <>
-              <div
-                ref={noteWrapperRef}
-                className={`note-wrapper ${
-                  isExpanded ? "expanded" : "collapsed"
-                }`}
-              >
-                <p className="note">{entry.note}</p>
-              </div>
-              {!isExpanded && entry.note.length > 100 && (
-                <span className="read-more" onClick={() => setIsExpanded(true)}>
-                  ... Read more <ChevronDown size={16} />
-                </span>
-              )}
-            </>
+            <div
+              ref={noteWrapperRef}
+              className={`note-wrapper ${isExpanded ? "expanded" : "collapsed"}`}
+            >
+              <p className="note">{note || "No content available"}</p>
+            </div>
           )}
 
           <div className="entry-footer">

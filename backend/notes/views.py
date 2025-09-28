@@ -1,10 +1,9 @@
-# notes/views.py
-
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework.exceptions import ValidationError
+from insights.utils import increment_count
+from django.conf import settings
 from django.db import transaction
 from config.permissions import IsOwner
 from .models import Note
@@ -33,19 +32,28 @@ class NoteListCreateAPIView(generics.ListCreateAPIView):
             return NoteCreateSerializer
         return NoteSerializer
 
-    def perform_create(self, serializer):
-        serializer.save()
-
     def create(self, request, *args, **kwargs):
         """
         Override to return a lean response using NoteLeanSerializer.
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        serializer.save()
 
         note = serializer.instance
+
+        key = f"user_note_count:{self.request.user.id}"
+        note_count = increment_count(
+            key
+        )  # TTL (24 hours) is configured in increment_count
         read_data = NoteLeanSerializer(note, context={"request": request}).data
+
+        # Indicate that a milestone message should be shown
+        if note_count in settings.MILESTONE_TRIGGERS:
+            read_data["is_milestone"] = True
+        else:
+            read_data["is_milestone"] = False
+
         return Response(read_data, status=status.HTTP_201_CREATED)
 
 
@@ -89,43 +97,53 @@ class NoteMigrationAPIView(APIView):
         notes_to_create = []
         errors = []
 
-        try:
-            # Step 1: Prepare notes for bulk creation, resolving mood_name to Mood instance
-            for entry_data in validated_entries:
-                try:
-                    mood_obj = None
-                    mood_value_snapshot = None
-                    mood_name = entry_data.get('mood_name')
-                    if mood_name:
-                        mood_obj = Mood.objects.get(name__iexact=mood_name)
-                        # Get the integer value from the mood object
+        # Step 1: Prepare notes for bulk creation, resolving mood_name to Mood instance
+        for entry_data in validated_entries:
+            try:
+                mood_obj = None
+                mood_value_snapshot = None
+                mood_name = entry_data.get("mood_name")
+                if mood_name:
+                    mood_obj = Mood.objects.get(name__iexact=mood_name)
+                    # Get the integer value from the mood object
+                    if mood_obj is not None:
                         mood_value_snapshot = mood_obj.category
 
-                    notes_to_create.append(
-                        Note(
-                            note=entry_data['note'],
-                            mood=mood_obj,
-                            user=user,
-                            created_at=entry_data.get('created_at'),
-                            mood_value_snapshot=mood_value_snapshot,
-                        )
+                notes_to_create.append(
+                    Note(
+                        note=entry_data["note"],
+                        mood=mood_obj,
+                        user=user,
+                        created_at=entry_data.get("created_at"),
+                        mood_value_snapshot=mood_value_snapshot,
                     )
-                except Mood.DoesNotExist:
-                    errors.append(f"Mood '{mood_name}' not found for note '{entry_data.get('note')}'."
-                    )
-                except Exception as e:
-                    errors.append(f"Error preparing entry '{entry_data.get('note')}': {str(e)}")
-
-            if errors:
-                return Response(
-                    {"message": "Validation failed for some entries.", "success_count": 0, "errors": errors},
-                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except Mood.DoesNotExist:
+                errors.append(
+                    f"Mood '{mood_name}' not found for note '{entry_data.get('note')}'."
+                )
+            except Exception as e:
+                errors.append(
+                    f"Error preparing entry '{entry_data.get('note')}': {str(e)}"
                 )
 
+        if errors:
+            return Response(
+                {
+                    "message": "Validation failed for some entries.",
+                    "success_count": 0,
+                    "errors": errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
             with transaction.atomic():
                 Note.objects.bulk_create(notes_to_create)
-                created_notes = Note.objects.filter(user=user).order_by('-created_at')[:len(notes_to_create)]
-            
+
+            created_notes = Note.objects.filter(user=user).order_by("-created_at")[
+                : len(notes_to_create)
+            ]
             notes_data = NoteLeanSerializer(created_notes, many=True).data
 
             return Response(

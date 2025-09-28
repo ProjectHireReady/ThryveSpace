@@ -8,11 +8,13 @@ import PageTransition from "./components/PageTransition";
 import SignUpPage from "./pages/auth/SignUpPage";
 import LoginPage from "./pages/auth/LoginPage";
 // import InsightsPage from "./pages/InsightsPage"; // 🔸 Commented out to avoid crash
+import About from "./components/About";
 import ProtectedRoute, { GuestRoute } from "./components/ProtectedRoute";
-
+import UnauthorizedPage from "./pages/UnauthorizedPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
-  
   return (
     <div className="app">
       {/* Show navigation bar on all pages */}
@@ -30,7 +32,7 @@ function App() {
               </PageTransition>
             }
           />
-          
+
           <Route
             path="/features"
             element={
@@ -40,54 +42,75 @@ function App() {
             }
           />
 
-           {/* Public routes - accessible to everyone */}
-          <Route 
-            path="/mood" 
+          <Route
+            path="/about"
+            element={
+              <PageTransition>
+                <About />
+              </PageTransition>
+            }
+          />
+
+          <Route
+            path="/mood"
             element={
               <PageTransition>
                 <MoodJournalPage />
               </PageTransition>
-            } 
+            }
           />
-          
-          <Route 
-            path="/entries" 
+
+          <Route
+            path="/entries"
             element={
               <PageTransition>
                 <EntriesPage />
               </PageTransition>
-            } 
+            }
           />
 
-             Insights with guest view
-          <Route 
-            path="/insights" 
+          {/* Insights page temporarily disabled */}
+          {/*
+          <Route
+            path="/insights"
             element={
               <PageTransition>
                 <InsightsPage />
               </PageTransition>
-            } 
+            }
+          />
+          */}
+
+          {/* Protected routes - require authentication */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <PageTransition>
+                  <ProfilePage />
+                </PageTransition>
+              </ProtectedRoute>
+            }
           />
 
           {/* Guest-only routes (redirect if logged in) */}
-          <Route 
-            path="/login" 
+          <Route
+            path="/login"
             element={
               <GuestRoute>
                 <LoginPage />
               </GuestRoute>
-            } 
+            }
           />
-          <Route 
-            path="/signup" 
+          <Route
+            path="/signup"
             element={
               <GuestRoute>
                 <SignUpPage />
               </GuestRoute>
-            } 
+            }
           />
-          
-  
+
           {/* Special routes */}
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route path="*" element={<NotFoundPage />} />
@@ -98,3 +121,4 @@ function App() {
 }
 
 export default App;
+

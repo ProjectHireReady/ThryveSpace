@@ -1,9 +1,10 @@
+// src/context/EntriesContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getNotes, postNote, updateNote, deleteNote } from "../api/notes";
 import {
   getOrCreateGuestId,
-  clearGuestId,
   createGuestEntry,
+  clearAllGuestData,
 } from "../utils/guestUtils";
 import { useAuth } from "./AuthContext";
 
@@ -11,36 +12,55 @@ const EntriesContext = createContext();
 export const useEntries = () => useContext(EntriesContext);
 
 export const EntriesProvider = ({ children }) => {
-  const { user } = useAuth();
+  const [guestId, setGuestId] = useState(null);
+  const { user, isInitialized } = useAuth();
   const isLoggedIn = !!user;
 
-  const [guestId, setGuestId] = useState(() => getOrCreateGuestId());
+  // Entries state
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const storageKey = `entries-${guestId}`;
+  const storageKey = guestId ? `entries-${guestId}` : null;
 
+  // Guest: create guestId only if needed (after auth is initialized)
   useEffect(() => {
-    fetchEntries();
-  }, [isLoggedIn]);
+    if (!isInitialized) return;
+    if (!isLoggedIn && !guestId) {
+      const newGuestId = getOrCreateGuestId(true);
+      setGuestId(newGuestId);
+    }
+  }, [isInitialized, isLoggedIn, guestId]);
 
+  // Guest: hydrate guest entries
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isInitialized) return;
+
+    if (!isLoggedIn && guestId && storageKey) {
       const saved = localStorage.getItem(storageKey);
       setEntries(saved ? JSON.parse(saved) : []);
+      setLoading(false);
+    } else if (!isLoggedIn) {
+      setLoading(false);
     }
-  }, [guestId]);
+  }, [isInitialized, guestId, isLoggedIn, storageKey]);
+
+  // Logged-in: fetch entries from backend once user is available
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (user) {
+      fetchEntries().then(() => {
+        // after fetching user notes, clear old guest data
+        resetGuest();
+      });
+    }
+  }, [user, isInitialized]);
 
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      if (isLoggedIn) {
-        const res = await getNotes();
-        setEntries(res.data);
-      } else {
-        const saved = localStorage.getItem(storageKey);
-        setEntries(saved ? JSON.parse(saved) : []);
-      }
+      const res = await getNotes();
+      console.log("Fetched notes from backend:", res.data);
+      setEntries(res.data);
     } catch (err) {
       console.error("Error fetching entries:", err);
     } finally {
@@ -48,60 +68,75 @@ export const EntriesProvider = ({ children }) => {
     }
   };
 
-  const saveGuestEntries = (newEntries) => {
-    localStorage.setItem(storageKey, JSON.stringify(newEntries));
-    setEntries(newEntries);
+  // Save guest entries to localStorage
+  const saveGuestEntries = (entriesToSave) => {
+    if (!storageKey) return;
+    localStorage.setItem(storageKey, JSON.stringify(entriesToSave));
   };
 
+  // Add entry
   const addEntry = async (payload) => {
     if (isLoggedIn) {
       const res = await postNote(payload);
       setEntries((prev) => [res.data, ...prev]);
     } else {
-      const newEntry = createGuestEntry(payload); // Use helper
-      const updated = [newEntry, ...entries];
-      saveGuestEntries(updated);
+      const newEntry = createGuestEntry(payload);
+      setEntries((prev) => {
+        const updated = [newEntry, ...prev];
+        saveGuestEntries(updated);
+        return updated;
+      });
     }
   };
 
+  // Update entry
   const updateEntry = async (id, payload) => {
     if (isLoggedIn) {
       const res = await updateNote(id, payload);
       setEntries((prev) => prev.map((e) => (e.id === id ? res.data : e)));
     } else {
-      const updated = entries.map((e) =>
-        e.id === id
-          ? {
-              ...e,
-              ...payload,
-              updated_at: new Date().toISOString(),
-            }
-          : e
-      );
-      saveGuestEntries(updated);
+      setEntries((prev) => {
+        const updated = prev.map((e) =>
+          e.id === id
+            ? { ...e, ...payload, updated_at: new Date().toISOString() }
+            : e
+        );
+        saveGuestEntries(updated);
+        return updated;
+      });
     }
   };
 
+  // Remove entry
   const removeEntry = async (id) => {
     if (isLoggedIn) {
       await deleteNote(id);
       setEntries((prev) => prev.filter((e) => e.id !== id));
     } else {
-      const updated = entries.filter((e) => e.id !== id);
-      saveGuestEntries(updated);
+      setEntries((prev) => {
+        const updated = prev.filter((e) => e.id !== id);
+        saveGuestEntries(updated);
+        return updated;
+      });
     }
   };
 
+  // Clear all entries
   const clearEntries = () => {
-    localStorage.removeItem(storageKey);
+    if (storageKey) localStorage.removeItem(storageKey);
     setEntries([]);
   };
 
+  // Reset guest (after migration/decline)
   const resetGuest = () => {
-    clearEntries();
-    clearGuestId();
-    const newId = getOrCreateGuestId();
-    setGuestId(newId);
+    clearAllGuestData();
+    if (!isLoggedIn) {
+      const newId = getOrCreateGuestId(true);
+      setGuestId(newId);
+      setEntries([]);
+    } else {
+      setGuestId(null); // logged-in users keep backend entries
+    }
   };
 
   return (

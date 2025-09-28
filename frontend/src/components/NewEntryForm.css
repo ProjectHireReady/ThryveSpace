@@ -112,6 +112,27 @@ h1.new-entry-heading {
   margin-right: 8px;
 }
 
+.new-entry-title {
+  width: 100%;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: none;
+  border-bottom: 2px solid #e2e8f0;
+  background: transparent;
+  padding: 0.6rem 0;
+  margin-bottom: 1rem;
+  outline: none;
+  transition: border-color 0.25s;
+}
+
+.new-entry-title:focus {
+  border-color: #5a90c5;
+}
+
+.new-entry-title::placeholder {
+  color: #94a3b8;
+}
+
 .new-entry-emoji img {
   width: 40px;
   height: 40px;
@@ -125,19 +146,20 @@ h1.new-entry-heading {
   min-height: 70px;
   max-height: 250px;
   font-size: 1.04rem;
-  border: none;
-  border-bottom: 2px solid #e2e8f0;
   font-family: var(--font-alt);
-  background: transparent;
-  padding: 0.9rem 0.25rem;
   line-height: 1.6;
-  resize: none;
-  overflow-y: auto;
+  background: transparent;
+  border: none;
   outline: none;
-  border-radius: 6px;
-  transition: border-color 0.25s, box-shadow 0.25s;
+  resize: none;
+  padding: 0.9rem 0;
+  margin: 0;
+  color: #1e293b;
 }
 
+.new-entry-input::placeholder {
+  color: #94a3b8;
+}
 .new-entry-input:focus {
   border-color: #5a90c5;
 }

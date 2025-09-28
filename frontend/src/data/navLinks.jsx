@@ -14,3 +14,10 @@ export const dashboardNavLinks = [
   { label: "ENTRIES", to: "/entries", type: "internal" },
   { label: "INSIGHTS", to: "/insights", type: "internal" },
 ];
+
+// links for guest dashboard
+export const guestDashboardLinks = [
+  { label: "MOOD", to: "/mood", type: "internal" },
+  { label: "ENTRIES", to: "/entries", type: "internal" },
+  { label: "INSIGHTS", to: "/insights", type: "internal" },
+];

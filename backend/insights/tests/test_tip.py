@@ -22,8 +22,8 @@ def at_local(day, hour=9, minute=0):
 class WeeklyTipTests(APITestCase):
     def setUp(self):
         cache.clear()
-        self.user = User.objects.create_user(username="u_tip", password="pass1234")
-        self.other = User.objects.create_user(username="u_other", password="pass1234")
+        self.user = User.objects.create_user(email="utip@example.com", password="pass1234")
+        self.other = User.objects.create_user(email="uother@example.com", password="pass1234")
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
 

@@ -1,89 +1,39 @@
+// src/components/NewEntryForm.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import { Check, Trash } from "lucide-react";
+import useEntrySubmit from "../hooks/useEntrySubmit";
+import useFormattedDate from "../hooks/useFormattedDate";
+import { useAuth } from "../context/AuthContext";
 import { useEntries } from "../context/EntriesContext";
-import { formatGuestPayload } from "../utils/guestUtils";
-import {
-  shouldShowKindness,
-  markKindnessShown,
-  shouldShowLoginPrompt,
-  markLoginPromptShown,
-} from "../utils/localStorageUtils";
 import KindnessMessage from "./KindnessMessage";
 import LoginPrompt from "./LoginPrompt";
 import "./NewEntryForm.css";
 
 export default function NewEntryForm({ mood, onSubmit }) {
-  const { addEntry } = useEntries();
-  const { isLoggedIn } = useAuth();
-  const navigate = useNavigate();
+  const { day, month } = useFormattedDate();
+  const { isAuthenticated: isLoggedIn } = useAuth();
+  const { addEntry, entries } = useEntries();
 
-  const [entry, setEntry] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
+  const {
+    entry,
+    setEntry,
+    title,
+    setTitle,
+    submitting,
+    handleSubmit,
+    showKindness,
+    showLoginPrompt,
+    kindnessMessage,
+    onLoginComplete,
+  } = useEntrySubmit({
+    mood,
+    onSubmit,
+    isLoggedIn,
+    addEntry,
+    entries,
+  });
 
-  const [showKindness, setShowKindness] = useState(false);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-
-  // Date box helper
-  const getToday = () => {
-    const date = new Date();
-    return {
-      day: date.getDate().toString().padStart(2, "0"),
-      month: date.toLocaleString("default", { month: "short" }).toUpperCase(),
-    };
-  };
-
-  const { day, month } = getToday();
-
-  const handleSubmit = async () => {
-    if (!entry.trim() && !mood) {
-      return alert("Please pick a mood or write something!");
-    }
-
-    const payload = isLoggedIn
-      ? { note: entry, mood_id: mood?.id || null }
-      : formatGuestPayload(entry, mood);
-
-    try {
-      setSubmitting(true);
-      await addEntry(payload);
-
-      setEntry("");
-
-      if (shouldShowKindness()) {
-        setShowKindness(true);
-        markKindnessShown();
-
-        setTimeout(() => {
-          setShowKindness(false);
-
-          if (shouldShowLoginPrompt()) {
-            setShowLoginPrompt(true);
-            markLoginPromptShown();
-          } else {
-            // If no login prompt, move to entries
-            onSubmit?.();
-            navigate("/entries");
-          }
-        }, 3000);
-      } else if (shouldShowLoginPrompt()) {
-        setShowLoginPrompt(true);
-        markLoginPromptShown();
-      } else {
-        // No kindness, no login prompt -> go directly
-        onSubmit?.();
-        navigate("/entries");
-      }
-    } catch (err) {
-      console.error("Error saving entry:", err);
-      alert("Could not save your note. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
     <div className="new-entry-page">
@@ -94,23 +44,39 @@ export default function NewEntryForm({ mood, onSubmit }) {
       </div>
 
       <div className="new-entry-container">
-        {/* Date box */}
         <div className="new-entry-date">
           <div className="new-entry-day">{day}</div>
           <div className="new-entry-month">{month}</div>
         </div>
 
         <div className="new-entry-card">
-          {/* Mood preview */}
           {mood && (
             <div className="new-entry-mood">
-              <span className="new-entry-emoji">
-                <img src={mood.imageUrl} alt={mood.name} />
+              {!imageLoaded && <div className="loading-spinner">Loading...</div>}
+              <span
+                className="new-entry-emoji"
+                style={{ display: imageLoaded ? "inline-block" : "none" }}
+              >
+                <img
+                  src={mood.imageUrl || mood.icon || "/fallback-emoji.png"}
+                  alt={mood.name}
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageLoaded(true)}
+                />
               </span>
             </div>
           )}
 
-          {/* Entry box */}
+          {/* Title input */}
+          <input
+            type="text"
+            className="new-entry-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Give your reflection a title..."
+          />
+
+          {/* Note input */}
           <textarea
             className="new-entry-input"
             value={entry}
@@ -124,13 +90,16 @@ export default function NewEntryForm({ mood, onSubmit }) {
               onClick={handleSubmit}
               className="new-entry-submit"
               aria-label="Submit Entry"
-              disabled={submitting}
+              disabled={submitting || (!entry.trim() && !mood)}
             >
               <Check size={20} />
             </button>
 
             <button
-              onClick={() => setEntry("")}
+              onClick={() => {
+                setEntry("");
+                setTitle("");
+              }}
               className="new-entry-delete"
               aria-label="Clear Entry"
               disabled={submitting}
@@ -141,24 +110,26 @@ export default function NewEntryForm({ mood, onSubmit }) {
         </div>
       </div>
 
-      {/* Kindness message */}
-      {showKindness && <KindnessMessage />}
-
-      {/* Login prompt */}
-      {showLoginPrompt && (
-        <LoginPrompt
-          onComplete={() => {
-            onSubmit?.();
-            navigate("/entries");
-          }}
-        />
+      {/* Guest messages */}
+      {!isLoggedIn && showKindness && (
+        <KindnessMessage message={kindnessMessage} />
+      )}
+      {!isLoggedIn && showLoginPrompt && (
+        <LoginPrompt onComplete={onSubmit} />
       )}
 
-      {!showLoginPrompt && !showKindness && (
+      {/* Logged-in messages */}
+      {isLoggedIn && kindnessMessage && (
+        <KindnessMessage message={kindnessMessage}/>
+      )}
+
+
+      {/* Default footer */}
+      {!showKindness && !showLoginPrompt && !kindnessMessage && (
         <p className="new-entry-footer-text">
           We listen gently once you have finished
-        </p>)}
-
+        </p>
+      )}
     </div>
   );
 }

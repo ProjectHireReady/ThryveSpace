@@ -1,10 +1,10 @@
-
 // src/context/AuthContext.js
 import { createContext, useContext, useState, useEffect } from "react";
 import {
   loginUser,
   signupUser,
-  logoutUser /*, getCurrentUser */,
+  logoutUser,
+  getCurrentUser,
 } from "../services/authService";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -73,7 +73,6 @@ export const AuthProvider = ({ children }) => {
 
   // Login
 
-
   const login = async (payload, options = {}) => {
     setLoading(true);
     setError(null);
@@ -97,18 +96,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Signup
-
   const signup = async (payload, options = {}) => {
     setLoading(true);
     setError(null);
     try {
       const data = await signupUser(payload);
-      handleAuthSuccess(data);
-
-      // Only redirect if not disabled
-      if (!options.skipRedirect) {
-        redirectAfterLogin();
-      }
 
       return data;
     } catch (err) {
@@ -158,10 +150,10 @@ export const AuthProvider = ({ children }) => {
   // Get user display name
   const getUserDisplayName = () => {
     if (!user) return null;
-    return user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.email;
+    return user.firstName
+      ? `${user.firstName} ${user.lastName || ""}`.trim()
+      : user.email;
   };
-
-
 
   // Don't render children until auth state is initialized
   if (!isInitialized) {
@@ -172,11 +164,11 @@ export const AuthProvider = ({ children }) => {
     );
   }
 
-
   return (
     <AuthContext.Provider
       value={{
         user, // use !!user to check if logged in
+        setUser,
         loading,
         error,
         isInitialized,
@@ -189,7 +181,6 @@ export const AuthProvider = ({ children }) => {
         // Helpers
         hasRole,
         getUserDisplayName,
-
       }}
     >
       {children}
