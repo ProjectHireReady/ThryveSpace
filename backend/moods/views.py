@@ -3,57 +3,70 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.db.models import Max
-from django.http import HttpResponse
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
+from django.views.decorators.http import condition # <--- NEW IMPORT: for ETag handling
 from .models import Mood, MoodCategory
 from .serializers import MoodsCategoriesSerializer
 import json
 import hashlib
+from datetime import datetime
 
 # --- ETag Generation Logic (Reusable) ---
 
-def generate_etag(data):
-    """
-    Generates a unique ETag based on the response content and the latest update timestamp.
-    """
-    # Find the latest update time across all active Moods
-    try:
-        latest_update = Mood.objects.filter(is_active=True).aggregate(max_updated=Max('updated_at'))['max_updated']
-    except AttributeError:
-        # Handle case where no moods exist
-        latest_update = '0'
-
-    data_string = json.dumps(data, sort_keys=True, default=str)
-    content_to_hash = f"{data_string}_{latest_update}"
+def get_last_modified(request, *args, **kwargs):
+    """Returns the most recent updated_at timestamp across Mood and MoodCategory."""
     
-    return hashlib.sha1(content_to_hash.encode('utf-8')).hexdigest()
+    # Check max updated_at for active Moods
+    latest_mood = Mood.objects.filter(is_active=True).aggregate(max_updated=Max('updated_at'))['max_updated']
+    
+    # Check max updated_at for all MoodCategories (since they affect the final data structure)
+    latest_category = MoodCategory.objects.all().aggregate(max_updated=Max('updated_at'))['max_updated']
+    
+    # Return the later of the two, or now if no objects exist (safe fallback)
+    last_modified = max(latest_mood or datetime.min.replace(tzinfo=latest_category.tzinfo), 
+                        latest_category or datetime.min.replace(tzinfo=latest_mood.tzinfo))
+    
+    # @condition requires returning a datetime object or None
+    return last_modified if last_modified else None
 
-# Apply daily caching (86400 seconds = 24 hours)
-@method_decorator(cache_page(86400), name='get')
+
+def calculate_moods_etag(request, *args, **kwargs):
+    """
+    Generates a unique ETag based on the latest update timestamp.
+    NOTE: We rely primarily on the timestamp returned by get_last_modified.
+    If further hashing is needed for content, the 'last modified' timestamp 
+    is a good hash component.
+    """
+    last_modified = get_last_modified(request)
+    
+    # Using the ISO format of the latest timestamp is a simple, effective ETag generator
+    if last_modified:
+        content_to_hash = last_modified.isoformat()
+        return hashlib.sha1(content_to_hash.encode('utf-8')).hexdigest()
+    return None # No ETag if no data exists
+
+# Apply conditional GET logic (ETag and Last-Modified)
+@method_decorator(condition(etag_func=calculate_moods_etag, last_modified_func=get_last_modified), name='get')
 class MoodsAPIView(APIView):
     permission_classes = [AllowAny]
     http_method_names = ['get', 'head', 'options']
 
     def get(self, request, *args, **kwargs):
-        # 1. Fetch all active moods (needed for data and ETag)
+        # The @condition decorator handles the 304 check BEFORE this method is called.
+        # If the ETag matches, Django returns 304, and this code is skipped.
+        
+        # 1. Fetch all active moods
         all_moods = Mood.objects.filter(is_active=True).select_related('category')
         
         # 2. Serialize the data structure
-        # NOTE: We pass the queryset to the serializer instance for access in get_moods.
         serializer = MoodsCategoriesSerializer(all_moods) 
         final_data = serializer.data
         
-        # 3. Generate ETag and check for 304 response
-        etag = generate_etag(final_data)
-        client_etag = request.headers.get('If-None-Match')
-        
-        if client_etag == f'"{etag}"':
-            return HttpResponse(status=status.HTTP_304_NOT_MODIFIED)
-
-        # 4. Build and return the successful 200 response
+        # 3. Build and return the successful 200 response
+        # The ETag and Last-Modified headers are added automatically by @condition.
         response = Response(final_data, status=status.HTTP_200_OK)
-        response['ETag'] = f'"{etag}"'
+        
+        # Manually add the Cache-Control header for client-side caching
         response['Cache-Control'] = 'public, max-age=86400, must-revalidate'
 
         return response
