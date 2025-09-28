@@ -1,10 +1,7 @@
 from django.db import models
 from uuid import uuid4
 
-# Assuming CATEGORY_CHOICES is now imported from a constants file
-# If you didn't create moods/constants.py, ensure CATEGORY_CHOICES is defined here.
-
-# --- If you haven't moved it to constants.py, keep it here: ---
+# --- CATEGORY_CHOICES (Define if not in constants.py) ---
 CATEGORY_CHOICES = [
     ("very negative", "Very Negative"),
     ("negative", "Negative"),
@@ -12,13 +9,36 @@ CATEGORY_CHOICES = [
     ("positive", "Positive"),
     ("very positive", "Very Positive"),
 ]
-# -------------------------------------------------------------
+# --------------------------------------------------------
 
+class MoodCategory(models.Model):
+    """
+    Table to define general mood categories.
+    Fields: value, label, icon (REQUIRED).
+    """
+    value = models.CharField(max_length=50, unique=True, choices=CATEGORY_CHOICES) 
+    label = models.CharField(max_length=50) 
+    
+    # 🟢 REQUIRED FIELD: 'icon' (Used for the URL as requested by the frontend)
+    icon = models.URLField(
+        blank=True, 
+        null=True, 
+        help_text="URL for the category icon image."
+    ) 
+
+    class Meta:
+        verbose_name_plural = "Mood Categories"
+        ordering = ['value']
+
+    def __str__(self):
+        return self.label
+
+# --------------------------------------------------------
 
 class Mood(models.Model):
     """
-    Table to store individual moods that users can select, satisfying the
-    required fields: id, name, icon, category info, updated_at.
+    Table to store individual moods.
+    Fields: id, name, icon (URL), category, updated_at (REQUIRED).
     """
     # 1. id
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
@@ -26,31 +46,39 @@ class Mood(models.Model):
     # 2. name
     name = models.CharField(max_length=100, unique=True)
     
-    # 3. icon (Renamed from emoji to match requested schema)
-    icon = models.CharField(
+    # 3. emoji_char (Internal field for the character, mapped to 'emoji' in API)
+    # NOTE: This field is necessary to support the 'emoji' output field.
+    emoji_char = models.CharField(
         max_length=10, 
-        help_text="The emoji or short icon string representing the mood."
+        default="😊",
+        help_text="The emoji character (e.g., 😃)."
     )
     
-    # 4. category info
-    category = models.CharField(
-        max_length=30,
-        choices=CATEGORY_CHOICES,
-        help_text="The general category (e.g., positive, neutral) this mood belongs to."
+    # 4. icon (REQUIRED FIELD: Stores the URL for the mood's main visual icon/image)
+    icon = models.URLField(
+        blank=True, 
+        null=True,
+        help_text="URL for the mood's image illustration (mapped to 'icon' in API)."
+    )
+
+    # 5. category info (Foreign Key to MoodCategory for better data integrity)
+    category = models.ForeignKey(
+        MoodCategory, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name='moods_in_category'
     )
     
-    # 5. updated_at
+    # 6. updated_at (Used for ETag calculation)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Other necessary fields from your implementation:
+    # Other necessary fields:
     is_active = models.BooleanField(default=True)
-    image_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
-        # Use 'icon' field in __str__
-        return f"{self.icon} {self.name}"
+        return f"{self.emoji_char} {self.name}"
 
     class Meta:
         ordering = ["name"]

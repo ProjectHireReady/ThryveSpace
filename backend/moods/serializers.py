@@ -1,20 +1,41 @@
 from rest_framework import serializers
-from .models import Mood, CATEGORY_CHOICES # Assuming CATEGORY_CHOICES is imported from models or defined globally
+# Assuming Mood and MoodCategory are correctly imported from .models
+from .models import Mood, MoodCategory, CATEGORY_CHOICES 
 
-# Cloudinary icon mapping for categories
+# Cloudinary icon mapping (Used for seeding, we will use the model's icon field for output)
 CATEGORY_ICONS = {
     "positive": "https://res.cloudinary.com/dirn4gqky/image/upload/v1757663590/Positive_yaegjw.svg",
-    "very positive": "https://res.cloudinary.com/dirn4gqky/image/upload/v1757664397/Very_Positive_grjod4.svg",
-    "neutral": "https://res.cloudinary.com/dirn4gqky/image/upload/v1757617744/Neutral_j2n5gp.svg",
-    "negative": "https://res.cloudinary.com/dirn4gqky/image/upload/v1757615267/Sad_vlwdhy.svg",
-    "very negative": "https://res.cloudinary.com/dirn4gqky/image/upload/v1757660403/Lonely_bfgeld.svg",
+    # ... other URLs ...
 }
 
+class MoodCategorySerializer(serializers.ModelSerializer):
+    """
+    Serializer for the MoodCategory model.
+    The output fields are exactly: value, label, icon.
+    """
+    class Meta:
+        model = MoodCategory
+        # Uses the model's 'icon' field (the URL) directly.
+        fields = ['value', 'label', 'icon']
+        
 class MoodSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Mood model.
+    The output fields are: id, name, emoji, category, icon.
+    """
+    
+    # Map the internal 'emoji_char' model field to the API output field 'emoji'
+    emoji = serializers.CharField(source='emoji_char', read_only=True)
+    
+    # Map the ForeignKey 'category' to its 'value' string
+    category = serializers.CharField(source='category.value', read_only=True)
+    
+    # The 'icon' field is taken directly from the model
+
     class Meta:
         model = Mood
-        # 🟢 FIX: Changed 'emoji' to 'icon'
-        fields = ("id", "name", "icon", "category", "image_url")
+        # FINAL FIELDS: id, name, emoji, category, icon (URL)
+        fields = ["id", "name", "emoji", "category", "icon"] 
         read_only_fields = ("id",)
 
     def validate_name(self, value):
@@ -30,17 +51,11 @@ class MoodsCategoriesSerializer(serializers.Serializer):
     moods = serializers.SerializerMethodField()
     
     def get_categories(self, obj):
-        """Returns a list of all defined categories from the model choices, with icon URLs."""
-        return [
-            {
-                'value': value,
-                'label': label,
-                'icon_url': CATEGORY_ICONS.get(value)
-            }
-            for value, label in CATEGORY_CHOICES
-        ]
+        """Returns a list of all defined categories using the MoodCategorySerializer."""
+        # Fetch categories from the model for the most accurate data
+        categories = MoodCategory.objects.all()
+        return MoodCategorySerializer(categories, many=True).data
 
     def get_moods(self, obj):
         """Serializes the queryset of Mood objects passed as 'obj'."""
-        # obj here must be the queryset of Moods (Mood.objects.filter(is_active=True))
         return MoodSerializer(obj, many=True).data
