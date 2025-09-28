@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Mood, CATEGORY_CHOICES
+from .models import Mood, CATEGORY_CHOICES # Assuming CATEGORY_CHOICES is imported from models or defined globally
 
 # Cloudinary icon mapping for categories
 CATEGORY_ICONS = {
@@ -22,6 +22,9 @@ class MoodSerializer(serializers.ModelSerializer):
         return value
 
 class MoodsCategoriesSerializer(serializers.Serializer):
+    """
+    Serializer for the final API response structure: {categories: [], moods: []}.
+    """
     categories = serializers.SerializerMethodField()
     moods = serializers.SerializerMethodField()
     
@@ -37,5 +40,6 @@ class MoodsCategoriesSerializer(serializers.Serializer):
         ]
 
     def get_moods(self, obj):
-        """Serializes the queryset of Mood objects."""
+        """Serializes the queryset of Mood objects passed as 'obj'."""
+        # obj here must be the queryset of Moods (Mood.objects.filter(is_active=True))
         return MoodSerializer(obj, many=True).data
