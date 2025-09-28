@@ -32,7 +32,7 @@ export const handleGuestKindness = async (
   let message = null;
   try {
     const guest_id = getOrCreateGuestId();
-    const note_snippet = entry.slice(0, 300); // trim to max length
+    const note_snippet = entry; //  service handles trimming
     const mood_name = mood?.name || null;
 
     const result = await requestGuestAI({ guest_id, mood_name, note_snippet });
