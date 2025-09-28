@@ -13,7 +13,8 @@ CATEGORY_ICONS = {
 class MoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mood
-        fields = ("id", "name", "emoji", "category", "image_url")
+        # 🟢 FIX: Changed 'emoji' to 'icon'
+        fields = ("id", "name", "icon", "category", "image_url")
         read_only_fields = ("id",)
 
     def validate_name(self, value):
