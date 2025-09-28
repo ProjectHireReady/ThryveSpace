@@ -2,17 +2,13 @@
 
 This document describes the API endpoint for fetching moods and their categories.
 
----
-
 ## 1. Get All Moods and Categories
 
 **Endpoint:**  
 `GET /api/v1/moods/`
 
 **Description:**  
-Provides a comprehensive list of all available moods and their corresponding categories. Designed as the single source of truth for the frontend to dynamically display mood options.
-
----
+Returns a comprehensive list of all available moods and their corresponding categories. This endpoint serves as the single source of truth for the frontend to dynamically display mood options.
 
 ### Request
 
@@ -20,9 +16,7 @@ Provides a comprehensive list of all available moods and their corresponding cat
 - **URL:** `http://localhost:8000/api/v1/moods/`
 - **Headers:**
     - `If-None-Match: <ETag_value>` (Optional)  
-        If the client includes a valid ETag from a previous request, the server will check if the data has changed since.
-
----
+        If provided, the server checks if the data has changed since the last request.
 
 ### Responses
 
@@ -57,21 +51,37 @@ Returns a JSON object containing two main arrays: `categories` and `moods`.
 ```
 </details>
 
-- **categories:**  
-    A list of objects, each describing a mood category.
+#### Categories
 
-- **moods:**  
-    A list of objects, each representing an individual mood with its associated emoji, category, and image URL.
+A list of objects, each describing a mood category.
 
-**Response Headers:**
+| Field     | Type        | Description                                   |
+| :-------- | :---------- | :-------------------------------------------- |
+| value     | String      | The system value for the category (e.g., "positive"). |
+| label     | String      | The human-readable label (e.g., "Positive").  |
+| icon_url  | URL String  | The URL for the category's icon/image.        |
 
-- `ETag`: A unique identifier for the current state of the resource. The frontend should store this value.
-- `Cache-Control`: `public, max-age=86400, must-revalidate`  
-    Instructs the client to cache the response for 24 hours (86,400 seconds) and re-validate with the server afterward.
+#### Moods
+
+A list of objects, each representing an individual mood.
+
+| Field     | Type         | Description                                         |
+| :-------- | :----------- | :-------------------------------------------------- |
+| id        | UUID String  | The unique identifier for the mood.                 |
+| name      | String       | The name of the mood (e.g., "Happy").               |
+| emoji     | String       | The emoji character associated with the mood.       |
+| category  | String       | The category value this mood belongs to (e.g., "positive"). |
+| image_url | URL String   | The URL for the mood's visual illustration.         |
+
+#### Response Headers
+
+- **ETag:** A unique identifier for the current state of the resource. The frontend should store this value.
+- **Cache-Control:** `public, max-age=86400, must-revalidate`  
+    Instructs the client to cache the response for 24 hours (86,400 seconds) and revalidate with the server afterward.
 
 ---
 
-### 3. Caching Response
+## 2. Caching Response
 
 #### 304 Not Modified
 
@@ -84,6 +94,4 @@ If a client sends a GET request with an `If-None-Match` header that matches the 
     _Empty_
 
 - **Benefit:**  
-    Saves bandwidth and reduces latency by avoiding the re-transmission of data that the client already has.
-
----
+    Saves bandwidth and reduces latency by avoiding retransmission of data the client already has.
