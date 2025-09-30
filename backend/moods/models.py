@@ -16,7 +16,7 @@ class MoodCategory(models.Model):
     Table to define general mood categories.
     Fields: value, label, icon, updated_at (REQUIRED for ETag).
     """
-    value = models.CharField(max_length=50, unique=True, choices=CATEGORY_CHOICES) 
+    value = models.CharField(max_length=50, choices=CATEGORY_CHOICES) 
     label = models.CharField(max_length=50) 
     
     # REQUIRED FIELD: 'icon'
