@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+# Import default headers from corsheaders
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,6 +59,13 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# --- CORS Fix for If-None-Match Header ---
+# Extend the default allowed headers to include "if-none-match"
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "if-none-match",
+]
+# ----------------------------------------
 
 ROOT_URLCONF = "config.urls"
 
