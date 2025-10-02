@@ -8,16 +8,16 @@ export default function ProtectedRoute({ children, requiredRole = null }) {
 
   // Show loading while checking auth state
   if (loading) {
-    return null;
+    return <div className="app-loading">Loading...</div>;
   }
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return (
-      <Navigate 
-        to="/login" 
-        state={{ from: location }} 
-        replace 
+      <Navigate
+        to="/login"
+        state={{ from: location }}
+        replace
       />
     );
   }
@@ -25,10 +25,10 @@ export default function ProtectedRoute({ children, requiredRole = null }) {
   // Check for required role if specified
   if (requiredRole && !hasRole(requiredRole)) {
     return (
-      <Navigate 
-        to="/unauthorized" 
-        state={{ from: location, requiredRole }} 
-        replace 
+      <Navigate
+        to="/unauthorized"
+        state={{ from: location, requiredRole }}
+        replace
       />
     );
   }
@@ -42,7 +42,7 @@ export function GuestRoute({ children }) {
 
   // Show loading while checking auth state
   if (loading) {
-    return null;
+    return <div className="app-loading">Loading...</div>;
   }
 
   // Redirect to dashboard if already authenticated
