@@ -1,27 +1,28 @@
 .site-footer {
   background: linear-gradient(145deg, #3A5E87, #2b4b6b);
   color: white;
-  padding: clamp(1rem, 2vw, 2rem) clamp(1rem, 4vw, 3rem); 
+  padding: 1rem 2rem; 
+  text-align: center;
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.15);
+  max-width: 100%;
 }
 
 .footer-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 0 clamp(0.5rem, 2vw, 1rem);
 }
 
 .footer-text {
   margin: 0.5rem 0;
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  font-size: 1rem; 
   opacity: 0.9;
-  word-wrap: break-word;
+  text-align: center;
 }
 
 .footer-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.2);
-  margin: clamp(0.5rem, 1vw, 1rem) 0;
+  margin: 0.75rem 0;
   border: none;
 }
 
@@ -29,10 +30,10 @@
   list-style: none;
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: clamp(0.5rem, 2vw, 1.5rem);
-  margin-top: clamp(0.5rem, 1vw, 0.75rem);
+  gap: 1rem; 
+  margin-top: 0.75rem;
   padding: 0;
+  flex-wrap: wrap;
 }
 
 .footer-links a {
@@ -41,7 +42,7 @@
   font-weight: 500;
   position: relative;
   transition: all 0.3s ease;
-  font-size: clamp(0.9rem, 1.3vw, 1rem);
+  font-size: 1rem; 
 }
 
 .footer-links a::after {
@@ -63,27 +64,19 @@
   color: #F2A38B;
 }
 
-/* Tablet adjustments */
-@media (max-width: 768px) {
-  .footer-text {
-    font-size: clamp(0.88rem, 1.8vw, 0.98rem);
-  }
-  .footer-links {
-    gap: clamp(0.5rem, 2vw, 1rem);
-  }
-}
-
 /* Mobile adjustments */
 @media (max-width: 500px) {
   .footer-links {
     flex-direction: column;
-    gap: 0.5rem;
-    align-items: center;
+    gap: 0.75rem;
   }
+
+  .footer-text,
+  .footer-links a {
+    font-size: 0.95rem; 
+  }
+
   .site-footer {
-    padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3vw, 1.5rem);
-  }
-  .footer-text {
-    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    padding: 1rem 1.5rem; 
   }
 }
