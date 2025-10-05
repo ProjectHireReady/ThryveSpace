@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from notes.models import Note
-from ..constants import AI_PROMPT_VERSION
+from config.constants import AI_PROMPT_VERSION
 
 from .serializers import InsightTipSerializer
 from .rules import render_tip
