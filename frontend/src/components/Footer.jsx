@@ -6,6 +6,7 @@ function Footer() {
     <footer className="site-footer">
       <div className="footer-container">
         <p className="footer-text">© 2025 ThryveSpace. All rights reserved.</p>
+        <hr className="footer-divider" />
         <ul className="footer-links">
           <li><Link to="/about">About</Link></li>
           <li><Link to="/privacy">Privacy</Link></li>
