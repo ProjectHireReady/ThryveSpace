@@ -11,7 +11,7 @@ function Hero() {
   }, []);
 
   return (
-    <section className="hero section">
+    <section className="hero section section--lg">
       <div className="overlay"></div>
       <div className="hero-content">
         <div className="text-group">

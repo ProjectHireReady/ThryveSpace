@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-
 import "./FeaturesPreview.css";
 import {
   FiBarChart2,
@@ -10,16 +9,19 @@ import {
 
 function FeaturesPreview() {
   return (
-    <section className="features-preview-alt">
+    <section className="features-preview-alt section section--sm">
       <div className="features-alt-container">
+        {/* Intro Text */}
         <div className="features-alt-text">
           <div className="text-header-accent">
-            <span className="accent-dot" /> {/* small glow or line */}
+            <span className="accent-dot" />
             <h2>Explore Features</h2>
           </div>
 
           <p className="features-subtext">
-            A quick glance at how we support your journey
+            Every journey starts with understanding. Here’s how our platform
+            guides you toward better emotional awareness, adapts to your unique
+            behavior, and offers practical insights to help you thrive every day
           </p>
 
           <Link to="/features" className="features-button">
@@ -27,6 +29,7 @@ function FeaturesPreview() {
           </Link>
         </div>
 
+        {/* Timeline Section */}
         <div className="timeline">
           <div className="timeline-item">
             <div className="timeline-icon">
@@ -35,8 +38,8 @@ function FeaturesPreview() {
             <div className="timeline-content">
               <h4>AI insights for deeper understanding</h4>
               <p>
-                Our AI helps you see mood patterns and offer gentle personalized
-                suggestions. It acts as a helpful companion to you.
+                Our AI identifies mood patterns and provides subtle,
+                personalized suggestions to help you reflect and grow.
               </p>
             </div>
           </div>
@@ -48,8 +51,8 @@ function FeaturesPreview() {
             <div className="timeline-content">
               <h4>Gentle guidance you can trust</h4>
               <p>
-                Subtle check-ins and reminders keep your emotional well-being
-                top-of-mind — but always on your terms.
+                Thoughtful check-ins and reminders keep your emotional
+                well-being top-of-mind, always respecting your pace.
               </p>
             </div>
           </div>
@@ -61,8 +64,8 @@ function FeaturesPreview() {
             <div className="timeline-content">
               <h4>Personalized experience</h4>
               <p>
-                Our features adapt to your behavior and preferences, giving you
-                a more intuitive and helpful daily companion.
+                Features adapt to your habits and preferences, creating a more
+                intuitive and supportive daily companion.
               </p>
             </div>
           </div>

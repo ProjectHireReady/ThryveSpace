@@ -1,20 +1,19 @@
 .daily-uplifts {
   background-color: rgba(255, 255, 255, 0.5);
-  /* soft overlay on card background */
   border-radius: 1rem;
 }
 
 .uplifts-container {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
+  position: relative;
 }
 
 .uplifts-header {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: bold;
   text-align: center;
-  /* color: #374151; */
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
 }
 
 /* Grid Area */
@@ -41,11 +40,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Center content horizontally */
   justify-content: center;
-  /* Center content vertically */
   text-align: center;
-  /* Center text in title/text */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -70,7 +66,7 @@
 }
 
 .uplift-text {
-  font-size: 1rem;
+  font-size: 1.02rem;
   font-family: var(--font-alt);
   font-weight: 600;
   color: #6b7280;
@@ -81,15 +77,12 @@
 
 /* Button with arrows */
 .uplift-arrows {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
+  position: relative; 
   display: flex;
   justify-content: space-between;
-  transform: translateY(-50%);
-  padding: 0 1rem;
-  pointer-events: none; /* stops arrows from blocking hover on cards */
+  margin-top: 1.5rem; 
+  gap: 4rem;
+  pointer-events: auto;
 }
 
 .uplift-arrow {
@@ -101,7 +94,7 @@
   font-size: 1.25rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  pointer-events: auto; /* enable clicks */
+  pointer-events: auto; 
 }
 
 .uplift-arrow:hover {
@@ -112,14 +105,12 @@
 @media (max-width: 900px) {
   .uplift-card {
     flex: 0 0 45%;
-    /* about 2 per row */
   }
 }
 
 @media (max-width: 600px) {
   .uplift-card {
     flex: 0 0 90%;
-    /* 1 per row */
   }
 }
 
