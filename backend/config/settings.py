@@ -24,7 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 OPENAI_API_KEY = config("OPENAI_API_KEY", default="")
-ALLOWED_HOSTS = []  # set in env for non-local
+ALLOWED_HOSTS = [
+    host for host in config("ALLOWED_HOSTS", default="").split(",") if host
+]
 
 # Application definition
 INSTALLED_APPS = [
