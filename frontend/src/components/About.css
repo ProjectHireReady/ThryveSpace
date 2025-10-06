@@ -1,154 +1,191 @@
 .about-page {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 2.5rem 1rem 3rem;
+  color: var(--color-text, #2b2b2b);
+  line-height: 1.75; 
 }
 
 /* Hero Section */
 .about-hero {
   text-align: center;
-  margin: 30px 0 80px;
+  margin: 40px 0 90px;
+  background: transparent !important;
 }
 
 .about-title {
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 24px;
-  color: var(--color-h1);
+  color: var(--color-h1, #2b4b6b);
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.3px; 
+}
+
+.underline {
+  position: relative;
+  display: inline-block;
+}
+
+.underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #9ec3eb, #ffd8c2);
+  border-radius: 3px;
+  opacity: 0.9; 
 }
 
 .about-subtitle {
   font-size: 1.1rem;
+  font-weight: 500;
   max-width: 640px;
-  margin: 0 auto 40px;
-  line-height: 1.6;
-  color: var(--color-text);
+  margin: 0 auto 2.4rem;
+  line-height: 1.8;
+  color: var(--color-text, #333);
 }
 
 .about-psychologist {
-  display: block;
   width: 100%;
   max-width: 500px;
-  margin: 2.5rem auto 3.5rem;
-  border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  margin: 2.8rem auto 3.5rem;
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
+  filter: brightness(1.08) contrast(1.02); 
+  opacity: 0; 
+  transform: translateY(20px);
+  animation: fadeInUp 1.2s ease forwards; 
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.about-psychologist:hover {
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.15);
 }
 
 /* Section Blocks */
 .about-block {
-  margin-bottom: 6rem;
+  margin-bottom: 5rem;
   position: relative;
-  padding-bottom: 1rem;
+  padding: 2rem 1.5rem 1rem;
+  border-radius: 12px;
+  background: rgba(232, 242, 255, 0.1); 
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 
-/* hr line */
+.about-block:hover {
+  background: rgba(232, 242, 255, 0.25); 
+  transform: translateY(-2px); 
+}
+
+/* Divider */
 .about-block:not(:last-child)::after {
   content: "";
   display: block;
-  height: 0.094rem; 
-  background-color: #4a90e2;
-  width: 100%;  
-  margin: 3rem 0 0;
+  height: 0.094rem;
+  background: linear-gradient(90deg, #9ec3eb, #ffd8c2);
+  width: 100%;
+  margin: 2.8rem 0 0;
+  opacity: 0.25; 
 }
 
-/* Header: Icon and Heading */
+/* Header */
 .about-header {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
-  margin-bottom: 3rem;
+  gap: 1.3rem;
+  margin-bottom: 2.2rem;
 }
 
 .about-icon {
-  width: 50px;
-  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.08));
 }
 
 .about-heading {
-  font-size: 1.65rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: var(--color-h2);
+  color: var(--color-h2, #3a5e87);
+  letter-spacing: 0.2px;
 }
 
-/* Content: Circle left, text right */
+/* Content */
 .about-content {
   display: grid;
-  grid-template-columns: auto 1fr; 
-  column-gap: 6rem;                
-  max-width: 720px;                
-  margin: 0 auto;                  
+  grid-template-columns: auto 1fr;
+  column-gap: 4rem;
+  max-width: 720px;
+  margin: 0 auto;
   align-items: start;
 }
 
-.about-content > div:last-child {
-  display: flex;
-  flex-direction: column;
-}
-
-.about-subheading {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  color: var(--color-h3);
-}
-
-.about-content p,
-.about-content ul {
-  max-width: 560px;
-  color: var(--color-text);
-  line-height: 1.7;
-}
-
-.about-content ul {
-  font-size: 1rem;
-  line-height: 1.6;
-  list-style-type: disc;
-  padding-left: 20px;
-}
-
-.about-content ul li {
-  margin-bottom: 0.5rem; 
-}
-
-.about-content ul li:last-child {
-  margin-bottom: 0;
-}
-
-/* Number Circles */
 .about-circle-outer {
-  width: 80px;
-  height: 80px;
-  border: 1px solid #5a90c5;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #5a90c5;
   display: flex;
-  align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  align-items: center;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
 }
 
 .about-circle-inner {
-  width: 65px;
-  height: 65px;
-  border: 1px solid #5a90c5;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 1px solid #5a90c5;
   color: #5a90c5;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-subheading {
+  font-size: 1.3rem;
+  /* font-size: 1.1rem; */
+  /* font-weight: 500; */
+  font-weight: 600;
+  color: var(--color-h3, #2b4b6b);
+  margin-bottom: 0.7rem;
+}
+
+.about-content p {
+  color: var(--color-text, #444);
+  line-height: 1.8;
+  max-width: 560px;
+  /* font-size: 1.02rem; */
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .about-content {
-    column-gap: 2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .about-content {
     grid-template-columns: 1fr;
-    column-gap: 0;
+    text-align: center;
+    row-gap: 1.8rem;
+  }
+
+  .about-circle-outer {
+    margin: 0 auto;
+  }
+
+  .about-subheading {
+    font-size: 1.1rem;
+  }
+
+  .about-psychologist {
+    width: 85%;
   }
 }

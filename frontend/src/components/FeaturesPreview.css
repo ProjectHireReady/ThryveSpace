@@ -1,7 +1,7 @@
 .features-preview-alt {
-  padding: 3rem 1rem;
-  max-width: 1100px;
+  max-width: 1050px;
   margin: 0 auto;
+  padding: 3rem 1rem;
 }
 
 .features-alt-container {
@@ -9,18 +9,26 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 3rem;
-  padding: 2rem 0;
   position: relative;
 }
 
-/* Text Section */
+/* Responsive layout for mobile */
+@media (max-width: 768px) {
+  .features-alt-container {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+
+/* Intro / Text Section */
 .features-alt-text {
   flex: 1;
   position: relative;
+  padding-top: 2rem;
 }
 
 .features-alt-text h2 {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   padding-left: 1.75rem;
   position: relative;
@@ -29,16 +37,15 @@
 .features-alt-text h2::before {
   content: "";
   position: absolute;
-  left: -2.25rem;
+  left: -1.4rem;
   top: 50%;
   transform: translateY(-50%);
   width: 2rem;
   height: 2rem;
-  left: -1.4rem;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233b82f6' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M12 6V3m0 0L9.5 5.5M12 3l2.5 2.5M6 12H3m0 0l2.5-2.5M3 12l2.5 2.5M12 21v-3m0 0l2.5 2.5M12 18l-2.5 2.5M21 12h-3m0 0l2.5 2.5M18 12l2.5-2.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-size: contain;
-  /* filter: drop-shadow(0 1px 2px rgba(59, 130, 246, 0.4)); */
+  filter: drop-shadow(0 2px 6px rgba(59, 130, 246, 0.6));
   transition: transform 0.3s ease;
 }
 
@@ -50,11 +57,11 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1rem; /* controls space below h2 */
+  margin-bottom: 1rem;
 }
 
 .features-subtext {
-  font-size: 1.0625rem;
+  font-size: 17px;
   color: #6b7280;
   margin-top: 1rem;
   margin-bottom: 2.5rem;
@@ -69,63 +76,87 @@
   position: relative;
   margin: 2rem 0;
   padding-left: 2rem;
-  padding-top: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2.25rem;
+  gap: 4rem;
 }
 
-.timeline::before {
-  content: "";
-  position: absolute;
-  left: 1rem;
-  top: 1.75rem;
-  bottom: 0;
-  width: 1.5px;
-  background: linear-gradient(
-    to bottom,
-    rgba(90, 144, 197, 0.2),
-    rgba(59, 103, 148, 0.5)
-  );
-  backdrop-filter: blur(1px);
-  border-radius: 1px;
-}
-
+/* Timeline items */
 .timeline-item {
   position: relative;
-  padding-left: 1.5rem;
+  padding-left: 2rem;
 }
 
+/* Connecting line passing through icons */
+.timeline-item::after {
+  content: "";
+  position: absolute;
+  left: -0.55rem;
+  top: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(90, 144, 197, 1),
+    rgba(59, 103, 148, 1)
+  );
+  border-radius: 1px;
+  z-index: 0;
+}
+
+/* Extend line down through next icon */
+.timeline-item:not(:last-child)::after {
+  height: calc(100% + 4rem);
+}
+
+/* Shorter line on last icon */
+.timeline-item:last-child::after {
+  height: calc(100% + 1.5rem);
+}
+
+/* Timeline icons */
 .timeline-icon {
   position: absolute;
-  left: -1.7rem;
+  left: -0.8rem;
   top: 0;
   background: #5a90c5;
   color: white;
   padding: 0.5rem;
   border-radius: 50%;
+  border: 3px solid #f9fbfd;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 1;
 }
 
+/* Timeline content */
+.timeline-item:nth-child(odd) .timeline-content {
+  margin-left: 1.5rem;
+}
+
+.timeline-item:nth-child(even) .timeline-content {
+  margin-left: 0;
+}
+
+/* Timeline content text */
 .timeline-content h4 {
   margin-bottom: 0.5rem;
-  font-size: 18px;
   color: #333333;
   font-weight: 600;
 }
 
 .timeline-content p {
-  font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.5;
 }
 
 /* Button */
 .features-button {
   margin-top: 1rem;
-  background: white;
+  background: linear-gradient(to left, #5a90c5 50%, white 50%);
+  background-size: 200% 100%;
+  background-position: left;
   border: 2px solid #5a90c5;
   color: #5a90c5;
   padding: 0.5rem 1.25rem;
@@ -134,14 +165,13 @@
   font-family: var(--font-body);
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.4s ease, color 0.3s ease, transform 0.3s ease;
-  background-size: 200%;
-  background-position: left;
+  transition: all 0.4s ease;
 }
 
 .features-button:hover {
-  background: linear-gradient(90deg, #5a90c5, #3b6794);
+  background-position: right;
   color: white;
+  border: 2px solid #f9fbfd;
   transform: translateY(-2px);
 }
 
