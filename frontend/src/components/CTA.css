@@ -4,7 +4,7 @@
   max-width: 100vw;
   height: calc(100vw * 0.75);
   overflow: hidden; 
-  margin-top: 4rem;
+  margin-top: 9rem;
 }
 
 .contact-header {
@@ -27,13 +27,13 @@
 
 .cta-button {
   position: absolute;
-  top: 88%; /* slightly higher for better spacing */
+  top: 88%; 
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 20px 35px;
   background-color: #3F6BA2;
   color: white;
-  font-size: 1.4rem; /* slightly bigger */
+  font-size: 1.4rem; 
   font-weight: 600;
   border: none;
   border-radius: 999px;

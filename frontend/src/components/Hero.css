@@ -76,7 +76,7 @@
   max-width: 900px;
   width: 100%;
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(6px);
   border-radius: 1rem;
   animation: fadeInUp 1.6s ease-in-out;
@@ -102,7 +102,7 @@
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
   line-height: 1.6;
-  color: #4b5563;
+  color: #5f6f80;
   font-weight: 400;
   animation: fadeInUp 1s ease-out 0.4s;
   animation-fill-mode: both;
@@ -114,15 +114,13 @@
   background-color: #5a90c5;
   color: white;
   margin-top: 1.5rem;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 500;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
-  /* animation: fadeInUp 1s ease-out 0.4s; */
-  /* animation-fill-mode: both; */
 }
 
 .hero-btn:hover {
