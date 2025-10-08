@@ -90,9 +90,9 @@ function NavBar() {
 
   // Dashboard navigation items with icons
   const dashboardItems = [
-    { to: "/mood", label: "Mood", icon: Sun },
-    { to: "/entries", label: "Entries", icon: BookOpen },
-    { to: "/insights", label: "Insights", icon: BarChart3 },
+    { to: "/mood", label: "MOOD", icon: Sun },
+    { to: "/entries", label: "ENTRIES", icon: BookOpen },
+    { to: "/insights", label: "INSIGHTS", icon: BarChart3 },
   ];
 
   return (

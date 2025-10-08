@@ -15,7 +15,7 @@
 
 /* Logo styling */
 .logo {
-  font-family: var(--font-alt);
+  font-family: var(--font-logo);
   font-weight: 700;
   font-size: 1.75rem;
   color: #5a90c5;
@@ -53,9 +53,10 @@
   padding: 0.6rem 1.25rem;
   border-radius: 10px;
   text-decoration: none;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 1.05rem;
+  color: #6b7280;
+  font-weight: 500;
+  font-family: var(--font-alt);
+  font-size: 16px;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -91,10 +92,10 @@
   background-color: #f9fbfd;
   border: 1px solid #d1d9e6;
   border-radius: 10px;
-  color: #374151;
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 400;
+  font-family: var(--font-alt);
   transition: all 0.25s ease;
 }
 
@@ -121,8 +122,9 @@
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: rgba(249, 251, 253, 0.6); 
+  backdrop-filter: blur(10px);          
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 10px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
   min-width: 180px;
@@ -141,6 +143,7 @@
   }
 }
 
+/* Dropdown items */
 .dropdown-item {
   display: flex;
   align-items: center;
@@ -150,16 +153,17 @@
   background: none;
   border: none;
   text-align: left;
-  color: #374151;
+  color: #374151; 
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .dropdown-item:hover {
-  background-color: #f9fafb;
+  color: #5a90c5;            
 }
+
 
 .dropdown-item.logout {
   color: #dc2626;
@@ -168,6 +172,17 @@
 
 .dropdown-item.logout:hover {
   background-color: #fef2f2;
+  border-radius: 6px;
+}
+
+.profile-dropdown .dropdown-item {
+  text-decoration: none;
+  position: relative;
+}
+
+.profile-dropdown .dropdown-item::after {
+  content: none;
+  display: none;
 }
 
 /* Navigation links */
