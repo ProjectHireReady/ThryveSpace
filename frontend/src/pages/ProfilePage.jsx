@@ -25,6 +25,18 @@ export default function ProfilePage() {
 
   // Load user from backend
   useEffect(() => {
+    // If we already have user from context, populate form and skip fetch
+    if (user) {
+      setFormData({
+        firstName: user.first_name || user.firstName || "",
+        lastName: user.last_name || user.lastName || "",
+        email: user.email || "",
+        password: "********",
+      });
+      setLoading(false);
+      return;
+    }
+
     async function fetchUser() {
       try {
         const { user: data } = await getUser();
@@ -34,15 +46,20 @@ export default function ProfilePage() {
           email: data.email || "",
           password: "********",
         });
+        setUser(data);
       } catch (err) {
-        console.error("Failed to fetch user:", err.response?.data || err.message);
+        console.error(
+          "Failed to fetch user:",
+          err.response?.data || err.message
+        );
         setError("Could not load profile.");
       } finally {
         setLoading(false);
       }
     }
+
     fetchUser();
-  }, []);
+  }, [user, setUser]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -71,7 +88,7 @@ export default function ProfilePage() {
 
   const handleEdit = (field) => {
     setEditingField(field);
-    setEditValue(formData[field]);
+    setEditValue(formData[field]); 
   };
 
   const handleSaveEdit = async () => {
