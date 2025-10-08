@@ -6,26 +6,26 @@ import "./Auth.css";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
-const signupSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => {
-  console.log("Password match check:", {
-    password: data.password,
-    confirmPassword: data.confirmPassword,
-    match: data.password === data.confirmPassword
-  });
-  return data.password === data.confirmPassword;
-}, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const signupSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Enter a valid email"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine(
+    (data) => data.password === data.confirmPassword,
+    {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    }
+  );
 
 export default function SignupPage() {
-  const { signup, loading: authLoading, error: authError } = useAuth();
+  // const { signup, loading: authLoading, error: authError } = useAuth();
+  const { signup, authLoading, error: authError } = useAuth();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -41,40 +41,25 @@ export default function SignupPage() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Clear specific field error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
-
-    // Special handling for confirm password
-    if (name === 'password' && errors.confirmPassword) {
-      setErrors(prev => ({ ...prev, confirmPassword: null }));
+    if (name === "password" && errors.confirmPassword) {
+      setErrors((prev) => ({ ...prev, confirmPassword: null }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    e.target.setAttribute('novalidate', 'true');
+    e.target.setAttribute("novalidate", "true");
 
     setErrors({});
-
-
-
     const result = signupSchema.safeParse(formData);
 
-
-
     if (!result.success) {
-
-      const formatted = {};
-
-      // Zod uses 'issues' not 'errors'
-      result.error.issues?.forEach(err => {
-
-        formatted[err.path[0]] = err.message;
-      });
-
-      setErrors(formatted);
+      const firstError = result.error.issues[0];
+      setErrors({ [firstError.path[0]]: firstError.message });
+      document.querySelector(`[name="${firstError.path[0]}"]`)?.focus();
       return;
     }
 
@@ -87,17 +72,14 @@ export default function SignupPage() {
       });
       navigate("/login");
     } catch (err) {
-      // Set form-level error for API/server errors
-      setErrors(prev => ({
-        ...prev,
-        form: err?.message || authError || "Signup failed. Please try again."
-      }));
-
+      setErrors({
+        form: err?.message || authError || "Signup failed. Please try again.",
+      });
     }
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page signup-page">
       <div className="auth-container">
         <div className="auth-image-wrapper">
           <img src={signupImage} alt="Signup" className="auth-image" />
@@ -109,18 +91,15 @@ export default function SignupPage() {
 
             {errors.form && <div className="error-msg">{errors.form}</div>}
 
-
-            <label className={errors.firstName ? 'error' : ''}>
-              First Name:
-            </label>
             <input
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              placeholder="e.g., Elizabeth"
-              className={errors.firstName ? 'error' : ''}
-              aria-invalid={errors.firstName ? 'true' : 'false'}
+              placeholder="First Name e.g., Elizabeth"
+              className={errors.firstName ? "error" : ""}
+              aria-invalid={errors.firstName ? "true" : undefined}
               aria-describedby={errors.firstName ? "firstName-error" : undefined}
+              autoComplete="given-name"
             />
             {errors.firstName && (
               <p id="firstName-error" className="inline-error">
@@ -128,17 +107,15 @@ export default function SignupPage() {
               </p>
             )}
 
-            <label className={errors.lastName ? 'error' : ''}>
-              Last Name:
-            </label>
             <input
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              placeholder="e.g., Williams"
-              className={errors.lastName ? 'error' : ''}
-              aria-invalid={errors.lastName ? 'true' : 'false'}
+              placeholder="Last Name e.g., Williams"
+              className={errors.lastName ? "error" : ""}
+              aria-invalid={errors.lastName ? "true" : undefined}
               aria-describedby={errors.lastName ? "lastName-error" : undefined}
+              autoComplete="family-name"
             />
             {errors.lastName && (
               <p id="lastName-error" className="inline-error">
@@ -146,18 +123,16 @@ export default function SignupPage() {
               </p>
             )}
 
-            <label className={errors.email ? 'error' : ''}>
-              Email:
-            </label>
             <input
               name="email"
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="you@example.com"
-              className={errors.email ? 'error' : ''}
-              aria-invalid={errors.email ? 'true' : 'false'}
+              placeholder="Email e.g., you@example.com"
+              className={errors.email ? "error" : ""}
+              aria-invalid={errors.email ? "true" : undefined}
               aria-describedby={errors.email ? "email-error" : undefined}
+              autoComplete="username"
             />
             {errors.email && (
               <p id="email-error" className="inline-error">
@@ -165,18 +140,15 @@ export default function SignupPage() {
               </p>
             )}
 
-            <label className={errors.password ? 'error' : ''}>
-              Password:
-            </label>
-            <div className={`password-input-wrapper ${errors.password ? 'error' : ''}`}>
+            <div className={`password-input-wrapper ${errors.password ? "error" : ""}`}>
               <input
                 name="password"
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="At least 8 characters"
-                className={errors.password ? 'error' : ''}
-                aria-invalid={errors.password ? 'true' : 'false'}
+                placeholder="Password (at least 8 characters)"
+                className={errors.password ? "error" : ""}
+                aria-invalid={errors.password ? "true" : undefined}
                 aria-describedby={errors.password ? "password-error" : undefined}
                 autoComplete="new-password"
               />
@@ -195,19 +167,17 @@ export default function SignupPage() {
               </p>
             )}
 
-            <label className={errors.confirmPassword ? 'error' : ''}>
-              Confirm Password:
-            </label>
-            <div className={`password-input-wrapper ${errors.confirmPassword ? 'error' : ''}`}>
+            <div className={`password-input-wrapper ${errors.confirmPassword ? "error" : ""}`}>
               <input
                 name="confirmPassword"
                 type={showPassword ? "text" : "password"}
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Confirm your password"
-                className={errors.confirmPassword ? 'error' : ''}
-                aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+                placeholder="Confirm Password"
+                className={errors.confirmPassword ? "error" : ""}
+                aria-invalid={errors.confirmPassword ? "true" : undefined}
                 aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
+                autoComplete="new-password"
               />
               <button
                 type="button"
