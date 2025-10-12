@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .models import Insight
 from notes.models import Note
 from config.constants import AI_PROMPT_VERSION
 
@@ -204,6 +205,10 @@ class AiFeedbackView(APIView):
 # ----------------------------------------------------------------------
 
 
+def str_to_bool(value: str) -> bool:
+    return str(value).lower() in ("true", "1", "yes", "y")
+
+
 class AiSummaryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -212,6 +217,35 @@ class AiSummaryView(APIView):
         Enqueue AI analysis job
         """
         week_offset = int(request.data.get("week_offset", 0))
+        regenerate = str_to_bool(request.query_params.get("regenerate", "false"))
+
+        week = get_week_range(week_offset)
+
+        insight = (
+            Insight.objects.filter(
+                user=request.user, type="summary", week_start=week.start
+            )
+            .order_by("-updated_at")
+            .first()
+        )
+
+        if not regenerate and insight:
+            client_etag = request.headers.get("If-None-Match")
+            current_etag = insight.updated_at.isoformat()
+
+            if client_etag == current_etag:
+                return Response(
+                    status=status.HTTP_304_NOT_MODIFIED, headers={"ETag": current_etag}
+                )
+
+            return Response(
+                {
+                    "content": insight.content,
+                    "prompt_version": AI_PROMPT_VERSION,
+                },
+                headers={"ETag": current_etag},
+            )
+
         queue = get_queue("default")
         job = queue.enqueue(process_user_insights, request.user, week_offset)
         return Response(
