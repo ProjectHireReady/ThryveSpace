@@ -1,3 +1,4 @@
+// utils/guestKindness.js
 import {
   shouldShowKindness,
   markKindnessShown,
@@ -7,6 +8,17 @@ import {
 import { requestGuestAI } from "../services/guestAiService";
 import { getOrCreateGuestId } from "./guestUtils";
 
+/**
+ * Handles showing kindness messages for guest users after submitting a note.
+ *
+ * @param {Function} navigate - react-router navigation function
+ * @param {Function} onSubmit - optional callback after submission
+ * @param {Function} setShowKindness - state setter to show kindness UI
+ * @param {Function} setShowLoginPrompt - state setter to show login prompt
+ * @param {Function} setKindnessMessage - state setter for kindness message
+ * @param {string} entry - the note content
+ * @param {Object|null} mood - optional mood object
+ */
 export const handleGuestKindness = async (
   navigate,
   onSubmit,
@@ -16,9 +28,11 @@ export const handleGuestKindness = async (
   entry,
   mood
 ) => {
+  const showLoginPrompt = shouldShowLoginPrompt();
+
+  // If kindness should not be shown at all
   if (!shouldShowKindness()) {
-    // Kindness already shown before, still handle navigation
-    if (shouldShowLoginPrompt()) {
+    if (showLoginPrompt) {
       setShowLoginPrompt(true);
       markLoginPromptShown();
     } else {
@@ -28,31 +42,40 @@ export const handleGuestKindness = async (
     return;
   }
 
-  // Attempt AI kindness fetch
-  let message = null;
+  // Default message in case AI fails
+  let message = "You’re doing great ❤️";
+
   try {
-    const guest_id = getOrCreateGuestId();
-    const note_snippet = entry; // service handles trimming
-    const mood_name = mood?.name || null;
+    const guestId = getOrCreateGuestId();
+    const trimmedNote = (entry || "").slice(0, 300);
 
-    const result = await requestGuestAI({ guest_id, mood_name, note_snippet });
+    const payload = {
+      fingerprint: guestId,
+      note: trimmedNote,
+      mood_name: mood?.name || null,
+    };
 
-    if (result.message) {
-      message = result.message;
-    }
+    console.log("Sending Guest AI payload:", payload);
+
+    const result = await requestGuestAI(payload);
+    if (result?.message) message = result.message;
   } catch (err) {
-    console.error("Guest kindness AI failed:", err);
+    console.error(
+      "Guest kindness AI failed:",
+      err.response?.data || err.message || err
+    );
   }
 
-  // Show kindness (AI or fallback static)
-  setKindnessMessage(message || "You’re doing great ❤️");
+  // Show the kindness message
+  setKindnessMessage(message);
   setShowKindness(true);
   markKindnessShown();
 
+  // Hide kindness message after a short delay and proceed
   setTimeout(() => {
     setShowKindness(false);
 
-    if (shouldShowLoginPrompt()) {
+    if (showLoginPrompt) {
       setShowLoginPrompt(true);
       markLoginPromptShown();
     } else {

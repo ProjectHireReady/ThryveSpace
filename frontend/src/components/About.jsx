@@ -85,6 +85,53 @@ export default function About() {
             </div>
           </div>
         </section>
+
+        {/* Our Story */}
+        <section className="about-block">
+          <div className="about-header">
+            <img src={leafSvg} alt="Leaf icon" className="about-icon" />
+            <h2 className="about-heading">Our Story</h2>
+          </div>
+          <div className="about-content">
+            <div className="about-circle-outer">
+              <div className="about-circle-inner">4</div>
+            </div>
+            <div>
+              <h3 className="about-subheading">How ThryveSpace Began</h3>
+              <p>
+                ThryveSpace was created by a small team passionate about making
+                mental health tools approachable and stigma-free. What started
+                as a personal idea to help people track their emotions safely
+                grew into a digital companion for emotional awareness and
+                growth.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Our Vision */}
+        <section className="about-block">
+          <div className="about-header">
+            <img src={leafSvg} alt="Leaf icon" className="about-icon" />
+            <h2 className="about-heading">Our Vision</h2>
+          </div>
+          <div className="about-content">
+            <div className="about-circle-outer">
+              <div className="about-circle-inner">5</div>
+            </div>
+            <div>
+              <h3 className="about-subheading">
+                Building a Kinder Digital Future
+              </h3>
+              <p>
+                We envision a world where digital spaces nurture mental wellness
+                rather than drain it, where technology empowers people to
+                understand themselves, build resilience, and feel safe
+                expressing their emotions.
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
 
       {/* Footer */}

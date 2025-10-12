@@ -1,11 +1,11 @@
 /* Import Google Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Lobster+Two&family=Nunito:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lobster+Two&family=Nunito:wght@400;600;700&family=Poppins:wght@400;600;700&family=Rubik:wght@400;500;600;700&display=swap");
 
 /* Define font variables */
 :root {
   --font-logo: "Lobster Two", cursive;
-  --font-body: "Poppins", sans-serif;
   --font-heading: "Poppins", sans-serif;
+  --font-body: "Rubik", sans-serif;
   --font-alt: "Nunito", sans-serif;
   /* For navbar, cards, etc. */
 
@@ -15,6 +15,11 @@
   --color-h3: #333333;
   --color-h4: #333333;
   --color-text: #6b7280;
+
+  /* Font sizing system for Rubik */
+  --font-size-paragraph: 17px;
+  --font-size-subtext: 17.5px;
+  --font-size-h4: 18px;
 }
 
 /* Base reset */
@@ -28,6 +33,14 @@
 body {
   font-family: var(--font-body);
   background-color: #f7f9fb;
+}
+
+/* Form and text area font */
+.form-input,
+.form-textarea,
+.form-heading,
+.form-subtext {
+  font-family: var(--font-body);
 }
 
 /* Apply heading font */
@@ -72,17 +85,36 @@ p {
   letter-spacing: 0.009em;
 }
 
+/* Base section spacing */
 .section {
-  margin-bottom: 1rem;
-  padding: 4rem 4.7%;
+  padding-top: clamp(60px, 8vw, 120px);
+  padding-bottom: clamp(60px, 8vw, 120px);
   position: relative;
 }
 
+/* Smaller spacing variant */
+.section--sm {
+  padding-top: clamp(40px, 5vw, 80px);
+  padding-bottom: clamp(40px, 5vw, 80px);
+}
+
+/* Larger spacing variant (for Hero section) */
+.section--lg {
+  padding-top: clamp(80px, 10vw, 160px);
+  padding-bottom: clamp(80px, 10vw, 160px);
+}
+
+/* Variant for CTAs or tight sections */
+.section--sm-top-heavy {
+  padding-top: clamp(60px, 8vw, 100px);
+  padding-bottom: clamp(30px, 4vw, 60px);
+}
+
+/* underline divider */
 .section-border {
-  padding-bottom: 4rem;
-  margin-bottom: 3rem;
+  padding-bottom: clamp(40px, 5vw, 80px);
+  margin-bottom: clamp(30px, 4vw, 60px);
   position: relative;
-  /* for pseudo-element */
 }
 
 .section-border::after {
@@ -91,8 +123,11 @@ p {
   bottom: 0;
   left: 5%;
   width: 90%;
-  /* 100% - 5% left - 5% right */
-  border-bottom: 1px solid #5a90c5;
+  height: 1.7px;
+  background: linear-gradient(90deg, #9ec3eb, #ffd8c2);
+  border-radius: 3px;
+  opacity: 0.88;
+  box-shadow: 0 0 3px rgba(158, 195, 235, 0.18);
 }
 
 /* Reset default button styles globally */
@@ -119,12 +154,10 @@ footer p {
   font-family: var(--font-alt);
 }
 
-/* ===== DISABLE BROWSER DEFAULT VALIDATION ===== */
-
-/* Remove browser default validation styling */
+/* DISABLE BROWSER DEFAULT VALIDATION */
 input:invalid {
   box-shadow: none;
-  border-color: #ccc; /* Keep your original border */
+  border-color: #ccc;
 }
 
 /* Remove the default validation bubble/tooltip */
@@ -143,7 +176,7 @@ input:-moz-ui-invalid {
 /* Remove outline on invalid inputs */
 input:invalid:focus {
   outline: none;
-  border-color: #4b7aa8; /* Your focus color */
+  border-color: #4b7aa8;
   box-shadow: 0 0 0 2px rgba(90, 144, 197, 0.2);
 }
 
@@ -151,4 +184,26 @@ button[type="button"] {
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
   appearance: none !important;
+}
+
+/* Font size and spacing system */
+p,
+.paragraph {
+  font-size: var(--font-size-paragraph);
+  line-height: 1.7;
+  letter-spacing: 0.2px;
+  color: var(--color-text);
+}
+
+.subtext {
+  font-size: var(--font-size-subtext);
+  line-height: 1.8;
+  color: #444;
+}
+
+h4 {
+  font-size: var(--font-size-h4);
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--color-h4);
 }

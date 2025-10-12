@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from django.utils import timezone
 from .services import get_kindness_message
-from backend.constants import AI_PROMPT_VERSION
+from config.constants import AI_PROMPT_VERSION
 
 try:
     # Use real service if present
@@ -17,7 +17,7 @@ except ImportError:
 
 
 class KindnessMessageView(APIView):
-    authentication_classes = [TokenAuthentication]  
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -28,9 +28,9 @@ class KindnessMessageView(APIView):
             {
                 "message": msg,
                 "meta": {
-                    "source": "rule_based", 
-                    "last_sent_at": timezone.now().isoformat()
+                    "source": "rule_based",
+                    "last_sent_at": timezone.now().isoformat(),
                 },
-                "prompt_version": AI_PROMPT_VERSION
+                "prompt_version": AI_PROMPT_VERSION,
             }
         )

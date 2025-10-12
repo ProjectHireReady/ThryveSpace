@@ -1,31 +1,81 @@
-// src/utils/loggedInKindness.js
 import { fetchKindnessMessage } from "../api/fetchKindnessMessage";
 import { USE_AI_KINDNESS, MIN_ENTRIES_BEFORE_KINDNESS } from "../config";
 
 /**
  * Handle showing kindness message after saving an entry.
- * AI: sends snippet and mood_name (max 400 chars snippet)
- * Rule-based: requires minimum entries before asking backend
+ * Builds payload, logs, and fetches kindness.
  */
-export const handleLoggedInKindness = async (
-  aiPayload,
+export const handleLoggedInKindness = async ({
+  entry,
+  mood,
+  response,
   totalEntries,
   setKindnessMessage,
-  aiFlag
-) => {
-  if (!aiPayload) return;
+  navigate,
+  // forceAi = false, // mock test flag
+}) => {
+  console.log("=== handleLoggedInKindness called ===");
+  console.log("Raw entry:", entry);
+  console.log("Mood object:", mood);
+  console.log("Backend response:", response);
+  console.log("Total entries:", totalEntries);
 
-  // Rule-based: wait until user has at least MIN_ENTRIES_BEFORE_KINDNESS
-  if (!USE_AI_KINDNESS && totalEntries < MIN_ENTRIES_BEFORE_KINDNESS) return;
+  const noteId = response?.id;
+  const aiFlag = response?.message || false;
+  // const aiFlag = forceAi || response?.message || false; // To test backend flag
 
-  // AI: respect backend flag
-  if (USE_AI_KINDNESS && !aiFlag) return;
+  const aiPayload = {
+    snippet: entry.slice(0, 400),
+    mood_name: mood?.name || null,
+    note_id: noteId,
+  };
 
-  // Fetch kindness message
-  const message = await fetchKindnessMessage(
-    aiPayload.snippet,
-    aiPayload.mood_name
-  );
+  console.log("Built AI payload:", aiPayload);
+  console.log("AI flag:", aiFlag);
+  console.log("USE_AI_KINDNESS:", USE_AI_KINDNESS);
+  console.log("MIN_ENTRIES_BEFORE_KINDNESS:", MIN_ENTRIES_BEFORE_KINDNESS);
 
-  if (message) setKindnessMessage(message);
+  if (!aiPayload.snippet) {
+    console.log("No snippet to send. Skipping kindness fetch.");
+    return;
+  }
+
+  if (!USE_AI_KINDNESS && totalEntries < MIN_ENTRIES_BEFORE_KINDNESS) {
+    console.log(
+      `Skipping rule-based kindness: need ${MIN_ENTRIES_BEFORE_KINDNESS}, have ${totalEntries}`
+    );
+    return;
+  }
+
+  if (USE_AI_KINDNESS && !aiFlag) {
+    console.log("AI flag false; skipping AI kindness");
+    return;
+  }
+
+  try {
+    console.log("Fetching kindness message with payload:", aiPayload);
+
+    const message = await fetchKindnessMessage(
+      aiPayload.snippet,
+      aiPayload.mood_name,
+      aiPayload.note_id
+    );
+
+    console.log("Kindness message received from backend:", message);
+
+    if (message) {
+      setKindnessMessage(message);
+      console.log("Kindness message set in state.");
+
+      // navigate after short delay 
+      setTimeout(() => {
+        console.log("Navigating to /entries after kindness display");
+        navigate("/entries");
+      }, 3000);
+    } else {
+      console.log("No message returned from backend.");
+    }
+  } catch (err) {
+    console.error("Error in handleLoggedInKindness:", err);
+  }
 };

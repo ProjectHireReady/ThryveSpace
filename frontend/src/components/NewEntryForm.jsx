@@ -112,7 +112,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
 
       {/* Guest messages */}
       {!isLoggedIn && showKindness && (
-        <KindnessMessage message={kindnessMessage} />
+        <KindnessMessage message={kindnessMessage} onDismiss={onSubmit} />
       )}
       {!isLoggedIn && showLoginPrompt && (
         <LoginPrompt onComplete={onSubmit} />
@@ -120,7 +120,7 @@ export default function NewEntryForm({ mood, onSubmit }) {
 
       {/* Logged-in messages */}
       {isLoggedIn && kindnessMessage && (
-        <KindnessMessage message={kindnessMessage}/>
+        <KindnessMessage message={kindnessMessage} onDismiss={onSubmit}/>
       )}
 
 

@@ -13,6 +13,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // null = guest
   const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -72,43 +73,36 @@ export const AuthProvider = ({ children }) => {
   }, [isInitialized]);
 
   // Login
-
   const login = async (payload, options = {}) => {
-    setLoading(true);
+    setAuthLoading(true);
     setError(null);
     try {
       const data = await loginUser(payload);
       handleAuthSuccess(data);
-
-      // Only redirect if not disabled (useful for components that handle their own navigation)
-      if (!options.skipRedirect) {
-        redirectAfterLogin();
-      }
-
+      if (!options.skipRedirect) redirectAfterLogin();
       return data;
     } catch (err) {
       const errorMessage = err.message || "Login failed";
       setError(errorMessage);
       throw err;
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   // Signup
   const signup = async (payload, options = {}) => {
-    setLoading(true);
+    setAuthLoading(true);
     setError(null);
     try {
       const data = await signupUser(payload);
-
       return data;
     } catch (err) {
       const errorMessage = err.message || "Signup failed";
       setError(errorMessage);
       throw err;
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
@@ -142,7 +136,7 @@ export const AuthProvider = ({ children }) => {
   // Check if user is authenticated
   const isAuthenticated = !!user;
 
-  // Check if user has specific role (if your app uses roles)
+  // Check if user has specific role
   const hasRole = (role) => {
     return user?.roles?.includes(role) || false;
   };
@@ -155,14 +149,10 @@ export const AuthProvider = ({ children }) => {
       : user.email;
   };
 
-  // Don't render children until auth state is initialized
-  if (!isInitialized) {
-    return (
-      <div className="auth-loading">
-        <div className="loading-spinner">Loading...</div>
-      </div>
-    );
-  }
+  // // Don't render children until auth state is initialized
+  // if (!isInitialized) {
+  //   return <div className="app-loading">Loading...</div>;
+  // }
 
   return (
     <AuthContext.Provider
@@ -170,6 +160,7 @@ export const AuthProvider = ({ children }) => {
         user, // use !!user to check if logged in
         setUser,
         loading,
+        authLoading,
         error,
         isInitialized,
         isAuthenticated,

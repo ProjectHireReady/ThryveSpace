@@ -118,8 +118,7 @@ export default function MoodSelector({ onMoodSelect }) {
       </h2>
 
       {loading ? (
-        <div className="spinner-container">
-          <div className="spinner"></div>
+        <div>
           <p>Loading moods...</p>
         </div>
       ) : error ? (

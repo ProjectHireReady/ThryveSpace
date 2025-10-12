@@ -1,4 +1,4 @@
-# backend/constants.py
+# backend/config/constants.py
 
 """
 This module holds shared constants used across the backend.
@@ -11,5 +11,3 @@ Examples include:
 
 # Versioning for AI-generated prompts/messages
 AI_PROMPT_VERSION = "v1"
-
-

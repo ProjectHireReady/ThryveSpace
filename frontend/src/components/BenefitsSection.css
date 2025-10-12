@@ -4,11 +4,10 @@
 }
 
 h2.benefits-section {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: bold;
   text-align: center;
-  /* color: #374151; */
-  margin-bottom: 2rem;
+  margin-bottom: 3.5rem;
 }
 
 .benefits-container {
@@ -37,9 +36,9 @@ h3.benefit-title {
 }
 
 p.benefit-desc {
-  font-size: 16px;
+  /* font-size: 16px; */
   line-height: 1.5;
-  font-weight: 600;
+  font-weight: 400;
   color: #6b7280;
   margin-top: 8px;
   margin-bottom: 2rem;
@@ -49,6 +48,7 @@ p.benefit-desc {
 .outer-circle {
   width: 60px;
   height: 60px;
+  background-color: rgba(255, 255, 255, 0.5);
   border: 1px solid #5a90c5;
   border-radius: 50%;
   display: flex;

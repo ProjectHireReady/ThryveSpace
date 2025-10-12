@@ -14,7 +14,8 @@ const loginSchema = z.object({
 });
 
 export default function LoginPage() {
-  const { login, loading: authLoading, error: authError } = useAuth();
+  // const { login, loading: authLoading, error: authError } = useAuth();
+  const { login, authLoading, error: authError } = useAuth();
   const { fetchEntries } = useEntries(); // fetch user entries after login
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,14 +34,14 @@ export default function LoginPage() {
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
     if (errors.email) {
-      setErrors(prev => ({ ...prev, email: null }));
+      setErrors((prev) => ({ ...prev, email: null }));
     }
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
     if (errors.password) {
-      setErrors(prev => ({ ...prev, password: null }));
+      setErrors((prev) => ({ ...prev, password: null }));
     }
   };
 
@@ -48,37 +49,34 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // CRITICAL: Prevent browser validation
-    e.target.setAttribute('novalidate', 'true');
+    e.target.setAttribute("novalidate", "true");
     setErrors({});
-
 
     const result = loginSchema.safeParse({ email, password });
 
-
     if (!result.success) {
-      const formatted = {};
-      result.error?.issues?.forEach(err => {
-        formatted[err.path[0]] = err.message;
-      });
-      setErrors(formatted);
+      const firstError = result.error.issues[0];
+      setErrors({ [firstError.path[0]]: firstError.message });
+      const field = document.querySelector(
+        `[id="login-${firstError.path[0]}"]`
+      );
+      field?.focus();
       return;
     }
-
 
     try {
       await login({ email, password });
       await finishLogin(); // normal flow
     } catch (err) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        form: err?.message || authError || "Login failed"
+        form: err?.message || authError || "Login failed",
       }));
-
     }
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page login-page">
       <div className="auth-container">
         {/* Image section */}
         <div className="auth-image-wrapper">
@@ -87,19 +85,21 @@ export default function LoginPage() {
 
         {/* Login form */}
         <div className="auth-form-wrapper">
-          <form className="auth-form login-form" onSubmit={handleSubmit} noValidate>
+          <form
+            className="auth-form login-form"
+            onSubmit={handleSubmit}
+            noValidate
+          >
             <h2>Welcome Back!</h2>
 
             {/* Show error messages */}
-            {errors.form && (
-              <p className="error-msg">{errors.form}</p>)}
+            {errors.form && <p className="error-msg">{errors.form}</p>}
 
             <p className="auth-subtext">
               Log in to continue your journey with{" "}
               <span className="brand-blue">ThryveSpace</span>.
             </p>
 
-            <label>Email:</label>
             <input
               id="login-email"
               type="email"
@@ -107,8 +107,8 @@ export default function LoginPage() {
               // onChange={(e) => setEmail(e.target.value)}
               onChange={handleEmailChange}
               placeholder="you@example.com"
-              className={errors.email ? 'error' : ''}
-              aria-invalid={errors.email ? 'true' : 'false'}
+              className={errors.email ? "error" : ""}
+              aria-invalid={errors.email ? "true" : undefined}
               aria-describedby={errors.email ? "login-email-error" : undefined}
             />
             {errors.email && (
@@ -117,18 +117,23 @@ export default function LoginPage() {
               </p>
             )}
 
-            <label>Password:</label>
-            <div className={`password-input-wrapper ${errors.password ? 'error' : ''}`}>
+            <div
+              className={`password-input-wrapper ${
+                errors.password ? "error" : ""
+              }`}
+            >
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 // onChange={(e) => setPassword(e.target.value)}
                 onChange={handlePasswordChange}
-                className={errors.password ? 'error' : ''}
-                aria-invalid={errors.password ? 'true' : 'false'}
-                aria-describedby={errors.password ? "login-password-error" : undefined}
+                className={errors.password ? "error" : ""}
+                aria-invalid={errors.email ? "true" : undefined}
+                aria-describedby={
+                  errors.password ? "login-password-error" : undefined
+                }
                 placeholder="Enter your password"
-
+                autoComplete="current-password"
               />
               <button
                 type="button"
@@ -144,7 +149,6 @@ export default function LoginPage() {
                 {errors.password}
               </p>
             )}
-
 
             <button type="submit" disabled={authLoading}>
               {authLoading ? "Processing..." : "Login"}
