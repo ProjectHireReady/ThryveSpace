@@ -30,7 +30,7 @@ def get_last_modified(request, *args, **kwargs):
     # Return the later of the two, or now if no objects exist (safe fallback)
 
     # Use timezone-aware minimum datetime
-    min_dt = datetime.min.replace(tzinfo=timezone.utc)
+    min_dt = datetime.min.replace(tzinfo=timezone.get_current_timezone())
     last_modified = max(
         latest_mood if latest_mood else min_dt,
         latest_category if latest_category else min_dt,
