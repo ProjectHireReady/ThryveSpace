@@ -35,12 +35,9 @@ export default function MoodJournalPage() {
       <JournalModal isOpen={isModalOpen} onClose={handleCloseModal}>
         <NewEntryForm
           mood={selectedMood}
-          onSubmit={() => {
-            // No redirect here — just close modal
-            setIsModalOpen(false);
-            setSelectedMood(null);
-          }}
+          onSubmit={handleCloseModal}
         />
+
       </JournalModal>
     </>
   );
