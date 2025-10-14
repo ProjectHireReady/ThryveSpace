@@ -1,5 +1,5 @@
-import axios from "../lib/axiosInstance";
+// import axios from "../lib/axiosInstance";
 
-export const getMoods = () => {
-  return axios.get("/moods/");
-};
+// export const getMoods = () => {
+//   return axios.get("/moods/");
+// };
