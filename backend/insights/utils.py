@@ -157,7 +157,16 @@ def analyze_week_summary(payload: dict):
     """
     if settings.USE_MOCK_AI:
         return {
-            "content": "Mock analysis: This week shows a positive trend with consistent moods. Keep it up!",
+            "content": {
+                "tips": [
+                    "Stay consistent with journaling.",
+                    "Try morning reflections for clarity.",
+                ],
+                "predictions": [
+                    {"label": "Calm", "icon": "🌿"},
+                    {"label": "Optimistic", "icon": "🌤️"},
+                ],
+            },
         }
 
     # Prompt instructions

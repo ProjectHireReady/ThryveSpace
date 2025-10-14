@@ -40,7 +40,7 @@ def process_user_insights(user, week_offset=0):
         user=user,
         type="summary",
         content=content,
-        week_start=get_week_range(week_offset).start,
+        week_start=get_week_range(week_offset)[0],
     )
     response["ETag"] = insight.updated_at.isoformat()
 

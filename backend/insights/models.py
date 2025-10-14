@@ -16,7 +16,7 @@ class Insight(models.Model):
         max_length=20, choices=TYPE_CHOICES, default="note_feedback"
     )
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.JSONField(blank=True, null=True)
     week_start = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
