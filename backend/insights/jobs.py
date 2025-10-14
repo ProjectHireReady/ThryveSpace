@@ -1,5 +1,9 @@
-from .utils import get_ai_response, build_week_summary, analyze_week_summary
-import time
+from .utils import (
+    get_ai_response,
+    build_week_summary,
+    analyze_week_summary,
+    get_week_range,
+)
 from .models import Insight
 
 
@@ -32,5 +36,12 @@ def process_user_insights(user, week_offset=0):
     content = response.get("content", "No insights generated.")
 
     # Save the insight to the database
-    Insight.objects.create(user=user, type="summary", content=content)
+    insight = Insight.objects.create(
+        user=user,
+        type="summary",
+        content=content,
+        week_start=get_week_range(week_offset)[0],
+    )
+    response["ETag"] = insight.updated_at.isoformat()
+
     return response

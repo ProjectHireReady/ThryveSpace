@@ -1,3 +1,4 @@
+import json
 from notes.models import Note
 from notes.serializers import NoteInsightSerializer
 from datetime import date, timedelta, datetime, time
@@ -137,8 +138,10 @@ def real_ai_response(prompt, meta=None):
             "content": resp.choices[0].message.content,
         }
     except Exception as e:
-        logger.warning("Error calling AI service: %s", e)
-        return {"error": str(e)}
+        logger.warning("Error calling AI service, falling back: %s", e)
+        return {
+            "content": "Looks like we’re having a brief pause preparing your weekly insights. Take a moment to breathe — we’ll have your reflections ready soon."
+        }
 
 
 def get_ai_response(prompt, meta=None):
@@ -152,38 +155,75 @@ def analyze_week_summary(payload: dict):
     Send weekly mood/journal payload to OpenAI for analysis.
     Returns structured response (dict).
     """
-
     if settings.USE_MOCK_AI:
         return {
-            "content": "Mock analysis: This week shows a positive trend with consistent moods. Keep it up!",
+            "content": {
+                "tips": [
+                    "Stay consistent with journaling.",
+                    "Try morning reflections for clarity.",
+                ],
+                "predictions": [
+                    {"label": "Calm", "icon": "🌿"},
+                    {"label": "Optimistic", "icon": "🌤️"},
+                ],
+            },
         }
 
-    # Default system instructions
-    system_prompt = (
-        "You are an empathetic mental wellness assistant. "
-        "Analyze the given weekly summary of moods and notes. "
-        "Identify trends, highlight positive patterns, and suggest "
-        "gentle improvements without sounding clinical."
-    )
+    # Prompt instructions
+    prompt = [
+        {
+            "role": "system",
+            "content": "You are ThryveSpace's emotional insights engine.",
+        },
+        {
+            "role": "user",
+            "content": f"""
+    Analyze the following user's mood entries for the week and return structured insights.
 
-    client = get_openai_client()
+    Mood data:
+    {payload["timeline"]}
 
-    resp = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {
-                "role": "user",
-                "content": (
-                    f"Here is the weekly summary data:\n{payload}\n"
-                    "Please provide a concise analysis in JSON format."
-                ),
-            },
-        ],
-        max_tokens=300,
-    )
+    Respond strictly in JSON with:
+    - tips: array of 2–4 brief motivational tips (strings)
+    - predictions: array of 1–3 objects with 'label' and optional 'icon'
 
-    # Extract and return the content
-    return {
-        "content": resp.choices[0].message.content,
-    }
+    Example:
+    {{
+    "tips": ["Stay consistent with journaling.", "Try morning reflections for clarity."],
+    "predictions": [
+        {{"label": "Calm", "icon": "🌿"}},
+        {{"label": "Optimistic", "icon": "🌤️"}}
+    ]
+    }}
+    """,
+        },
+    ]
+
+    try:
+        client = get_openai_client()
+
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=prompt,
+            response_format={"type": "json_object"},
+        )
+
+        # Extract and return the content
+        try:
+            parsed_content = json.loads(resp.choices[0].message.content)
+            return {
+                "content": parsed_content,
+            }
+        except json.JSONDecodeError as json_err:
+            logger.warning("Error decoding AI response JSON: %s", json_err)
+            return {
+                "tips": ["Take a few moments to reflect today."],
+                "predictions": [{"label": "Insight unavailable", "icon": "⏳"}],
+            }
+
+    except Exception as e:
+        logger.warning("Error calling AI service: %s", e)
+        return {
+            "tips": ["Take a few moments to reflect today."],
+            "predictions": [{"label": "Insight unavailable", "icon": "⏳"}],
+        }

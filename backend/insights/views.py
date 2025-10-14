@@ -2,14 +2,13 @@
 from django.conf import settings
 from django.core.cache import cache
 from django_rq import get_queue
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 
 from rest_framework import permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .models import Insight
 from notes.models import Note
 from config.constants import AI_PROMPT_VERSION
 
@@ -19,6 +18,7 @@ from .utils import (
     increment_count,
     today_key_suffix,
     get_daily_limit,
+    get_week_range as get_week_range_util,
 )
 from .jobs import generate_note_feedback, process_user_insights
 from .services import (
@@ -204,6 +204,20 @@ class AiFeedbackView(APIView):
 # ----------------------------------------------------------------------
 
 
+def str_to_bool(value: str) -> bool:
+    return str(value).lower() in ("true", "1", "yes", "y")
+
+
+def transform_insight_messages(data):
+    messages = []
+    for tip in data.get("tips", []):
+        messages.append({"type": "tip", "message": tip})
+    for pred in data.get("predictions", []):
+        label = f"{pred['label']} {pred.get('icon', '')}".strip()
+        messages.append({"type": "prediction", "message": label})
+    return messages
+
+
 class AiSummaryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -212,6 +226,48 @@ class AiSummaryView(APIView):
         Enqueue AI analysis job
         """
         week_offset = int(request.data.get("week_offset", 0))
+        regenerate = str_to_bool(request.query_params.get("regenerate", "false"))
+
+        week_start = get_week_range_util(week_offset)[0]
+
+        insight = (
+            Insight.objects.filter(
+                user=request.user, type="summary", week_start=week_start
+            )
+            .order_by("-updated_at")
+            .first()
+        )
+
+        if not regenerate and insight:
+            client_etag = request.headers.get("If-None-Match")
+            current_etag = insight.updated_at.isoformat()
+
+            if client_etag == current_etag:
+                return Response(
+                    status=status.HTTP_304_NOT_MODIFIED, headers={"ETag": current_etag}
+                )
+
+            try:
+                data = insight.content
+                messages = transform_insight_messages(data)
+
+                return Response(
+                    {
+                        "message": True,
+                        "messages": messages,
+                        "etag": insight.updated_at.isoformat(),
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            except (KeyError, TypeError) as e:
+                return Response(
+                    {
+                        "error": "Missing expected key in AI response.",
+                        "details": str(e),
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
         queue = get_queue("default")
         job = queue.enqueue(process_user_insights, request.user, week_offset)
         return Response(
@@ -245,13 +301,25 @@ class AiSummaryView(APIView):
             )
 
         if job.is_finished:
-            return Response(
-                {
-                    "message": "Job completed.",
-                    "result": job.result,
-                    "prompt_version": AI_PROMPT_VERSION,
-                },
-                status=status.HTTP_200_OK,
-            )
+            try:
+                data = job.result["content"]
+                messages = transform_insight_messages(data)
+
+                return Response(
+                    {
+                        "message": True,
+                        "messages": messages,
+                        "etag": job.result.get("ETag"),
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            except (KeyError, TypeError) as e:
+                return Response(
+                    {
+                        "error": "Missing expected key in AI response.",
+                        "details": str(e),
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
         return Response({"job_id": job.id, "job_status": job.get_status()}, status=200)
