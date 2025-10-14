@@ -146,7 +146,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Redis and Django RQ configuration constants
-USE_MOCK_AI = True
+USE_MOCK_AI = config("USE_MOCK_AI", default=True, cast=bool)
 MAX_DAILY_AI_LOGGED_IN = 3
 GUEST_RATE_LIMIT_MAX = 2
 MILESTONE_TRIGGERS = [3, 6, 9]
