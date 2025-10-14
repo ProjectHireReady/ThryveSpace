@@ -75,9 +75,9 @@ export default function EntryCard({ entry }) {
         </div>
         <div className="mood-line">
           <span className="emoji">
-            {entry.imageUrl ? (
+            {entry.icon ? (
               <img
-                src={entry.imageUrl}
+                src={entry.icon}
                 alt={entry.name || "Mood"}
                 className="mood-img"
               />

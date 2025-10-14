@@ -2,7 +2,6 @@
 :root {
   --gray-light: #d1d5db;  /* backgrounds, hover states, open borders */
   --gray-medium: #9ca3af; /* secondary text, icons, subtle borders */
-  /* --gray-dark: #111827;   main text */
   --gray-hover: #f3f4f6;  /* softer hover backgrounds */
 }
 
@@ -56,7 +55,6 @@
 .entry-card-wrapper .date-box .day {
   font-size: 1.1rem;
   font-weight: bold;
-  /* color: var(--gray-dark); */
 }
 
 .entry-card-wrapper .date-box .month {
@@ -72,14 +70,13 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  /* color: var(--gray-dark); */
 }
 
 /* Mood styling */
 .entry-card-wrapper .emoji,
 .entry-card-wrapper .mood-img {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   object-fit: cover;
   border-radius: 50%;
 }
