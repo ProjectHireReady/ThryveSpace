@@ -12,55 +12,43 @@ export default function useEntrySubmit({
   entries,
 }) {
   const navigate = useNavigate();
-
-  // Local input states
   const [title, setTitle] = useState("");
   const [entry, setEntry] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // States for kindness/login messages
   const [showKindness, setShowKindness] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [kindnessMessage, setKindnessMessage] = useState(null);
 
   const handleSubmit = async () => {
-    if (!entry.trim() && !mood) {
-      console.log("Nothing to submit: entry and mood empty");
-      return;
-    }
+    if (!entry.trim() && !mood) return;
 
     const payload = isLoggedIn
-      ? {
-          title: title.trim() || null,
-          note: entry.trim(),
-          mood_id: mood?.id || null,
-        }
+      ? { title: title.trim() || null, note: entry.trim(), mood_id: mood?.id || null }
       : formatGuestPayload(entry, mood, title);
-
-    console.log("Submitting payload:", payload);
 
     try {
       setSubmitting(true);
-
-      const response = await addEntry(payload); // saves note and returns backend response
-      console.log("FULL response from addEntry:", response);
+      const response = await addEntry(payload);
 
       setEntry("");
       setTitle("");
 
       if (isLoggedIn) {
-        // pass raw stuff to helper
-        await handleLoggedInKindness({
+        // Run kindness logic
+        const message = await handleLoggedInKindness({
           entry,
           mood,
           response,
           totalEntries: entries.length + 1,
           setKindnessMessage,
           navigate,
-          // forceAi: true, // To test
         });
+
+        // 🟢 If no kindness message was triggered, navigate immediately
+        if (!message) onSubmit();
+
       } else {
-        console.log("Handling guest kindness...");
         await handleGuestKindness(
           navigate,
           onSubmit,
@@ -71,22 +59,18 @@ export default function useEntrySubmit({
           mood
         );
       }
+
     } catch (err) {
-      console.error(
-        "Error saving entry:",
-        err.response?.data || err.message || err
-      );
-      alert("Could not save your note. Check console for details.");
+      console.error("Error saving entry:", err);
+      alert("Could not save your note.");
     } finally {
       setSubmitting(false);
     }
   };
 
   return {
-    title,
-    setTitle,
-    entry,
-    setEntry,
+    title, setTitle,
+    entry, setEntry,
     submitting,
     handleSubmit,
     showKindness,
