@@ -49,21 +49,21 @@ export default function useEntrySubmit({
       setTitle("");
 
       if (isLoggedIn) {
-        console.log("Handling logged-in kindness...");
-        const message = await handleLoggedInKindness({
+        // pass raw stuff to helper
+        await handleLoggedInKindness({
           entry,
           mood,
           response,
           totalEntries: entries.length + 1,
           setKindnessMessage,
-          navigate,
+          // forceAi: true, // To test
         });
 
-        // ✅ If no kindness message was triggered, navigate immediately
-        if (!message) {
-          console.log("No kindness message triggered, navigating to entries...");
-          onSubmit();
-        }
+        setTimeout(() => {
+          console.log("Navigating to /entries after kindness delay");
+          onSubmit?.(); // close modal in parent
+          navigate("/entries");
+        }, 3000);
       } else {
         console.log("Handling guest kindness...");
         await handleGuestKindness(

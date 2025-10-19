@@ -70,7 +70,6 @@ export const handleLoggedInKindness = async ({
       // navigate after short delay 
       setTimeout(() => {
         console.log("Navigating to /entries after kindness display");
-        navigate("/entries");
       }, 3000);
     } else {
       console.log("No message returned from backend.");
