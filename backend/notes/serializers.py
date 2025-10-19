@@ -53,7 +53,7 @@ class NoteCreateSerializer(serializers.ModelSerializer):
     Serializer for CREATE operations (POST requests).
     """
 
-    mood_id = serializers.UUIDField(write_only=True, required=False, allow_blank=True)
+    mood_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Note
