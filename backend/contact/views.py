@@ -14,6 +14,7 @@ from .throttles import ContactUserOrIPThrottle
 
 logger = logging.getLogger(__name__)
 
+
 class ContactView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ContactUserOrIPThrottle]
@@ -21,7 +22,10 @@ class ContactView(APIView):
     def post(self, request):
         serializer = ContactSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({"ok": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"ok": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         data = serializer.validated_data
 
@@ -63,13 +67,18 @@ class ContactView(APIView):
             msg.attach_alternative(html_body, "text/html")
             msg.send(fail_silently=False)
 
-            return Response({
-                "ok": True,
-                "message": "Thanks for reaching out! We’ve received your message."
-            })
+            return Response(
+                {
+                    "ok": True,
+                    "message": "Thanks for reaching out! We’ve received your message.",
+                }
+            )
         except Exception as e:
             logger.exception("❌ Contact form send failed: %s", e)
             return Response(
-                {"ok": False, "message": "Failed to send message. Please try again later."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {
+                    "ok": False,
+                    "message": "Failed to send message. Please try again later.",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

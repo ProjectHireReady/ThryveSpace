@@ -2,6 +2,7 @@
 from ipware import get_client_ip
 from rest_framework.throttling import SimpleRateThrottle
 
+
 class ContactUserOrIPThrottle(SimpleRateThrottle):
     scope = "contact"
 
@@ -13,8 +14,4 @@ class ContactUserOrIPThrottle(SimpleRateThrottle):
             client_ip, _ = get_client_ip(request)
             ident = f"ip:{client_ip or 'unknown'}"
 
-        return self.cache_format % {
-            "scope": self.scope,
-            "ident": ident
-        }
-
+        return self.cache_format % {"scope": self.scope, "ident": ident}
