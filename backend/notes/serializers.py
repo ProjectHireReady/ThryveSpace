@@ -51,30 +51,28 @@ class NoteSerializer(serializers.ModelSerializer):
 class NoteCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for CREATE operations (POST requests).
-    Accepts 'mood_name' to link a mood by name.
     """
 
-    mood_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    mood_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Note
-        fields = ["note", "title", "mood_name"]
+        fields = ["note", "title", "mood_id"]
 
     def create(self, validated_data):
         user = self.context["request"].user
 
-        mood_name = validated_data.pop("mood_name", None)
+        mood_id = validated_data.pop("mood_id", None)
 
         mood_obj = None
         mood_value_snapshot = None
-        if mood_name:
+        if mood_id:
             try:
-                mood_obj = Mood.objects.get(name__iexact=mood_name)
-                # Corrected: Get the integer value from the Mood object's category
+                mood_obj = Mood.objects.get(id=mood_id)
 
                 mood_value_snapshot = _map_category_to_value(mood_obj.category)
             except Mood.DoesNotExist:
-                raise serializers.ValidationError({"mood_name": "Mood not found."})
+                raise serializers.ValidationError({"mood_id": "Mood not found."})
 
         note = Note.objects.create(
             user=user,
