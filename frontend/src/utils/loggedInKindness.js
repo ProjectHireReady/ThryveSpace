@@ -12,6 +12,7 @@ export const handleLoggedInKindness = async ({
   totalEntries,
   setKindnessMessage,
   navigate,
+  onSubmit,
   // forceAi = false, // mock test flag
 }) => {
   console.log("=== handleLoggedInKindness called ===");
@@ -69,11 +70,17 @@ export const handleLoggedInKindness = async ({
 
       // navigate after short delay 
       setTimeout(() => {
-        console.log("Navigating to /entries after kindness display");
+        console.log("Navigating to /entries after kindness delay");
+        onSubmit?.(); // close modal in parent
         navigate("/entries");
       }, 3000);
     } else {
       console.log("No message returned from backend.");
+      setTimeout(() => {
+        console.log("Navigating to /entries if after delay no message");
+        onSubmit?.(); // close modal in parent
+        navigate("/entries");
+      }, 2000);
     }
   } catch (err) {
     console.error("Error in handleLoggedInKindness:", err);
