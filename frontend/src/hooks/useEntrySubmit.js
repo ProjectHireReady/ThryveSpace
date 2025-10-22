@@ -31,10 +31,10 @@ export default function useEntrySubmit({
 
     const payload = isLoggedIn
       ? {
-          title: title.trim() || null,
-          note: entry.trim(),
-          mood_id: mood?.id || null,
-        }
+        title: title.trim() || null,
+        note: entry.trim(),
+        mood_id: mood?.id || null,
+      }
       : formatGuestPayload(entry, mood, title);
 
     console.log("Submitting payload:", payload);
@@ -57,6 +57,7 @@ export default function useEntrySubmit({
           totalEntries: entries.length + 1,
           setKindnessMessage,
           navigate,
+          onSubmit,
           // forceAi: true, // To test
         });
       } else {
