@@ -104,7 +104,7 @@ def _mood_value_for(note: Note) -> Optional[int]:
         cat_value = getattr(cat, "value", None)
 
         if isinstance(cat_value, str):
-            return CATEGORY_NUMERIC_MAPPING.get(cat_value.lower(), None)
+            return CATEGORY_NUMERIC_MAPPING.get(cat_value.lower())
     return None
 
 
