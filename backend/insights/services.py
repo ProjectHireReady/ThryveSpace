@@ -11,17 +11,9 @@ from django.db.models.functions import TruncDate
 from django.utils import timezone
 
 from notes.models import Note  # <-- needed for typing + queryset
+from moods.constants import CATEGORY_NUMERIC_MAPPING
 
 WEEK_CACHE_TTL = 604800  # 1 week
-
-# Map Mood.category (string) -> 1..5
-CATEGORY_VALUE_MAP = {
-    "very negative": 1,
-    "negative": 2,
-    "neutral": 3,
-    "positive": 4,
-    "very positive": 5,
-}
 
 
 @dataclass
@@ -92,7 +84,7 @@ def _mood_value_for(note: Note) -> Optional[int]:
     Determine a 1..5 mood value for a note.
     Priority:
       1) mood_value_snapshot if present on the model
-      2) map Mood.category (string) via CATEGORY_VALUE_MAP
+      2) map Mood.category (string) via CATEGORY_NUMERIC_MAPPING
       3) None
     """
     snap = getattr(note, "mood_value_snapshot", None)
@@ -107,9 +99,12 @@ def _mood_value_for(note: Note) -> Optional[int]:
         return None
 
     cat = getattr(mood, "category", None)
-    if isinstance(cat, str):
-        return cat  # Removing conversion to mood value here
 
+    if cat:
+        cat_value = getattr(cat, "value", None)
+
+        if isinstance(cat_value, str):
+            return CATEGORY_NUMERIC_MAPPING.get(cat_value.lower())
     return None
 
 

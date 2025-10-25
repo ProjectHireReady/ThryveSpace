@@ -15,3 +15,12 @@ CATEGORY_ICONS = {
     "negative": "https://res.cloudinary.com/dirn4gqky/image/upload/v1757615267/Sad_vlwdhy.svg",
     "very negative": "https://res.cloudinary.com/dirn4gqky/image/upload/v1757660403/Lonely_bfgeld.svg",
 }
+
+# Numeric mapping for categories (value: numeric_value)
+CATEGORY_NUMERIC_MAPPING = {
+    "very negative": 1,
+    "negative": 2,
+    "neutral": 3,
+    "positive": 4,
+    "very positive": 5,
+}
