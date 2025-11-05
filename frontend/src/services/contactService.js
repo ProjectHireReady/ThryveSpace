@@ -8,7 +8,7 @@ import axiosInstance from "../lib/axiosInstance";
  */
 export async function sendContact(payload) {
   try {
-    const { data } = await axiosInstance.post("/api/contact", payload);
+    const { data } = await axiosInstance.post("contact/", payload);
     return data ?? { ok: true };
   } catch (err) {
     const status = err?.response?.status;

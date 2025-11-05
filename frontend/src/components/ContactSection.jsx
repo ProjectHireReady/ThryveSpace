@@ -185,7 +185,7 @@ function ContactSection() {
             <button
               type="submit"
               className="form-button"
-              disabled={submitting || !isValid}
+              disabled={submitting}
               aria-busy={submitting ? "true" : "false"}
             >
               {submitting ? "Sending…" : "Send Message"}
