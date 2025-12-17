@@ -1,5 +1,5 @@
 // src/components/ContactSection.jsx
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import "./ContactSection.css";
 import contactImage from "../assets/contact-img.svg";
 import { sendContact } from "../services/contactService";
@@ -36,6 +36,18 @@ function ContactSection() {
   const [toast, setToast] = useState("");
   const [serverError, setServerError] = useState("");
 
+  // Track toast timer so we can clear it on unmount / re-submit
+  const toastTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+    };
+  }, []);
+
   // Compute validation errors once whenever values change
   const validationErrors = useMemo(() => validate(values), [values]);
 
@@ -71,8 +83,16 @@ function ContactSection() {
       setValues({ name: "", email: "", message: "" });
       setToast("Thanks for reaching out 💌");
 
-      // Auto-hide after 4s
-      setTimeout(() => setToast(""), 4000);
+      // Clear any existing toast timer before setting a new one
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+
+      // Auto-hide after 4s (safe even if user navigates away)
+      toastTimerRef.current = setTimeout(() => {
+        setToast("");
+        toastTimerRef.current = null;
+      }, 4000);
     } catch (err) {
       setServerError(err?.message || "Something went wrong. Please try again.");
     } finally {
@@ -175,9 +195,7 @@ function ContactSection() {
                 value={values.message}
                 onChange={onChange}
                 aria-invalid={!!formErrors.message}
-                aria-describedby={
-                  formErrors.message ? `${msgId}-err` : undefined
-                }
+                aria-describedby={formErrors.message ? `${msgId}-err` : undefined}
                 required
               />
               {formErrors.message && (
