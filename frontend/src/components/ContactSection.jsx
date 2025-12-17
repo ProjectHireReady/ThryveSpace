@@ -2,7 +2,7 @@
 import { useId, useMemo, useState } from "react";
 import "./ContactSection.css";
 import contactImage from "../assets/contact-img.svg";
-import { sendContact } from "../services/contactService"; 
+import { sendContact } from "../services/contactService";
 
 function validate(values) {
   const errors = {};
@@ -31,28 +31,31 @@ function ContactSection() {
   const msgId = useId();
 
   const [values, setValues] = useState({ name: "", email: "", message: "" });
-  const [errors, setErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState("");
   const [serverError, setServerError] = useState("");
 
-  const isValid = useMemo(
-    () => Object.keys(validate(values)).length === 0,
-    [values]
-  );
+  // Compute validation errors once whenever values change
+  const validationErrors = useMemo(() => validate(values), [values]);
+
+  // Derive isValid from validationErrors
+  const isValid = Object.keys(validationErrors).length === 0;
 
   function onChange(e) {
     setValues((v) => ({ ...v, [e.target.name]: e.target.value }));
-    if (errors[e.target.name]) {
-      // live-clear just this field’s error
-      setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
+
+    // live-clear just this field’s error (only if it exists in submitted errors)
+    if (formErrors[e.target.name]) {
+      setFormErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
     }
   }
 
   async function onSubmit(e) {
     e.preventDefault();
-    const nextErrors = validate(values);
-    setErrors(nextErrors);
+
+    const nextErrors = validationErrors;
+    setFormErrors(nextErrors);
     setServerError("");
 
     if (Object.keys(nextErrors).length > 0) return;
@@ -64,8 +67,10 @@ function ContactSection() {
         email: values.email.trim(),
         message: values.message.trim(),
       });
+
       setValues({ name: "", email: "", message: "" });
       setToast("Thanks for reaching out 💌");
+
       // Auto-hide after 4s
       setTimeout(() => setToast(""), 4000);
     } catch (err) {
@@ -116,17 +121,17 @@ function ContactSection() {
                 type="text"
                 name="name"
                 placeholder="Your Name"
-                className={`form-input${errors.name ? " has-error" : ""}`}
+                className={`form-input${formErrors.name ? " has-error" : ""}`}
                 value={values.name}
                 onChange={onChange}
                 autoComplete="name"
-                aria-invalid={!!errors.name}
-                aria-describedby={errors.name ? `${nameId}-err` : undefined}
+                aria-invalid={!!formErrors.name}
+                aria-describedby={formErrors.name ? `${nameId}-err` : undefined}
                 required
               />
-              {errors.name && (
+              {formErrors.name && (
                 <p id={`${nameId}-err`} className="field-error">
-                  {errors.name}
+                  {formErrors.name}
                 </p>
               )}
             </div>
@@ -141,17 +146,17 @@ function ContactSection() {
                 type="email"
                 name="email"
                 placeholder="Your Email"
-                className={`form-input${errors.email ? " has-error" : ""}`}
+                className={`form-input${formErrors.email ? " has-error" : ""}`}
                 value={values.email}
                 onChange={onChange}
                 autoComplete="email"
-                aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? `${emailId}-err` : undefined}
+                aria-invalid={!!formErrors.email}
+                aria-describedby={formErrors.email ? `${emailId}-err` : undefined}
                 required
               />
-              {errors.email && (
+              {formErrors.email && (
                 <p id={`${emailId}-err`} className="field-error">
-                  {errors.email}
+                  {formErrors.email}
                 </p>
               )}
             </div>
@@ -165,19 +170,19 @@ function ContactSection() {
                 id={msgId}
                 name="message"
                 placeholder="Your Message"
-                className={`form-textarea${errors.message ? " has-error" : ""}`}
+                className={`form-textarea${formErrors.message ? " has-error" : ""}`}
                 rows="5"
                 value={values.message}
                 onChange={onChange}
-                aria-invalid={!!errors.message}
+                aria-invalid={!!formErrors.message}
                 aria-describedby={
-                  errors.message ? `${msgId}-err` : undefined
+                  formErrors.message ? `${msgId}-err` : undefined
                 }
                 required
               />
-              {errors.message && (
+              {formErrors.message && (
                 <p id={`${msgId}-err`} className="field-error">
-                  {errors.message}
+                  {formErrors.message}
                 </p>
               )}
             </div>
@@ -185,7 +190,7 @@ function ContactSection() {
             <button
               type="submit"
               className="form-button"
-              disabled={submitting}
+              disabled={!isValid || submitting}
               aria-busy={submitting ? "true" : "false"}
             >
               {submitting ? "Sending…" : "Send Message"}
