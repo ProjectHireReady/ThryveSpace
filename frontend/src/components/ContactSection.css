@@ -171,3 +171,27 @@
     display: none;
   }
 }
+
+/* Banners */
+.banner { 
+  margin: 0 0 12px; 
+  padding: 10px 12px; 
+  border-radius: 10px; 
+  font-size: 0.95rem; 
+}
+.banner-success { 
+  background: #ecfdf5; 
+  border: 1px solid #a7f3d0; 
+  color: #065f46; 
+}
+.banner-error { 
+  background: #fef2f2; 
+  border: 1px solid #fecaca; 
+  color: #7f1d1d; 
+}
+
+/* Field errors */
+.field { margin-bottom: 12px; }
+.label { display: block; margin-bottom: 6px; font-weight: 600; }
+.field-error { margin-top: 6px; font-size: 0.85rem; color: #b91c1c; }
+.has-error { border-color: #fca5a5 !important; }
